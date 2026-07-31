@@ -17,7 +17,6 @@ import { ApiStatus } from './status'
 export interface LaravelErrorResponse {
   message?: string
   errors?: Record<string, string[]>
-  code?: number
 }
 
 // 错误日志数据接口
