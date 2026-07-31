@@ -1,25 +1,33 @@
 /**
  * HTTP 请求封装模块
- * 基于 Axios 封装的 HTTP 请求工具，提供统一的请求/响应处理
+ * 基于 Axios 封装的 HTTP 请求工具，适配 Laravel 后端原生响应格式
  *
  * ## 主要功能
  *
- * - 请求/响应拦截器（自动添加 Token、统一错误处理）
+ * - 请求拦截器：自动添加 Bearer Token
+ * - 响应拦截器：HTTP 2xx 视为成功（Laravel 无统一外层包装）；检测 body.code===401 兜底处理
  * - 401 未授权自动登出（带防抖机制）
  * - 请求失败自动重试（可配置）
- * - 统一的成功/错误消息提示
+ * - 统一的错误消息展示（兼容 Laravel message/errors 字段）
  * - 支持 GET/POST/PUT/DELETE 等常用方法
  *
+ * ## 后端响应格式说明（Laravel 原生）
+ *
+ * - 成功（200/201）：直接返回数据（单对象/数组/分页对象 `{data, links, meta}`），无外层包装
+ * - 删除/登出（204）：无 body
+ * - 登录成功（200）：`{ access_token: "...", user: {...} }`
+ * - 401 未认证：HTTP 401 或 body 为 `{ code: 401, message: "...", data: null }`
+ * - 422 验证失败：`{ message: "...", errors: { field: ["msg"] } }`
+ * - 其他错误（abort）：`{ message: "错误信息" }`
+ *
  * @module utils/http
- * @author Art Design Pro Team
  */
 
-import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { useUserStore } from '@/store/modules/user'
-import { ApiStatus } from './status'
-import { HttpError, handleError, showError, showSuccess } from './error'
 import { $t } from '@/locales'
-import { BaseResponse } from '@/types'
+import { useUserStore } from '@/store/modules/user'
+import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { HttpError, handleError, showError, showSuccess } from './error'
+import { ApiStatus } from './status'
 
 /** 请求配置常量 */
 const REQUEST_TIMEOUT = 15000
@@ -36,6 +44,8 @@ let unauthorizedTimer: NodeJS.Timeout | null = null
 interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
   showErrorMessage?: boolean
   showSuccessMessage?: boolean
+  /** 自定义成功消息（后端无 msg 字段时使用） */
+  successMessage?: string
 }
 
 const { VITE_API_URL, VITE_WITH_CREDENTIALS } = import.meta.env
@@ -65,7 +75,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig) => {
     const { accessToken } = useUserStore()
-    if (accessToken) request.headers.set('Authorization', accessToken)
+    if (accessToken) request.headers.set('Authorization', `Bearer ${accessToken}`)
 
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
       request.headers.set('Content-Type', 'application/json')
@@ -80,13 +90,23 @@ axiosInstance.interceptors.request.use(
   }
 )
 
-/** 响应拦截器 */
+/** 响应拦截器
+ *
+ *  Laravel 后端没有统一的 `{code, msg, data}` 外层包装，所以成功响应直接放行。
+ *  额外检测响应体中是否存在 code===401（例如后端 /login 路由兜底返回的 JSON），
+ *  如果存在则触发未授权处理。
+ */
 axiosInstance.interceptors.response.use(
-  (response: AxiosResponse<BaseResponse>) => {
-    const { code, msg } = response.data
-    if (code === ApiStatus.success) return response
-    if (code === ApiStatus.unauthorized) handleUnauthorizedError(msg)
-    throw createHttpError(msg || $t('httpMsg.requestFailed'), code)
+  (response: AxiosResponse) => {
+    // 204 No Content（删除/登出等）直接放行，body 为空
+    if (response.status === ApiStatus.noContent) return response
+
+    const body = response.data
+    // 兼容 body 内部包含 code===401 的场景（Laravel 未认证重定向到 /login 返回）
+    if (body && typeof body === 'object' && body.code === ApiStatus.unauthorized) {
+      handleUnauthorizedError(body.message)
+    }
+    return response
   },
   (error) => {
     if (error.response?.status === ApiStatus.unauthorized) handleUnauthorizedError()
@@ -162,9 +182,17 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-/** 请求函数 */
+/** 请求函数
+ *
+ *  Laravel 后端无 `{code,msg,data}` 外层包装，成功响应直接返回 response.data（即响应体本身）。
+ *  - 单资源 GET：直接返回 Resource 对象
+ *  - 分页 GET：返回 `{data, links, meta}`（由上层 table adapter 解析）
+ *  - 列表 GET：返回数组
+ *  - 登录：返回 `{access_token, user}`
+ *  - 204 No Content：返回 null
+ */
 async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> {
-  // POST | PUT 参数自动填充
+  // POST | PUT 参数自动填充（params 搬到 data）
   if (
     ['POST', 'PUT'].includes(config.method?.toUpperCase() || '') &&
     config.params &&
@@ -175,14 +203,21 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
   }
 
   try {
-    const res = await axiosInstance.request<BaseResponse<T>>(config)
+    const res = await axiosInstance.request(config)
 
-    // 显示成功消息
-    if (config.showSuccessMessage && res.data.msg) {
-      showSuccess(res.data.msg)
+    // 204 No Content 返回 null
+    if (res.status === ApiStatus.noContent) {
+      if (config.showSuccessMessage)
+        showSuccess(config.successMessage || $t('httpMsg.operationSuccess'))
+      return null as T
     }
 
-    return res.data.data as T
+    // 显示成功消息：优先使用调用方传入的 successMessage（因为后端无 msg 字段）
+    if (config.showSuccessMessage) {
+      showSuccess(config.successMessage || $t('httpMsg.operationSuccess'))
+    }
+
+    return res.data as T
   } catch (error) {
     if (error instanceof HttpError && error.code !== ApiStatus.unauthorized) {
       const showMsg = config.showErrorMessage !== false
