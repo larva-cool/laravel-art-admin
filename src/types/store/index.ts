@@ -101,10 +101,10 @@ export interface WorkTab {
   isActive?: boolean
 }
 
-// 用户Store状态
+// 管理员Store状态（旧mock类型，保留供参考）
 export interface UserState {
-  /** 用户信息 */
-  userInfo: Api.Auth.UserInfo | null
+  /** 管理员信息 */
+  adminInfo: Api.Auth.AdminInfo | null
   /** 认证令牌 */
   token: string | null
   /** 用户角色列表 */

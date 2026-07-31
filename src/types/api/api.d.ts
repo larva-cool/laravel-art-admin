@@ -25,7 +25,7 @@
  *
  * ```typescript
  * const params: Api.Auth.LoginParams = { userName: 'admin', password: '123456' }
- * const response: Api.Auth.UserInfo = await fetchUserInfo()
+ * const response: Api.Auth.AdminInfo = await fetchUserInfo()
  * ```
  *
  * @module types/api/api
@@ -71,11 +71,11 @@ declare namespace Api {
     /** 登录响应 */
     interface LoginResponse {
       access_token: string
-      user: UserInfo
+      user: AdminInfo
     }
 
-    /** 用户信息（对齐后端 AdminInfoResource） */
-    interface UserInfo {
+    /** 管理员信息（对齐后端 AdminInfoResource） */
+    interface AdminInfo {
       user_id: number
       user_name: string
       email: string

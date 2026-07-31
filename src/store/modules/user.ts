@@ -44,7 +44,7 @@ export const useUserStore = defineStore(
     // 锁屏密码
     const lockPassword = ref('')
     // 管理员信息（登录后台的管理员）
-    const adminInfo = ref<Partial<Api.Auth.UserInfo>>({})
+    const adminInfo = ref<Partial<Api.Auth.AdminInfo>>({})
     // 搜索历史记录
     const searchHistory = ref<AppRouteRecord[]>([])
     // 访问令牌
@@ -63,7 +63,7 @@ export const useUserStore = defineStore(
      * 设置管理员信息
      * @param newInfo 新的管理员信息
      */
-    const setAdminInfo = (newInfo: Api.Auth.UserInfo) => {
+    const setAdminInfo = (newInfo: Api.Auth.AdminInfo) => {
       adminInfo.value = newInfo
     }
 
