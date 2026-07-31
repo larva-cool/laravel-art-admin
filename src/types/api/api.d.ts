@@ -62,26 +62,26 @@ declare namespace Api {
 
   /** 认证类型 */
   namespace Auth {
-    /** 登录参数 */
+    /** 登录参数（后端接收 account 字段，支持用户名/邮箱/手机号登录） */
     interface LoginParams {
-      userName: string
+      account: string
       password: string
     }
 
     /** 登录响应 */
     interface LoginResponse {
-      token: string
-      refreshToken: string
+      access_token: string
+      user: UserInfo
     }
 
-    /** 用户信息 */
+    /** 用户信息（对齐后端 AdminInfoResource） */
     interface UserInfo {
-      buttons: string[]
-      roles: string[]
-      userId: number
-      userName: string
+      user_id: number
+      user_name: string
       email: string
-      avatar?: string
+      avatar: string
+      roles: string[]
+      buttons: string[]
     }
   }
 
@@ -95,7 +95,7 @@ declare namespace Api {
       id: number
       avatar: string
       status: string
-      userName: string
+      username: string
       userGender: string
       nickName: string
       userPhone: string

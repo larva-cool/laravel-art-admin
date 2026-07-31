@@ -18,11 +18,11 @@
             @keyup.enter="handleSubmit"
             style="margin-top: 25px"
           >
-            <ElFormItem prop="username">
+            <ElFormItem prop="account">
               <ElInput
                 class="custom-height"
                 :placeholder="$t('login.placeholder.username')"
-                v-model.trim="formData.username"
+                v-model.trim="formData.account"
                 clearable
               />
             </ElFormItem>
@@ -112,13 +112,13 @@
   const formRef = ref<FormInstance>()
 
   const formData = reactive({
-    username: '',
+    account: '',
     password: '',
     rememberPassword: true
   })
 
   const rules = computed<FormRules>(() => ({
-    username: [{ required: true, message: t('login.placeholder.username'), trigger: 'blur' }],
+    account: [{ required: true, message: t('login.placeholder.username'), trigger: 'blur' }],
     password: [{ required: true, message: t('login.placeholder.password'), trigger: 'blur' }]
   }))
 
@@ -143,19 +143,21 @@
 
       loading.value = true
 
-      const { username, password } = formData
+      const { account, password } = formData
 
-      const { token, refreshToken } = await fetchLogin({
-        userName: username,
+      const { access_token, user } = await fetchLogin({
+        account,
         password
       })
 
-      if (!token) {
-        throw new Error('Login failed - no token received')
+      if (!access_token) {
+        throw new Error('Login failed - no access_token received')
       }
 
-      userStore.setToken(token, refreshToken)
+      userStore.setToken(access_token)
+      userStore.setUserInfo(user)
       userStore.setLoginStatus(true)
+      userStore.checkAndClearWorktabs()
 
       showLoginSuccessNotice()
 

@@ -2,28 +2,31 @@ import request from '@/utils/http'
 
 /**
  * 登录
- * @param params 登录参数
- * @returns 登录响应
+ * @param params 登录参数（account 支持用户名/邮箱/手机号）
+ * @returns { access_token, user }
  */
 export function fetchLogin(params: Api.Auth.LoginParams) {
   return request.post<Api.Auth.LoginResponse>({
-    url: '/api/auth/login',
+    url: '/admin/auth/login',
     params
-    // showSuccessMessage: true // 显示成功消息
-    // showErrorMessage: false // 不显示错误消息
   })
 }
 
 /**
- * 获取用户信息
+ * 获取当前登录用户信息
  * @returns 用户信息
  */
 export function fetchGetUserInfo() {
   return request.get<Api.Auth.UserInfo>({
-    url: '/api/user/info'
-    // 自定义请求头
-    // headers: {
-    //   'X-Custom-Header': 'your-custom-value'
-    // }
+    url: '/admin/auth/info'
+  })
+}
+
+/**
+ * 退出登录（后端吊销当前 token）
+ */
+export function fetchLogout() {
+  return request.post<void>({
+    url: '/admin/auth/logout'
   })
 }

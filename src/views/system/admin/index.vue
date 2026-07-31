@@ -136,7 +136,7 @@
                 previewTeleported: true
               }),
               h('div', { class: 'ml-2' }, [
-                h('p', { class: 'user-name' }, row.userName),
+                h('p', { class: 'user-name' }, row.username),
                 h('p', { class: 'email' }, row.userEmail)
               ])
             ])

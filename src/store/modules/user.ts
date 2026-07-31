@@ -31,17 +31,18 @@
  * @module store/modules/user
  * @author Art Design Pro Team
  */
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { fetchLogout } from '@/api/auth'
 import { LanguageEnum } from '@/enums/appEnum'
 import { router } from '@/router'
-import { useSettingStore } from './setting'
-import { useWorktabStore } from './worktab'
+import { resetRouterState } from '@/router/guards/beforeEach'
 import { AppRouteRecord } from '@/types/router'
 import { setPageTitle } from '@/utils/router'
-import { resetRouterState } from '@/router/guards/beforeEach'
-import { useMenuStore } from './menu'
 import { StorageConfig } from '@/utils/storage/storage-config'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { useMenuStore } from './menu'
+import { useSettingStore } from './setting'
+import { useWorktabStore } from './worktab'
 
 /**
  * 用户状态管理
@@ -126,23 +127,27 @@ export const useUserStore = defineStore(
     /**
      * 设置令牌
      * @param newAccessToken 访问令牌
-     * @param newRefreshToken 刷新令牌（可选）
      */
-    const setToken = (newAccessToken: string, newRefreshToken?: string) => {
+    const setToken = (newAccessToken: string) => {
       accessToken.value = newAccessToken
-      if (newRefreshToken) {
-        refreshToken.value = newRefreshToken
-      }
     }
 
     /**
      * 退出登录
-     * 清空所有用户相关状态并跳转到登录页
-     * 如果是同一账号重新登录，保留工作台标签页
+     * 通知后端吊销 token，清空所有用户相关状态并跳转到登录页
      */
-    const logOut = () => {
+    const logOut = async () => {
+      // 通知后端吊销当前 token（忽略失败，本地始终清理）
+      try {
+        if (accessToken.value) {
+          await fetchLogout()
+        }
+      } catch {
+        // 后端登出失败不影响本地清理
+      }
+
       // 保存当前用户 ID，用于下次登录时判断是否为同一用户
-      const currentUserId = info.value.userId
+      const currentUserId = info.value.user_id
       if (currentUserId) {
         localStorage.setItem(StorageConfig.LAST_USER_ID_KEY, String(currentUserId))
       }
@@ -157,9 +162,8 @@ export const useUserStore = defineStore(
       lockPassword.value = ''
       // 清空访问令牌
       accessToken.value = ''
-      // 清空刷新令牌
+      // 清空刷新令牌（后端不返回，保留字段但清空）
       refreshToken.value = ''
-      // 注意：不清空工作台标签页，等下次登录时根据用户判断
       // 移除iframe路由缓存
       sessionStorage.removeItem('iframeRoutes')
       // 清空主页路径
@@ -182,7 +186,7 @@ export const useUserStore = defineStore(
      */
     const checkAndClearWorktabs = () => {
       const lastUserId = localStorage.getItem(StorageConfig.LAST_USER_ID_KEY)
-      const currentUserId = info.value.userId
+      const currentUserId = info.value.user_id
 
       // 无法获取当前用户 ID，跳过检查
       if (!currentUserId) return
