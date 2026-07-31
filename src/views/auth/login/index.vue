@@ -37,6 +37,31 @@
               />
             </ElFormItem>
 
+            <!-- 拖拽验证 -->
+            <div class="relative pb-5 mt-6">
+              <div
+                class="relative z-[2] overflow-hidden select-none rounded-lg border border-transparent tad-300"
+                :class="{ '!border-[#FF4E4F]': !isPassing && isClickPass }"
+              >
+                <ArtDragVerify
+                  ref="dragVerify"
+                  v-model:value="isPassing"
+                  :text="$t('login.sliderText')"
+                  textColor="var(--art-gray-700)"
+                  :successText="$t('login.sliderSuccessText')"
+                  progressBarBg="var(--main-color)"
+                  background="'#F1F1F4'"
+                  handlerBg="var(--default-box-color)"
+                />
+              </div>
+              <p
+                class="absolute top-0 z-[1] px-px mt-2 text-xs text-[#f56c6c] tad-300"
+                :class="{ 'translate-y-10': !isPassing && isClickPass }"
+              >
+                {{ $t('login.placeholder.slider') }}
+              </p>
+            </div>
+
             <div class="flex-cb mt-2 text-sm">
               <ElCheckbox v-model="formData.rememberPassword">{{
                 $t('login.rememberPwd')
@@ -98,6 +123,9 @@
   }))
 
   const loading = ref(false)
+  const dragVerify = ref()
+  const isPassing = ref(false)
+  const isClickPass = ref(false)
 
   // 登录
   const handleSubmit = async () => {
@@ -106,6 +134,12 @@
     try {
       const valid = await formRef.value.validate()
       if (!valid) return
+
+      // 拖拽验证
+      if (!isPassing.value) {
+        isClickPass.value = true
+        return
+      }
 
       loading.value = true
 
@@ -135,6 +169,14 @@
       }
     } finally {
       loading.value = false
+      resetDragVerify()
+    }
+  }
+
+  // 重置拖拽验证
+  const resetDragVerify = () => {
+    if (dragVerify.value?.reset) {
+      dragVerify.value.reset()
     }
   }
 
