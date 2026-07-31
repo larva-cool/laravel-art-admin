@@ -43,7 +43,7 @@ const userStore = useUserStore()
 export const useAuth = () => {
   const route = useRoute()
   const { isFrontendMode } = useAppMode()
-  const { info } = storeToRefs(userStore)
+  const { adminInfo: info } = storeToRefs(userStore)
 
   // 前端按钮权限（例如：['add', 'edit']）
   const frontendAuthList = info.value?.buttons ?? []

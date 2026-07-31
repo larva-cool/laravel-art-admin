@@ -122,7 +122,7 @@
 
   // Store
   const userStore = useUserStore()
-  const { info: userInfo, lockPassword, isLock } = storeToRefs(userStore)
+  const { adminInfo: userInfo, lockPassword, isLock } = storeToRefs(userStore)
 
   // 响应式数据
   const visible = ref<boolean>(false)

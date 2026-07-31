@@ -155,7 +155,7 @@
       }
 
       userStore.setToken(access_token)
-      userStore.setUserInfo(user)
+      userStore.setAdminInfo(user)
       userStore.setLoginStatus(true)
       userStore.checkAndClearWorktabs()
 

@@ -27,9 +27,9 @@
           />
           <div class="w-[calc(100%-60px)] h-full">
             <span class="block text-sm font-medium text-g-800 truncate">{{
-              userInfo.user_name
+              adminInfo.user_name
             }}</span>
-            <span class="block mt-0.5 text-xs text-g-500 truncate">{{ userInfo.email }}</span>
+            <span class="block mt-0.5 text-xs text-g-500 truncate">{{ adminInfo.email }}</span>
           </div>
         </div>
         <ul class="py-4 mt-3 border-t border-g-300/80">
@@ -73,7 +73,7 @@
   const { t } = useI18n()
   const userStore = useUserStore()
 
-  const { getUserInfo: userInfo } = storeToRefs(userStore)
+  const { getAdminInfo: adminInfo } = storeToRefs(userStore)
   const userMenuPopover = ref()
 
   /**
