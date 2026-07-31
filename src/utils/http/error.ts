@@ -14,7 +14,7 @@ import { AxiosError } from 'axios'
 import { ApiStatus } from './status'
 
 /** Laravel 后端错误响应格式 */
-export interface LaravelErrorResponse {
+export interface ErrorResponse {
   message?: string
   errors?: Record<string, string[]>
 }
@@ -74,7 +74,7 @@ export class HttpError extends Error {
  * - 422 验证错误：取 errors 中第一个字段的第一条错误消息
  * - 其他错误：取 message 字段
  */
-function extractErrorMessage(body?: LaravelErrorResponse): string | undefined {
+function extractErrorMessage(body?: ErrorResponse): string | undefined {
   if (!body) return undefined
   if (body.errors && typeof body.errors === 'object') {
     const firstField = Object.keys(body.errors)[0]
@@ -111,7 +111,7 @@ const getDefaultMessage = (status: number): string => {
 /**
  * 处理 Axios 错误，转换为 HttpError 抛出
  */
-export function handleError(error: AxiosError<LaravelErrorResponse>): never {
+export function handleError(error: AxiosError<ErrorResponse>): never {
   if (error.code === 'ERR_CANCELED') {
     console.warn('Request cancelled:', error.message)
     throw new HttpError($t('httpMsg.requestCancelled'), ApiStatus.error)
