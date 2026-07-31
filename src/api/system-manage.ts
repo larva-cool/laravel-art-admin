@@ -17,9 +17,9 @@ export function fetchGetRoleList(params: Api.SystemManage.RoleSearchParams) {
   })
 }
 
-// 获取菜单列表
+// 获取前端路由配置（后端按当前管理员角色过滤，返回 AppRouteRecord[] 格式）
 export function fetchGetMenuList() {
   return request.get<AppRouteRecord[]>({
-    url: '/api/v3/system/menus/simple'
+    url: '/admin/menus/routes'
   })
 }
