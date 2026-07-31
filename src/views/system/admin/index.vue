@@ -51,7 +51,7 @@
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
   import { DialogType } from '@/types'
 
-  defineOptions({ name: 'User' })
+  defineOptions({ name: 'Admin' })
 
   type UserListItem = Api.SystemManage.UserListItem
 
