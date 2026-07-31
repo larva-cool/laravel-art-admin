@@ -92,24 +92,18 @@ axiosInstance.interceptors.request.use(
 
 /** 响应拦截器
  *
- *  Laravel 后端没有统一的 `{code, msg, data}` 外层包装，所以成功响应直接放行。
- *  额外检测响应体中是否存在 code===401（例如后端 /login 路由兜底返回的 JSON），
- *  如果存在则触发未授权处理。
+ *  Laravel 后端没有统一的 `{code, msg, data}` 外层包装，HTTP 2xx 直接放行。
+ *  401/4xx/5xx 错误通过 error 回调走 handleError，从响应体 message 字段提取错误消息。
  */
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
-    // 204 No Content（删除/登出等）直接放行，body 为空
-    if (response.status === ApiStatus.noContent) return response
-
-    const body = response.data
-    // 兼容 body 内部包含 code===401 的场景（Laravel 未认证重定向到 /login 返回）
-    if (body && typeof body === 'object' && body.code === ApiStatus.unauthorized) {
-      handleUnauthorizedError(body.message)
-    }
     return response
   },
   (error) => {
-    if (error.response?.status === ApiStatus.unauthorized) handleUnauthorizedError()
+    if (error.response?.status === ApiStatus.unauthorized) {
+      const message = error.response.data?.message
+      handleUnauthorizedError(message)
+    }
     return Promise.reject(handleError(error))
   }
 )
