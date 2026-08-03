@@ -56,7 +56,7 @@
   import type { AppRouteRecord } from '@/types/router'
   import MenuDialog from './modules/menu-dialog.vue'
   import { fetchGetMenuList } from '@/api/system-manage'
-  import { ElTag, ElMessageBox } from 'element-plus'
+  import { ElTag, ElMessageBox, ElMessage } from 'element-plus'
 
   defineOptions({ name: 'Menus' })
 
@@ -352,12 +352,12 @@
   })
 
   /**
-   * 添加菜单
+   * 添加菜单（不锁定类型，可选目录/菜单/按钮）
    */
   const handleAddMenu = (): void => {
     dialogType.value = 'menu'
     editData.value = null
-    lockMenuType.value = true
+    lockMenuType.value = false
     dialogVisible.value = true
   }
 

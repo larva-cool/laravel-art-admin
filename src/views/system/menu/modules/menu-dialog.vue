@@ -22,6 +22,7 @@
       <template #menuType>
         <ElRadioGroup v-model="form.menuType" :disabled="disableMenuType">
           <ElRadioButton value="menu" label="menu">菜单</ElRadioButton>
+          <ElRadioButton value="directory" label="directory">目录</ElRadioButton>
           <ElRadioButton value="button" label="button">按钮</ElRadioButton>
         </ElRadioGroup>
       </template>
@@ -37,14 +38,14 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormRules } from 'element-plus'
-  import { ElIcon, ElTooltip } from 'element-plus'
-  import { QuestionFilled } from '@element-plus/icons-vue'
-  import { formatMenuTitle } from '@/utils/router'
-  import type { AppRouteRecord } from '@/types/router'
   import type { FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtForm from '@/components/core/forms/art-form/index.vue'
+  import type { AppRouteRecord } from '@/types/router'
+  import { formatMenuTitle } from '@/utils/router'
+  import { QuestionFilled } from '@element-plus/icons-vue'
   import { useWindowSize } from '@vueuse/core'
+  import type { FormRules } from 'element-plus'
+  import { ElIcon, ElMessage, ElTooltip } from 'element-plus'
 
   const { width } = useWindowSize()
 
@@ -119,7 +120,7 @@
   const formRef = ref()
   const isEdit = ref(false)
 
-  const form = reactive<MenuFormData & { menuType: 'menu' | 'button' }>({
+  const form = reactive<MenuFormData & { menuType: 'menu' | 'directory' | 'button' }>({
     menuType: 'menu',
     id: 0,
     name: '',
@@ -167,7 +168,7 @@
     // Switch 组件的 span：小屏幕 12，大屏幕 6
     const switchSpan = width.value < 640 ? 12 : 6
 
-    if (form.menuType === 'menu') {
+    if (form.menuType === 'menu' || form.menuType === 'directory') {
       return [
         ...baseItems,
         { label: '菜单名称', key: 'name', type: 'input', props: { placeholder: '菜单名称' } },
