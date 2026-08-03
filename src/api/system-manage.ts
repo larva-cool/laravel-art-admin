@@ -214,3 +214,49 @@ export function fetchGetMenuList() {
     url: '/admin/menus/routes'
   })
 }
+
+// ========== 地区管理 ==========
+
+// 获取地区树形结构
+export function fetchGetAreaTree(params?: Api.SystemManage.AreaSearchParams) {
+  return request.get<Api.SystemManage.AreaListItem[]>({
+    url: '/admin/areas/tree',
+    params
+  })
+}
+
+// 获取地区详情
+export function fetchGetAreaDetail(id: number) {
+  return request.get<Api.SystemManage.AreaListItem>({
+    url: `/admin/areas/${id}`
+  })
+}
+
+// 创建地区
+export function fetchCreateArea(data: Api.SystemManage.AreaSaveParams) {
+  return request.post<Api.SystemManage.AreaListItem>({
+    url: '/admin/areas',
+    data,
+    showSuccessMessage: true,
+    successMessage: '创建成功'
+  })
+}
+
+// 更新地区
+export function fetchUpdateArea(id: number, data: Api.SystemManage.AreaSaveParams) {
+  return request.put<Api.SystemManage.AreaListItem>({
+    url: `/admin/areas/${id}`,
+    data,
+    showSuccessMessage: true,
+    successMessage: '更新成功'
+  })
+}
+
+// 删除地区
+export function fetchDeleteArea(id: number) {
+  return request.del<null>({
+    url: `/admin/areas/${id}`,
+    showSuccessMessage: true,
+    successMessage: '删除成功'
+  })
+}

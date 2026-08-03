@@ -215,6 +215,38 @@ declare namespace Api {
       cast_type?: string
     }
 
+    /** 地区列表项（AreaResource） */
+    interface AreaListItem {
+      id: number
+      parent_id: number | null
+      name: string
+      area_code: number | null
+      lat: number | null
+      lng: number | null
+      city_code: string | null
+      sort: number
+      created_at: string | null
+      updated_at: string | null
+      children?: AreaListItem[]
+    }
+
+    /** 地区保存参数（创建/编辑） */
+    interface AreaSaveParams {
+      parent_id?: number | null
+      name: string
+      area_code?: number | null
+      lat?: number | null
+      lng?: number | null
+      city_code?: string | null
+      sort?: number
+    }
+
+    /** 地区搜索参数 */
+    interface AreaSearchParams {
+      name?: string
+      parent_id?: string
+    }
+
     /** 菜单类型枚举值 */
     type MenuTypeValue = 0 | 1 | 2 | 3 | 4
 
