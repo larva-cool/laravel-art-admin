@@ -6,8 +6,7 @@ export const systemRoutes: AppRouteRecord = {
   component: '/index/index',
   meta: {
     title: 'menus.system.title',
-    icon: 'ri:user-3-line',
-    roles: ['R_SUPER', 'R_ADMIN']
+    icon: 'ri:user-3-line'
   },
   children: [
     {
@@ -16,8 +15,7 @@ export const systemRoutes: AppRouteRecord = {
       component: '/system/admin',
       meta: {
         title: 'menus.system.admin',
-        keepAlive: true,
-        roles: ['R_SUPER', 'R_ADMIN']
+        keepAlive: true
       }
     },
     {
@@ -26,8 +24,7 @@ export const systemRoutes: AppRouteRecord = {
       component: '/system/role',
       meta: {
         title: 'menus.system.role',
-        keepAlive: true,
-        roles: ['R_SUPER']
+        keepAlive: true
       }
     },
     {
@@ -48,7 +45,6 @@ export const systemRoutes: AppRouteRecord = {
       meta: {
         title: 'menus.system.menu',
         keepAlive: true,
-        roles: ['R_SUPER'],
         authList: [
           { title: '新增', authMark: 'add' },
           { title: '编辑', authMark: 'edit' },

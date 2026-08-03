@@ -56,27 +56,28 @@
   const permissionNameToId = ref<Map<string, number>>(new Map())
   // 菜单树转换后的权限树
   const treeData = ref<PermissionTreeNode[]>([])
-  // 初始选中的按钮节点 key（key 为按钮菜单 id，提交时需要映射成 permission id）
+  // 初始选中的节点 key（key 为菜单 id，提交时需要映射成 permission id）
   const checkedKeys = ref<string[]>([])
-  // 按钮节点 key → permissionId 的映射（用于提交时转换）
-  const buttonKeyToPermissionId = ref<Map<string, number>>(new Map())
+  // 节点 key → permissionId 的映射（用于提交时转换）
+  const keyToPermissionId = ref<Map<string, number>>(new Map())
 
-  // 将后端菜单树递归转换为权限树，只保留目录/菜单/按钮节点
+  // 将后端菜单树递归转换为权限树，保留所有配置了 permission 的节点
   const transformMenuTree = (menus: Api.SystemManage.MenuTreeItem[]): PermissionTreeNode[] => {
     const result: PermissionTreeNode[] = []
 
     for (const menu of menus) {
-      // 跳过外链/iframe 等无权限节点和禁用节点
+      // 跳过禁用节点
       if (!menu.is_enable) continue
+      // 跳过外链/iframe 等无权限节点
       if (menu.type.value === 3 || menu.type.value === 4) continue
 
       if (menu.type.value === 2) {
-        // 按钮节点
+        // 按钮节点：必须有 permission
         if (!menu.permission) continue
         const permissionId = permissionNameToId.value.get(menu.permission)
         if (permissionId === undefined) continue
         const key = `btn-${menu.id}`
-        buttonKeyToPermissionId.value.set(key, permissionId)
+        keyToPermissionId.value.set(key, permissionId)
         result.push({
           key,
           label: menu.title,
@@ -85,6 +86,22 @@
       } else {
         // 目录/菜单节点：递归处理子节点
         const children = transformMenuTree(menu.children || [])
+        if (menu.permission) {
+          // 配置了 permission 的目录/菜单：作为可选权限节点
+          const permissionId = permissionNameToId.value.get(menu.permission)
+          if (permissionId !== undefined) {
+            const key = `menu-${menu.id}`
+            keyToPermissionId.value.set(key, permissionId)
+            result.push({
+              key,
+              label: menu.title,
+              permissionId,
+              children: children.length > 0 ? children : undefined
+            })
+            continue
+          }
+        }
+        // 未配置 permission 的目录/菜单：仅作为分组容器
         if (children.length > 0) {
           result.push({
             key: `menu-${menu.id}`,
@@ -98,7 +115,7 @@
     return result
   }
 
-  // 收集所有按钮节点 key，用于根据已分配权限回显选中状态
+  // 收集所有有 permissionId 的节点 key，用于根据已分配权限回显选中状态
   const collectCheckedKeys = (
     nodes: PermissionTreeNode[],
     assignedPermissionIds: Set<number>
@@ -122,7 +139,7 @@
     loading.value = true
 
     // 重置状态
-    buttonKeyToPermissionId.value = new Map()
+    keyToPermissionId.value = new Map()
     checkedKeys.value = []
     treeData.value = []
 
@@ -153,16 +170,22 @@
     if (roleId.value === null) return
     submitting.value = true
     try {
-      // ElTree getCheckedKeys 返回选中节点的 key，过滤出按钮节点
-      const checkedButtonKeys = (treeRef.value?.getCheckedKeys(false) || []) as string[]
+      // ElTree getCheckedKeys 返回选中节点的 key，过滤出有 permissionId 的节点
+      const checkedKeys = (treeRef.value?.getCheckedKeys(false) || []) as string[]
       const permissionIds = new Set<number>()
 
-      for (const key of checkedButtonKeys) {
-        const pid = buttonKeyToPermissionId.value.get(key)
+      for (const key of checkedKeys) {
+        const pid = keyToPermissionId.value.get(key)
         if (pid !== undefined) permissionIds.add(pid)
       }
 
-      // 半选的父节点对应的按钮也要包含（但按钮是叶子节点，半选只影响目录/菜单，不会产生权限 id）
+      // 半选的父节点也需要包含
+      const halfCheckedKeys = (treeRef.value?.getHalfCheckedKeys() || []) as string[]
+      for (const key of halfCheckedKeys) {
+        const pid = keyToPermissionId.value.get(key)
+        if (pid !== undefined) permissionIds.add(pid)
+      }
+
       await fetchAssignRolePermissions(roleId.value, Array.from(permissionIds))
       dialogVisible.value = false
     } finally {

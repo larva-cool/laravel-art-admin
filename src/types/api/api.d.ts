@@ -274,8 +274,7 @@ declare namespace Api {
       show_text_badge: string | null
       active_path: string | null
       permission: string | null
-      roles: string[] | null
-      children: MenuTreeItem[]
+      children?: MenuTreeItem[]
     }
 
     /** 菜单保存参数（创建/编辑） */
@@ -301,7 +300,6 @@ declare namespace Api {
       show_text_badge?: string | null
       active_path?: string | null
       permission?: string | null
-      roles?: string[] | null
     }
   }
 }
