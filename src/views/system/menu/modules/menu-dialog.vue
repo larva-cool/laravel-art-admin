@@ -186,7 +186,7 @@
   const menuTreeData = ref<MenuTreeItem[]>([])
 
   const form = reactive({
-    parent_id: 0 as number,
+    parent_id: null as number | null,
     path: '' as string | null,
     name: '' as string | null,
     component: '' as string | null,
@@ -252,7 +252,7 @@
     } else {
       id.value = null
       Object.assign(form, {
-        parent_id: parentId ?? 0,
+        parent_id: parentId ?? null,
         path: '',
         name: '',
         component: '',

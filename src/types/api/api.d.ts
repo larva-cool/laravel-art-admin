@@ -253,7 +253,7 @@ declare namespace Api {
     /** 菜单树节点（/admin/menus/tree 返回） */
     interface MenuTreeItem {
       id: number
-      parent_id: number
+      parent_id: number | null
       path: string | null
       name: string | null
       component: string | null
@@ -279,7 +279,7 @@ declare namespace Api {
 
     /** 菜单保存参数（创建/编辑） */
     interface MenuSaveParams {
-      parent_id: number
+      parent_id?: number | null
       path?: string | null
       name?: string | null
       component?: string | null
