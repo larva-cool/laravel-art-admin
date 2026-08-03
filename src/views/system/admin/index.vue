@@ -70,7 +70,7 @@
         per_page: 20
       },
       columnsFactory: () => [
-        { prop: 'id', label: 'ID', width: 80 },
+        { prop: 'id', label: 'ID', width: 110 },
         { prop: 'username', label: '用户名', minWidth: 120 },
         { prop: 'name', label: '昵称', minWidth: 120 },
         { prop: 'email', label: '邮箱', minWidth: 180, showOverflowTooltip: true },
