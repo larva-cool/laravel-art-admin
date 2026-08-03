@@ -23,7 +23,7 @@
           :value="perm.id"
           style="display: block; margin-bottom: 4px; margin-left: 16px"
         >
-          {{ perm.display_name }}
+          {{ permissionLabel(perm) }}
           <span style="font-size: 12px; color: #999">（{{ perm.name }}）</span>
         </ElCheckbox>
       </div>
@@ -81,6 +81,29 @@
       areas: '地区管理'
     }
     return labels[resource] || resource
+  }
+
+  const actionLabels: Record<string, string> = {
+    index: '列表',
+    list: '列表',
+    view: '查看',
+    show: '查看',
+    create: '新增',
+    store: '新增',
+    edit: '编辑',
+    update: '编辑',
+    delete: '删除',
+    destroy: '删除',
+    export: '导出',
+    import: '导入'
+  }
+
+  // 权限中文名：优先使用后端 display_name，否则从 name（resource.action）推导
+  const permissionLabel = (perm: Api.SystemManage.PermissionItem): string => {
+    if (perm.display_name) return perm.display_name
+    const parts = perm.name.split('.')
+    const action = parts[parts.length - 1]
+    return actionLabels[action] || action
   }
 
   const open = async (row: Api.SystemManage.RoleListItem) => {
