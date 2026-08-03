@@ -204,7 +204,7 @@ export function fetchDeleteSetting(id: number) {
 // 获取完整菜单树（包含目录/菜单/按钮，供菜单管理和权限分配使用）
 export function fetchGetMenuTree() {
   return request.get<Api.SystemManage.MenuTreeItem[]>({
-    url: '/admin/menus/tree'
+    url: '/admin/menus'
   })
 }
 
