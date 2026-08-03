@@ -78,20 +78,11 @@
         </ElCol>
         <ElCol :span="12">
           <ElFormItem label="权限标识" prop="permission">
-            <ElSelect
+            <ElInput
               v-model="form.permission"
-              filterable
+              placeholder="如：system.admin 或 users.create"
               clearable
-              placeholder="请选择权限标识"
-              style="width: 100%"
-            >
-              <ElOption
-                v-for="perm in permissionOptions"
-                :key="perm.id"
-                :label="perm.display_name ? `${perm.display_name} (${perm.name})` : perm.name"
-                :value="perm.name"
-              />
-            </ElSelect>
+            />
           </ElFormItem>
         </ElCol>
       </ElRow>
@@ -173,7 +164,7 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchCreateMenu, fetchGetAllPermissions, fetchUpdateMenu } from '@/api/system-manage'
+  import { fetchCreateMenu, fetchUpdateMenu } from '@/api/system-manage'
   import type { FormInstance, FormRules } from 'element-plus'
 
   defineOptions({ name: 'MenuDialog' })
@@ -194,15 +185,6 @@
 
   /** 父级菜单树数据 */
   const menuTreeData = ref<MenuTreeItem[]>([])
-
-  /** 权限标识选项 */
-  const permissionOptions = ref<Api.SystemManage.PermissionItem[]>([])
-
-  /** 加载权限列表 */
-  const loadPermissions = async () => {
-    if (permissionOptions.value.length > 0) return
-    permissionOptions.value = (await fetchGetAllPermissions()) || []
-  }
 
   const form = reactive({
     parent_id: null as number | null,
@@ -268,7 +250,6 @@
   const open = (row: MenuTreeItem | null, treeData: MenuTreeItem[], parentId?: number | null) => {
     dialogVisible.value = true
     menuTreeData.value = treeData
-    loadPermissions()
 
     if (row) {
       id.value = row.id
