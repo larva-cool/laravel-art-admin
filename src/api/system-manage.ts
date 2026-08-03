@@ -220,7 +220,7 @@ export function fetchGetMenuList() {
 // 获取地区树形结构
 export function fetchGetAreaTree(params?: Api.SystemManage.AreaSearchParams) {
   return request.get<Api.SystemManage.AreaListItem[]>({
-    url: '/admin/areas/tree',
+    url: '/admin/areas',
     params
   })
 }
