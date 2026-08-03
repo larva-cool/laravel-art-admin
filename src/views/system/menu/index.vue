@@ -19,7 +19,7 @@
         @refresh="handleRefresh"
       >
         <template #left>
-          <ElButton v-auth="'add'" @click="handleAddMenu" v-ripple> 添加菜单 </ElButton>
+          <ElButton v-auth="'menus.create'" @click="handleAddMenu" v-ripple> 添加菜单 </ElButton>
           <ElButton @click="toggleExpand" v-ripple>
             {{ isExpanded ? '收起' : '展开' }}
           </ElButton>
@@ -50,13 +50,13 @@
 </template>
 
 <script setup lang="ts">
-  import { formatMenuTitle } from '@/utils/router'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import { fetchGetMenuList } from '@/api/system-manage'
+  import ArtButtonMore, { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import type { AppRouteRecord } from '@/types/router'
+  import { formatMenuTitle } from '@/utils/router'
+  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import MenuDialog from './modules/menu-dialog.vue'
-  import { fetchGetMenuList } from '@/api/system-manage'
-  import { ElTag, ElMessageBox, ElMessage } from 'element-plus'
 
   defineOptions({ name: 'Menus' })
 
@@ -195,36 +195,43 @@
       width: 180,
       align: 'right',
       formatter: (row: AppRouteRecord) => {
-        const buttonStyle = { style: 'text-align: right' }
-
         if (row.meta?.isAuthButton) {
-          return h('div', buttonStyle, [
-            h(ArtButtonTable, {
-              type: 'edit',
-              onClick: () => handleEditAuth(row)
-            }),
-            h(ArtButtonTable, {
-              type: 'delete',
-              onClick: () => handleDeleteAuth()
-            })
-          ])
+          return h(ArtButtonMore, {
+            list: [
+              { key: 'edit', label: '编辑', icon: 'ri:edit-2-line', auth: 'menus.edit' },
+              {
+                key: 'delete',
+                label: '删除',
+                icon: 'ri:delete-bin-4-line',
+                color: '#f56c6c',
+                auth: 'menus.delete'
+              }
+            ],
+            onClick: (item: ButtonMoreItem) => {
+              if (item.key === 'edit') handleEditAuth(row)
+              else if (item.key === 'delete') handleDeleteAuth()
+            }
+          })
         }
 
-        return h('div', buttonStyle, [
-          h(ArtButtonTable, {
-            type: 'add',
-            onClick: () => handleAddAuth(),
-            title: '新增权限'
-          }),
-          h(ArtButtonTable, {
-            type: 'edit',
-            onClick: () => handleEditMenu(row)
-          }),
-          h(ArtButtonTable, {
-            type: 'delete',
-            onClick: () => handleDeleteMenu()
-          })
-        ])
+        return h(ArtButtonMore, {
+          list: [
+            { key: 'add', label: '新增子菜单', icon: 'ri:add-line', auth: 'menus.create' },
+            { key: 'edit', label: '编辑', icon: 'ri:edit-2-line', auth: 'menus.edit' },
+            {
+              key: 'delete',
+              label: '删除',
+              icon: 'ri:delete-bin-4-line',
+              color: '#f56c6c',
+              auth: 'menus.delete'
+            }
+          ],
+          onClick: (item: ButtonMoreItem) => {
+            if (item.key === 'add') handleAddAuth()
+            else if (item.key === 'edit') handleEditMenu(row)
+            else if (item.key === 'delete') handleDeleteMenu()
+          }
+        })
       }
     }
   ])

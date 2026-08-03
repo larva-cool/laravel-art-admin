@@ -15,7 +15,9 @@
       >
         <template #left>
           <ElSpace wrap>
-            <ElButton type="primary" @click="editDialogRef?.open()" v-ripple>新增角色</ElButton>
+            <ElButton type="primary" v-auth="'roles.create'" @click="editDialogRef?.open()" v-ripple
+              >新增角色</ElButton
+            >
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -86,13 +88,19 @@
             h('div', [
               h(ArtButtonMore, {
                 list: [
-                  { key: 'permission', label: '分配权限', icon: 'ri:shield-keyhole-line' },
-                  { key: 'edit', label: '编辑', icon: 'ri:edit-2-line' },
+                  {
+                    key: 'permission',
+                    label: '分配权限',
+                    icon: 'ri:shield-keyhole-line',
+                    auth: 'roles.edit'
+                  },
+                  { key: 'edit', label: '编辑', icon: 'ri:edit-2-line', auth: 'roles.edit' },
                   {
                     key: 'delete',
                     label: '删除',
                     icon: 'ri:delete-bin-4-line',
-                    color: '#f56c6c'
+                    color: '#f56c6c',
+                    auth: 'roles.delete'
                   }
                 ],
                 onClick: (item: ButtonMoreItem) => handleAction(item, row)

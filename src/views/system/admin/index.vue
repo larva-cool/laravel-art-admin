@@ -15,7 +15,13 @@
       >
         <template #left>
           <ElSpace wrap>
-            <ElButton type="primary" @click="editDialogRef?.open()" v-ripple>新增管理员</ElButton>
+            <ElButton
+              type="primary"
+              v-auth="'admins.create'"
+              @click="editDialogRef?.open()"
+              v-ripple
+              >新增管理员</ElButton
+            >
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -111,17 +117,19 @@
             h('div', [
               h(ArtButtonMore, {
                 list: [
-                  { key: 'edit', label: '编辑', icon: 'ri:edit-2-line' },
+                  { key: 'edit', label: '编辑', icon: 'ri:edit-2-line', auth: 'admins.edit' },
                   {
                     key: 'toggle',
                     label: row.status.value === 1 ? '禁用' : '启用',
-                    icon: row.status.value === 1 ? 'ri:forbid-line' : 'ri:checkbox-circle-line'
+                    icon: row.status.value === 1 ? 'ri:forbid-line' : 'ri:checkbox-circle-line',
+                    auth: 'admins.edit'
                   },
                   {
                     key: 'delete',
                     label: '删除',
                     icon: 'ri:delete-bin-4-line',
-                    color: '#f56c6c'
+                    color: '#f56c6c',
+                    auth: 'admins.delete'
                   }
                 ],
                 onClick: (item: ButtonMoreItem) => handleAction(item, row)
