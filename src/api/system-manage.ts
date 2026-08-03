@@ -208,10 +208,10 @@ export function fetchGetMenuTree() {
   })
 }
 
-// 获取前端路由配置（后端按当前管理员角色过滤，返回 AppRouteRecord[] 格式）
+// 获取前端路由配置（后端按当前管理员权限过滤，返回 AppRouteRecord[] 格式）
 export function fetchGetMenuList() {
   return request.get<AppRouteRecord[]>({
-    url: '/admin/menus/routes'
+    url: '/admin/routes'
   })
 }
 
