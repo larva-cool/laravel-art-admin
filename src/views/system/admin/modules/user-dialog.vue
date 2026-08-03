@@ -1,143 +1,174 @@
 <template>
   <ElDialog
     v-model="dialogVisible"
-    :title="dialogType === 'add' ? '添加用户' : '编辑用户'"
-    width="30%"
-    align-center
+    :title="isEdit ? '编辑管理员' : '新增管理员'"
+    width="500px"
+    :close-on-click-modal="false"
+    @close="handleClose"
   >
-    <ElForm ref="formRef" :model="formData" :rules="rules" label-width="80px">
+    <ElForm ref="formRef" :model="form" :rules="rules" label-width="90px">
       <ElFormItem label="用户名" prop="username">
-        <ElInput v-model="formData.username" placeholder="请输入用户名" />
+        <ElInput v-model="form.username" placeholder="请输入用户名" :disabled="isEdit" clearable />
+      </ElFormItem>
+      <ElFormItem label="昵称" prop="name">
+        <ElInput v-model="form.name" placeholder="请输入昵称" clearable />
+      </ElFormItem>
+      <ElFormItem label="邮箱" prop="email">
+        <ElInput v-model="form.email" placeholder="请输入邮箱" clearable />
       </ElFormItem>
       <ElFormItem label="手机号" prop="phone">
-        <ElInput v-model="formData.phone" placeholder="请输入手机号" />
+        <ElInput v-model="form.phone" placeholder="请输入手机号" clearable />
       </ElFormItem>
-      <ElFormItem label="性别" prop="gender">
-        <ElSelect v-model="formData.gender">
-          <ElOption label="男" value="男" />
-          <ElOption label="女" value="女" />
-        </ElSelect>
+      <ElFormItem label="密码" prop="password">
+        <ElInput
+          v-model="form.password"
+          type="password"
+          show-password
+          :placeholder="isEdit ? '留空则不修改' : '请输入密码'"
+          clearable
+        />
       </ElFormItem>
-      <ElFormItem label="角色" prop="role">
-        <ElSelect v-model="formData.role" multiple>
+      <ElFormItem label="状态" prop="status">
+        <ElRadioGroup v-model="form.status">
+          <ElRadio :value="1">正常</ElRadio>
+          <ElRadio :value="0">禁用</ElRadio>
+        </ElRadioGroup>
+      </ElFormItem>
+      <ElFormItem label="角色" prop="roles">
+        <ElSelect v-model="form.roles" multiple placeholder="请选择角色" style="width: 100%">
           <ElOption
-            v-for="role in roleList"
-            :key="role.roleCode"
-            :value="role.roleCode"
-            :label="role.roleName"
+            v-for="role in roleOptions"
+            :key="role.id"
+            :value="role.name"
+            :label="role.name"
           />
         </ElSelect>
       </ElFormItem>
     </ElForm>
+
     <template #footer>
-      <div class="dialog-footer">
-        <ElButton @click="dialogVisible = false">取消</ElButton>
-        <ElButton type="primary" @click="handleSubmit">提交</ElButton>
-      </div>
+      <ElButton @click="handleClose">取消</ElButton>
+      <ElButton type="primary" :loading="submitting" @click="handleSubmit">确认</ElButton>
     </template>
   </ElDialog>
 </template>
 
 <script setup lang="ts">
-  import { ROLE_LIST_DATA } from '@/mock/temp/formData'
   import type { FormInstance, FormRules } from 'element-plus'
+  import { fetchCreateAdmin, fetchGetRoleList, fetchUpdateAdmin } from '@/api/system-manage'
 
-  interface Props {
-    visible: boolean
-    type: string
-    userData?: Partial<Api.SystemManage.UserListItem>
-  }
+  defineOptions({ name: 'AdminEditDialog' })
 
-  interface Emits {
-    (e: 'update:visible', value: boolean): void
-    (e: 'submit'): void
-  }
+  const emit = defineEmits<{
+    (e: 'refresh'): void
+  }>()
 
-  const props = defineProps<Props>()
-  const emit = defineEmits<Emits>()
-
-  // 角色列表数据
-  const roleList = ref(ROLE_LIST_DATA)
-
-  // 对话框显示控制
-  const dialogVisible = computed({
-    get: () => props.visible,
-    set: (value) => emit('update:visible', value)
-  })
-
-  const dialogType = computed(() => props.type)
-
-  // 表单实例
+  const dialogVisible = ref(false)
   const formRef = ref<FormInstance>()
+  const submitting = ref(false)
+  const id = ref<number | null>(null)
+  const isEdit = computed(() => id.value !== null)
 
-  // 表单数据
-  const formData = reactive({
+  const roleOptions = ref<Api.SystemManage.RoleListItem[]>([])
+
+  const form = reactive({
     username: '',
+    name: '',
+    email: '',
     phone: '',
-    gender: '男',
-    role: [] as string[]
+    password: '',
+    status: 1 as number,
+    roles: [] as string[]
   })
 
-  // 表单验证规则
-  const rules: FormRules = {
+  const rules = computed<FormRules>(() => ({
     username: [
-      { required: true, message: '请输入用户名', trigger: 'blur' },
-      { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+      { required: !isEdit.value, message: '请输入用户名', trigger: 'blur' },
+      { min: 3, max: 50, message: '长度在 3 到 50 个字符', trigger: 'blur' }
     ],
-    phone: [
-      { required: true, message: '请输入手机号', trigger: 'blur' },
-      { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
+    name: [
+      { required: true, message: '请输入昵称', trigger: 'blur' },
+      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
     ],
-    gender: [{ required: true, message: '请选择性别', trigger: 'blur' }],
-    role: [{ required: true, message: '请选择角色', trigger: 'blur' }]
+    password: isEdit.value
+      ? [{ min: 8, message: '密码至少 8 个字符', trigger: 'blur' }]
+      : [{ required: true, message: '请输入密码', trigger: 'blur' }],
+    status: [{ required: true, message: '请选择状态', trigger: 'change' }]
+  }))
+
+  const open = async (row?: Api.SystemManage.AdminListItem) => {
+    dialogVisible.value = true
+    // 加载角色选项
+    if (roleOptions.value.length === 0) {
+      const res = await fetchGetRoleList({ page: 1, per_page: 100 })
+      roleOptions.value = res?.data || []
+    }
+
+    if (row) {
+      id.value = row.id
+      Object.assign(form, {
+        username: row.username,
+        name: row.name,
+        email: row.email || '',
+        phone: row.phone || '',
+        password: '',
+        status: row.status,
+        roles: row.roles || []
+      })
+    } else {
+      id.value = null
+      Object.assign(form, {
+        username: '',
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        status: 1,
+        roles: []
+      })
+    }
   }
 
-  /**
-   * 初始化表单数据
-   * 根据对话框类型（新增/编辑）填充表单
-   */
-  const initFormData = () => {
-    const isEdit = props.type === 'edit' && props.userData
-    const row = props.userData
-
-    Object.assign(formData, {
-      username: isEdit && row ? row.username || '' : '',
-      phone: isEdit && row ? row.userPhone || '' : '',
-      gender: isEdit && row ? row.userGender || '男' : '男',
-      role: isEdit && row ? (Array.isArray(row.userRoles) ? row.userRoles : []) : []
-    })
-  }
-
-  /**
-   * 监听对话框状态变化
-   * 当对话框打开时初始化表单数据并清除验证状态
-   */
-  watch(
-    () => [props.visible, props.type, props.userData],
-    ([visible]) => {
-      if (visible) {
-        initFormData()
-        nextTick(() => {
-          formRef.value?.clearValidate()
-        })
-      }
-    },
-    { immediate: true }
-  )
-
-  /**
-   * 提交表单
-   * 验证通过后触发提交事件
-   */
   const handleSubmit = async () => {
     if (!formRef.value) return
-
-    await formRef.value.validate((valid) => {
-      if (valid) {
-        ElMessage.success(dialogType.value === 'add' ? '添加成功' : '更新成功')
+    await formRef.value.validate(async (valid) => {
+      if (!valid) return
+      submitting.value = true
+      try {
+        if (isEdit.value && id.value) {
+          await fetchUpdateAdmin(id.value, {
+            name: form.name,
+            email: form.email || null,
+            phone: form.phone || null,
+            password: form.password || null,
+            status: form.status,
+            roles: form.roles
+          })
+        } else {
+          await fetchCreateAdmin({
+            username: form.username,
+            name: form.name,
+            email: form.email || null,
+            phone: form.phone || null,
+            password: form.password,
+            status: form.status,
+            roles: form.roles
+          })
+        }
         dialogVisible.value = false
-        emit('submit')
+        emit('refresh')
+      } finally {
+        submitting.value = false
       }
     })
   }
+
+  const handleClose = () => {
+    formRef.value?.resetFields()
+    dialogVisible.value = false
+  }
+
+  defineExpose({ open })
 </script>
+
+<style scoped lang="scss"></style>

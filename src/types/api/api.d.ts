@@ -102,31 +102,54 @@ declare namespace Api {
 
   /** 系统管理类型 */
   namespace SystemManage {
-    /** 用户列表 */
-    type UserList = Api.Common.PaginatedResponse<UserListItem>
+    /** 管理员列表（Laravel 分页） */
+    type AdminList = Api.Common.PaginatedResponse<AdminListItem>
 
-    /** 用户列表项 */
-    interface UserListItem {
+    /** 管理员列表项（AdminResource） */
+    interface AdminListItem {
       id: number
-      avatar: string
-      status: string
       username: string
-      userGender: string
-      nickName: string
-      userPhone: string
-      userEmail: string
-      userRoles: string[]
-      createBy: string
-      createTime: string
-      updateBy: string
-      updateTime: string
+      email: string | null
+      phone: string | null
+      name: string
+      /** 0=禁用, 1=正常 */
+      status: number
+      login_count: number
+      last_login_ip: string | null
+      last_login_at: string | null
+      last_active_at: string | null
+      /** 角色名称数组（whenLoaded） */
+      roles?: string[]
+      created_at: string | null
+      updated_at: string | null
     }
 
-    /** 用户搜索参数 */
-    type UserSearchParams = Partial<
-      Pick<UserListItem, 'id' | 'userName' | 'userGender' | 'userPhone' | 'userEmail' | 'status'> &
-        Api.Common.CommonSearchParams
-    >
+    /** 管理员创建参数 */
+    interface AdminCreateParams {
+      username: string
+      email?: string | null
+      phone?: string | null
+      name: string
+      password: string
+      status: number
+      roles?: string[]
+    }
+
+    /** 管理员更新参数 */
+    interface AdminUpdateParams {
+      email?: string | null
+      phone?: string | null
+      name: string
+      password?: string | null
+      status: number
+      roles?: string[]
+    }
+
+    /** 管理员搜索参数 */
+    interface AdminSearchParams extends Api.Common.CommonSearchParams {
+      keyword?: string
+      status?: number
+    }
 
     /** 角色列表（Laravel 分页） */
     type RoleList = Api.Common.PaginatedResponse<RoleListItem>

@@ -3,11 +3,83 @@ import request from '@/utils/http'
 
 // ========== 管理员管理 ==========
 
-// 获取管理员列表
-export function fetchGetUserList(params: Api.SystemManage.UserSearchParams) {
-  return request.get<Api.SystemManage.UserList>({
+// 获取管理员列表（分页）
+export function fetchGetAdminList(params: Api.SystemManage.AdminSearchParams) {
+  return request.get<Api.SystemManage.AdminList>({
     url: '/admin/admins',
     params
+  })
+}
+
+// 获取管理员详情
+export function fetchGetAdminDetail(id: number) {
+  return request.get<Api.SystemManage.AdminListItem>({
+    url: `/admin/admins/${id}`
+  })
+}
+
+// 创建管理员
+export function fetchCreateAdmin(data: Api.SystemManage.AdminCreateParams) {
+  return request.post<Api.SystemManage.AdminListItem>({
+    url: '/admin/admins',
+    data,
+    showSuccessMessage: true,
+    successMessage: '创建成功'
+  })
+}
+
+// 更新管理员
+export function fetchUpdateAdmin(id: number, data: Api.SystemManage.AdminUpdateParams) {
+  return request.put<Api.SystemManage.AdminListItem>({
+    url: `/admin/admins/${id}`,
+    data,
+    showSuccessMessage: true,
+    successMessage: '更新成功'
+  })
+}
+
+// 删除管理员
+export function fetchDeleteAdmin(id: number) {
+  return request.del<null>({
+    url: `/admin/admins/${id}`,
+    showSuccessMessage: true,
+    successMessage: '删除成功'
+  })
+}
+
+// 启用/禁用管理员
+export function fetchToggleAdminStatus(id: number) {
+  return request.put<Api.SystemManage.AdminListItem>({
+    url: `/admin/admins/${id}/toggle-status`,
+    showSuccessMessage: true,
+    successMessage: '状态切换成功'
+  })
+}
+
+// 重置管理员密码
+export function fetchResetAdminPassword(id: number, password: string) {
+  return request.put<null>({
+    url: `/admin/admins/${id}/reset-password`,
+    data: { password, password_confirmation: password },
+    showSuccessMessage: true,
+    successMessage: '密码重置成功'
+  })
+}
+
+// 获取管理员已分配角色
+export function fetchGetAdminRoles(id: number) {
+  return request.get<string[]>({
+    url: `/admin/admins/${id}/roles`
+  })
+}
+
+// 分配管理员角色
+export function fetchAssignAdminRoles(id: number, roles: string[]) {
+  return request.put<string[]>({
+    url: `/admin/admins/${id}/roles`,
+    data: { roles },
+    showSuccessMessage: true,
+    successMessage: '角色分配成功'
   })
 }
 
