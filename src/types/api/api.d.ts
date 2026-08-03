@@ -156,5 +156,36 @@ declare namespace Api {
     interface RoleSearchParams extends Api.Common.CommonSearchParams {
       role_name?: string
     }
+
+    /** 菜单类型枚举值 */
+    type MenuTypeValue = 0 | 1 | 2 | 3 | 4
+
+    /** 菜单树节点（/admin/menus/tree 返回） */
+    interface MenuTreeItem {
+      id: number
+      parent_id: number
+      path: string | null
+      name: string | null
+      component: string | null
+      redirect: string | null
+      title: string
+      icon: string | null
+      link: string | null
+      type: { value: MenuTypeValue; label: string }
+      sort: number
+      is_enable: boolean
+      is_hide: boolean
+      is_hide_tab: boolean
+      is_iframe: boolean
+      keep_alive: boolean
+      is_full_page: boolean
+      fixed_tab: boolean
+      show_badge: boolean
+      show_text_badge: string | null
+      active_path: string | null
+      permission: string | null
+      roles: string[] | null
+      children: MenuTreeItem[]
+    }
   }
 }

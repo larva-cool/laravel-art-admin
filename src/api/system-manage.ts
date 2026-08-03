@@ -83,6 +83,13 @@ export function fetchAssignRolePermissions(id: number, permissionIds: number[]) 
 
 // ========== 菜单管理 ==========
 
+// 获取完整菜单树（包含目录/菜单/按钮，供菜单管理和权限分配使用）
+export function fetchGetMenuTree() {
+  return request.get<Api.SystemManage.MenuTreeItem[]>({
+    url: '/admin/menus/tree'
+  })
+}
+
 // 获取前端路由配置（后端按当前管理员角色过滤，返回 AppRouteRecord[] 格式）
 export function fetchGetMenuList() {
   return request.get<AppRouteRecord[]>({
