@@ -95,6 +95,7 @@ declare namespace Api {
       user_name: string
       email: string
       avatar: string
+      phone?: string
       roles: string[]
       buttons: string[]
     }

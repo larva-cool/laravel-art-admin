@@ -66,6 +66,33 @@ export function fetchResetAdminPassword(id: number, password: string) {
   })
 }
 
+// 修改当前管理员密码
+export function fetchChangeAdminPassword(oldPassword: string, password: string) {
+  return request.put<null>({
+    url: '/admin/admins/change-password',
+    data: { old_password: oldPassword, password, password_confirmation: password },
+    showSuccessMessage: true,
+    successMessage: '密码修改成功'
+  })
+}
+
+// 获取当前管理员资料
+export function fetchGetAdminProfile() {
+  return request.get<Api.SystemManage.AdminListItem>({
+    url: '/admin/admins/profile'
+  })
+}
+
+// 更新当前管理员资料
+export function fetchUpdateAdminProfile(data: Partial<Api.SystemManage.AdminUpdateParams>) {
+  return request.put<Api.SystemManage.AdminListItem>({
+    url: '/admin/admins/profile',
+    data,
+    showSuccessMessage: true,
+    successMessage: '资料更新成功'
+  })
+}
+
 // 获取管理员已分配角色
 export function fetchGetAdminRoles(id: number) {
   return request.get<string[]>({
