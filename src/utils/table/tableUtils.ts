@@ -54,119 +54,53 @@ export interface TableError {
   details?: unknown
 }
 
-// 辅助函数：从对象中提取记录数组
-function extractRecords<T>(obj: Record<string, unknown>, fields: string[]): T[] {
-  for (const field of fields) {
-    if (field in obj && Array.isArray(obj[field])) {
-      return obj[field] as T[]
-    }
-  }
-  return []
-}
-
-// 辅助函数：从对象中提取总数
-function extractTotal(obj: Record<string, unknown>, records: unknown[], fields: string[]): number {
-  for (const field of fields) {
-    if (field in obj && typeof obj[field] === 'number') {
-      return obj[field] as number
-    }
-  }
-  return records.length
-}
-
-// 辅助函数：提取分页参数
-function extractPagination(
-  obj: Record<string, unknown>,
-  data?: Record<string, unknown>
-): Pick<ApiResponse<unknown>, 'current' | 'size'> | undefined {
-  const result: Partial<Pick<ApiResponse<unknown>, 'current' | 'size'>> = {}
-  const sources = [obj, data ?? {}]
-
-  const currentFields = tableConfig.currentFields
-  for (const src of sources) {
-    for (const field of currentFields) {
-      if (field in src && typeof src[field] === 'number') {
-        result.current = src[field] as number
-        break
-      }
-    }
-    if (result.current !== undefined) break
-  }
-
-  const sizeFields = tableConfig.sizeFields
-  for (const src of sources) {
-    for (const field of sizeFields) {
-      if (field in src && typeof src[field] === 'number') {
-        result.size = src[field] as number
-        break
-      }
-    }
-    if (result.size !== undefined) break
-  }
-
-  if (result.current === undefined && result.size === undefined) return undefined
-  return result
-}
-
 /**
- * 默认响应适配器 - 支持多种常见的API响应格式
+ * 默认响应数据适配器
+ *
+ * 支持 Laravel 标准分页格式：
+ * {
+ *   data: [...],
+ *   meta: { current_page, per_page, total, ... },
+ *   links: {...}
+ * }
+ *
+ * 同时兼容扁平分页格式：
+ * { records: [...], total, current, size }
+ * { list: [...], totalCount, pageNum, pageSize }
+ * { data: [...], total, current, size }
  */
-export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => {
-  // 定义支持的字段
-  const recordFields = tableConfig.recordFields
-
-  if (!response) {
-    return { records: [], total: 0 }
+export function defaultResponseAdapter<T>(response: any): ApiResponse<T> {
+  if (!response || typeof response !== 'object') {
+    return { records: [], total: 0, current: 1, size: 10 }
   }
 
-  if (Array.isArray(response)) {
-    return { records: response, total: response.length }
-  }
+  const listKey = tableConfig.responseKey.list
+  const metaKey = tableConfig.responseKey.meta
 
-  if (typeof response !== 'object') {
-    console.warn(
-      '[tableUtils] 无法识别的响应格式，支持的格式包括: 数组、包含' +
-        recordFields.join('/') +
-        '字段的对象、嵌套data对象。当前格式:',
-      response
-    )
-    return { records: [], total: 0 }
-  }
+  // 优先使用配置的列表字段，然后尝试常见的列表字段
+  const records = Array.isArray(response[listKey])
+    ? response[listKey]
+    : Array.isArray(response.records)
+      ? response.records
+      : Array.isArray(response.list)
+        ? response.list
+        : Array.isArray(response.items)
+          ? response.items
+          : []
 
-  const res = response as Record<string, unknown>
-  let records: T[] = []
-  let total = 0
-  let pagination: Pick<ApiResponse<unknown>, 'current' | 'size'> | undefined
+  // Laravel 格式：分页信息嵌套在 meta 对象中
+  const meta = response[metaKey]
+  const source = meta && typeof meta === 'object' ? meta : response
 
-  // 处理标准格式或直接列表
-  records = extractRecords(res, recordFields)
-  total = extractTotal(res, records, tableConfig.totalFields)
-  pagination = extractPagination(res)
+  const totalKey = tableConfig.responseKey.total
+  const currentKey = tableConfig.responseKey.current
+  const sizeKey = tableConfig.responseKey.size
 
-  // 如果没有找到，检查嵌套data
-  if (records.length === 0 && 'data' in res && typeof res.data === 'object') {
-    const data = res.data as Record<string, unknown>
-    records = extractRecords(data, ['list', 'records', 'items'])
-    total = extractTotal(data, records, tableConfig.totalFields)
-    pagination = extractPagination(res, data)
+  const total = Number(source[totalKey] ?? source.totalCount ?? source.total ?? 0)
+  const current = Number(source[currentKey] ?? source.pageNum ?? source.current ?? 1)
+  const size = Number((source[sizeKey] ?? source.pageSize ?? source.size ?? records.length) || 10)
 
-    if (Array.isArray(res.data)) {
-      records = res.data as T[]
-      total = records.length
-    }
-  }
-
-  if (!recordFields.some((field) => field in res) && records.length === 0) {
-    console.warn('[tableUtils] 无法识别的响应格式')
-    console.warn('支持的字段包括: ' + recordFields.join('、'), response)
-    console.warn('扩展字段请到 utils/table/tableConfig 文件配置')
-  }
-
-  const result: ApiResponse<T> = { records, total }
-  if (pagination) {
-    Object.assign(result, pagination)
-  }
-  return result
+  return { records, total, current, size }
 }
 
 /**

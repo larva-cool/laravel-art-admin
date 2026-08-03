@@ -1,55 +1,53 @@
 /**
- * 表格全局配置模块
+ * 表格全局配置
  *
- * 提供表格与后端接口的字段映射配置
- *
- * ## 主要功能
- *
- * - 响应数据字段自动识别和映射
- * - 支持多种常见的后端响应格式
- * - 请求参数字段映射配置
- * - 可扩展的字段配置机制
- *
- * ## 使用场景
- *
- * - 适配不同后端的分页接口格式
- * - 统一前端表格组件的数据处理
- * - 减少重复的数据转换代码
- * - 支持多个后端服务的接口对接
- *
- * ## 配置说明
- *
- * - recordFields: 列表数据字段名（按优先级顺序查找）
- * - totalFields: 总条数字段名
- * - currentFields: 当前页码字段名
- * - sizeFields: 每页大小字段名
- * - paginationKey: 前端发送请求时使用的分页参数名
- *
- * ## 扩展方式
- *
- * 如果后端使用其他字段名，可以在对应数组中添加新的字段名
- * 例如：recordFields: ['list', 'data', 'records', 'items', 'yourCustomField']
- *
- * @module utils/table/tableConfig
- * @author Art Design Pro Team
+ * 集中管理表格相关的全局配置，包括分页字段名、默认配置等。
+ * 各业务模块可以通过 useTable 的参数覆盖这些配置。
  */
-export const tableConfig = {
-  // 响应数据字段映射配置，系统会从接口返回数据中按顺序查找这些字段
-  // 列表数据
-  recordFields: ['list', 'data', 'records', 'items', 'result', 'rows'],
-  // 总条数
-  totalFields: ['total', 'count'],
-  // 当前页码
-  currentFields: ['current', 'page', 'pageNum'],
-  // 每页大小
-  sizeFields: ['size', 'pageSize', 'limit'],
 
-  // 请求参数映射配置，前端发送请求时使用的分页参数名
-  // useTable 组合式函数传递分页参数的时候 用 current 跟 size
+/** 分页相关字段名配置（Laravel 格式） */
+export const tableConfig = {
+  /** 分页请求/响应字段名映射 */
   paginationKey: {
-    // 当前页码
-    current: 'current',
-    // 每页大小
-    size: 'size'
-  }
+    /** 请求时的当前页码字段名（Laravel 使用 page） */
+    current: 'page',
+    /** 请求时的每页条数字段名（Laravel 使用 per_page） */
+    size: 'per_page'
+  },
+
+  /** 响应数据中分页字段名映射（Laravel 分页 JSON 结构） */
+  responseKey: {
+    /** 数据列表字段名 */
+    list: 'data',
+    /** 当前页码字段名（嵌套在 meta 中） */
+    current: 'current_page',
+    /** 每页条数字段名（嵌套在 meta 中） */
+    size: 'per_page',
+    /** 总条数字段名（嵌套在 meta 中） */
+    total: 'total',
+    /** 分页元数据字段名 */
+    meta: 'meta'
+  },
+
+  /** 默认分页配置 */
+  defaultPagination: {
+    /** 默认当前页 */
+    current: 1,
+    /** 默认每页条数 */
+    size: 10,
+    /** 默认总条数 */
+    total: 0
+  },
+
+  /** 每页条数选项 */
+  pageSizes: [10, 20, 30, 50, 100],
+
+  /** 默认每页条数 */
+  pageSize: 10,
+
+  /** 默认防抖延迟（毫秒） */
+  defaultDebounceTime: 300
 }
+
+/** 表格配置类型 */
+export type TableConfig = typeof tableConfig

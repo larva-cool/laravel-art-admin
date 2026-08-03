@@ -33,6 +33,7 @@
  * @author Art Design Pro Team
  */
 import { hash } from 'ohash'
+import { tableConfig } from './tableConfig'
 
 // 缓存失效策略枚举
 export enum CacheInvalidationStrategy {
@@ -99,11 +100,12 @@ export class TableCache<T> {
   // 🔧 优化：增强类型安全性
   private generateTags(params: Record<string, unknown>): Set<string> {
     const tags = new Set<string>()
+    const { current: pageKey, size: sizeKey } = tableConfig.paginationKey
 
     // 添加搜索条件标签
     const searchKeys = Object.keys(params).filter(
       (key) =>
-        !['current', 'size', 'total'].includes(key) &&
+        ![pageKey, sizeKey, 'total'].includes(key) &&
         params[key] !== undefined &&
         params[key] !== '' &&
         params[key] !== null
@@ -117,7 +119,7 @@ export class TableCache<T> {
     }
 
     // 添加分页标签
-    tags.add(`pagination:${params.size || 10}`)
+    tags.add(`pagination:${params[sizeKey] || 10}`)
     // 添加通用分页标签，用于清理所有分页缓存
     tags.add('pagination')
 

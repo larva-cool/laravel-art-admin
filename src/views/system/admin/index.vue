@@ -42,14 +42,14 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
-  import { useTable } from '@/hooks/core/useTable'
   import { fetchGetUserList } from '@/api/system-manage'
-  import UserSearch from './modules/user-search.vue'
-  import UserDialog from './modules/user-dialog.vue'
-  import { ElTag, ElMessageBox, ElImage } from 'element-plus'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import { useTable } from '@/hooks/core/useTable'
+  import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
   import { DialogType } from '@/types'
+  import { ElImage, ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import UserDialog from './modules/user-dialog.vue'
+  import UserSearch from './modules/user-search.vue'
 
   defineOptions({ name: 'Admin' })
 
@@ -109,8 +109,8 @@
     core: {
       apiFn: fetchGetUserList,
       apiParams: {
-        current: 1,
-        size: 20,
+        page: 1,
+        per_page: 20,
         ...searchForm.value
       },
       // 自定义分页字段映射，未设置时将使用全局配置 tableConfig.ts 中的 paginationKey
