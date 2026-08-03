@@ -180,6 +180,41 @@ declare namespace Api {
       role_name?: string
     }
 
+    /** 配置列表（Laravel 分页） */
+    type SettingList = Api.Common.PaginatedResponse<SettingListItem>
+
+    /** 配置列表项（SettingResource） */
+    interface SettingListItem {
+      id: number
+      name: string
+      key: string
+      value: string | null
+      cast_type: string
+      input_type: string
+      param: string | null
+      sort: number
+      remark: string | null
+      updated_at: string | null
+    }
+
+    /** 配置保存参数（创建/编辑） */
+    interface SettingSaveParams {
+      name: string
+      key: string
+      value?: string | null
+      cast_type: string
+      input_type: string
+      param?: string | null
+      sort?: number
+      remark?: string | null
+    }
+
+    /** 配置搜索参数 */
+    interface SettingSearchParams extends Api.Common.CommonSearchParams {
+      keyword?: string
+      cast_type?: string
+    }
+
     /** 菜单类型枚举值 */
     type MenuTypeValue = 0 | 1 | 2 | 3 | 4
 

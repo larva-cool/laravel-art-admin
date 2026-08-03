@@ -153,6 +153,52 @@ export function fetchAssignRolePermissions(id: number, permissionIds: number[]) 
   })
 }
 
+// ========== 配置管理 ==========
+
+// 获取配置列表（分页）
+export function fetchGetSettingList(params: Api.SystemManage.SettingSearchParams) {
+  return request.get<Api.SystemManage.SettingList>({
+    url: '/admin/settings',
+    params
+  })
+}
+
+// 获取配置详情
+export function fetchGetSettingDetail(id: number) {
+  return request.get<Api.SystemManage.SettingListItem>({
+    url: `/admin/settings/${id}`
+  })
+}
+
+// 创建配置
+export function fetchCreateSetting(data: Api.SystemManage.SettingSaveParams) {
+  return request.post<Api.SystemManage.SettingListItem>({
+    url: '/admin/settings',
+    data,
+    showSuccessMessage: true,
+    successMessage: '创建成功'
+  })
+}
+
+// 更新配置
+export function fetchUpdateSetting(id: number, data: Api.SystemManage.SettingSaveParams) {
+  return request.put<Api.SystemManage.SettingListItem>({
+    url: `/admin/settings/${id}`,
+    data,
+    showSuccessMessage: true,
+    successMessage: '更新成功'
+  })
+}
+
+// 删除配置
+export function fetchDeleteSetting(id: number) {
+  return request.del<null>({
+    url: `/admin/settings/${id}`,
+    showSuccessMessage: true,
+    successMessage: '删除成功'
+  })
+}
+
 // ========== 菜单管理 ==========
 
 // 获取完整菜单树（包含目录/菜单/按钮，供菜单管理和权限分配使用）
