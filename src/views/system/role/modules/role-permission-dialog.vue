@@ -8,10 +8,12 @@
   >
     <div v-loading="loading" class="permission-tree-wrapper">
       <ElTree
+        :key="treeKey"
         ref="treeRef"
         :data="treeData"
         show-checkbox
         node-key="key"
+        default-expand-all
         :props="{ label: 'label', children: 'children' }"
         :default-checked-keys="checkedKeys"
       />
@@ -25,13 +27,13 @@
 </template>
 
 <script setup lang="ts">
-  import type { ElTree } from 'element-plus'
   import {
     fetchAssignRolePermissions,
     fetchGetAllPermissions,
     fetchGetMenuTree,
     fetchGetRolePermissions
   } from '@/api/system-manage'
+  import type { ElTree } from 'element-plus'
 
   defineOptions({ name: 'RolePermissionDialog' })
 
@@ -46,6 +48,7 @@
   const loading = ref(false)
   const submitting = ref(false)
   const treeRef = ref<InstanceType<typeof ElTree>>()
+  const treeKey = ref(0)
   const roleId = ref<number | null>(null)
   const roleName = ref('')
 
@@ -140,6 +143,7 @@
       // 回显选中状态
       const assignedSet = new Set(assignedIds || [])
       checkedKeys.value = collectCheckedKeys(treeData.value, assignedSet)
+      treeKey.value++
     } finally {
       loading.value = false
     }
