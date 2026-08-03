@@ -48,7 +48,7 @@
 
   type RoleListItem = Api.SystemManage.RoleListItem
 
-  const showSearchBar = ref(false)
+  const showSearchBar = ref(true)
   const editDialogRef = ref<InstanceType<typeof RoleEditDialog>>()
   const permissionDialogRef = ref<InstanceType<typeof RolePermissionDialog>>()
 

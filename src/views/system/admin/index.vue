@@ -46,7 +46,7 @@
 
   type AdminListItem = Api.SystemManage.AdminListItem
 
-  const showSearchBar = ref(false)
+  const showSearchBar = ref(true)
   const editDialogRef = ref<InstanceType<typeof AdminEditDialog>>()
 
   const {
