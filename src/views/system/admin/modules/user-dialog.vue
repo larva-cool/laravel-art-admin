@@ -54,8 +54,8 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
   import { fetchCreateAdmin, fetchGetRoleList, fetchUpdateAdmin } from '@/api/system-manage'
+  import type { FormInstance, FormRules } from 'element-plus'
 
   defineOptions({ name: 'AdminEditDialog' })
 
@@ -112,7 +112,7 @@
         email: row.email || '',
         phone: row.phone || '',
         password: '',
-        status: row.status,
+        status: row.status.value,
         roles: row.roles || []
       })
     } else {

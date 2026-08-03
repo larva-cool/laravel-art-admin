@@ -112,8 +112,8 @@ declare namespace Api {
       email: string | null
       phone: string | null
       name: string
-      /** 0=禁用, 1=正常 */
-      status: number
+      /** 状态枚举 {value: 0|1, label: string} */
+      status: { value: number; label: string }
       login_count: number
       last_login_ip: string | null
       last_login_at: string | null

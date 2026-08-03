@@ -94,8 +94,10 @@
           label: '状态',
           width: 80,
           formatter: (row: AdminListItem) =>
-            h(ElTag, { type: row.status === 1 ? 'success' : 'danger' }, () =>
-              row.status === 1 ? '正常' : '禁用'
+            h(
+              ElTag,
+              { type: row.status.value === 1 ? 'success' : 'danger' },
+              () => row.status.label
             )
         },
         { prop: 'login_count', label: '登录次数', width: 100 },
@@ -112,8 +114,8 @@
                   { key: 'edit', label: '编辑', icon: 'ri:edit-2-line' },
                   {
                     key: 'toggle',
-                    label: row.status === 1 ? '禁用' : '启用',
-                    icon: row.status === 1 ? 'ri:forbid-line' : 'ri:checkbox-circle-line'
+                    label: row.status.value === 1 ? '禁用' : '启用',
+                    icon: row.status.value === 1 ? 'ri:forbid-line' : 'ri:checkbox-circle-line'
                   },
                   {
                     key: 'delete',
