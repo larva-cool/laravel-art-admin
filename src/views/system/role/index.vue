@@ -119,9 +119,8 @@
 
   const handleSearch = (params: Partial<Api.SystemManage.RoleSearchParams>) => {
     const paramsRecord = searchParams as Record<string, unknown>
-    Object.keys(params).forEach((key) => {
-      const val = (params as Record<string, unknown>)[key]
-      if (val === undefined || val === null || val === '') {
+    Object.keys(paramsRecord).forEach((key) => {
+      if (key !== 'page' && key !== 'per_page') {
         delete paramsRecord[key]
       }
     })
