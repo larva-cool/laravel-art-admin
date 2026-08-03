@@ -19,9 +19,7 @@
         @refresh="handleRefresh"
       >
         <template #left>
-          <ElButton v-auth="'add'" type="primary" @click="handleAddMenu" v-ripple>
-            新增顶层菜单
-          </ElButton>
+          <ElButton v-auth="'add'" @click="handleAddMenu" v-ripple> 添加菜单 </ElButton>
           <ElButton @click="toggleExpand" v-ripple>
             {{ isExpanded ? '收起' : '展开' }}
           </ElButton>
@@ -52,13 +50,13 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchGetMenuList } from '@/api/system-manage'
+  import { formatMenuTitle } from '@/utils/router'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import type { AppRouteRecord } from '@/types/router'
-  import { formatMenuTitle } from '@/utils/router'
-  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import MenuDialog from './modules/menu-dialog.vue'
+  import { fetchGetMenuList } from '@/api/system-manage'
+  import { ElTag, ElMessageBox, ElMessage } from 'element-plus'
 
   defineOptions({ name: 'Menus' })
 
