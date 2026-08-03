@@ -15,7 +15,7 @@ export const systemRoutes: AppRouteRecord = {
       component: '/system/admin',
       meta: {
         title: 'menus.system.admin',
-        keepAlive: true
+        keep_alive: true
       }
     },
     {
@@ -24,7 +24,7 @@ export const systemRoutes: AppRouteRecord = {
       component: '/system/role',
       meta: {
         title: 'menus.system.role',
-        keepAlive: true
+        keep_alive: true
       }
     },
     {
@@ -33,9 +33,9 @@ export const systemRoutes: AppRouteRecord = {
       component: '/system/user-center',
       meta: {
         title: 'menus.system.userCenter',
-        isHide: true,
-        keepAlive: true,
-        isHideTab: true
+        is_hide: true,
+        keep_alive: true,
+        is_hide_tab: true
       }
     },
     {
@@ -44,11 +44,11 @@ export const systemRoutes: AppRouteRecord = {
       component: '/system/menu',
       meta: {
         title: 'menus.system.menu',
-        keepAlive: true,
-        authList: [
-          { title: '新增', authMark: 'add' },
-          { title: '编辑', authMark: 'edit' },
-          { title: '删除', authMark: 'delete' }
+        keep_alive: true,
+        auth_list: [
+          { title: '新增', auth_mark: 'add' },
+          { title: '编辑', auth_mark: 'edit' },
+          { title: '删除', auth_mark: 'delete' }
         ]
       }
     }

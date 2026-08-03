@@ -32,38 +32,38 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   /** 路由图标 */
   icon?: string
   /** 是否显示徽章 */
-  showBadge?: boolean
+  show_badge?: boolean
   /** 文本徽章 */
-  showTextBadge?: string
+  show_text_badge?: string
   /** 是否在菜单中隐藏 */
-  isHide?: boolean
+  is_hide?: boolean
   /** 是否在标签页中隐藏 */
-  isHideTab?: boolean
+  is_hide_tab?: boolean
   /** 外部链接 */
   link?: string
   /** 是否为iframe */
-  isIframe?: boolean
+  is_iframe?: boolean
   /** 是否缓存 */
-  keepAlive?: boolean
+  keep_alive?: boolean
   /** 操作权限 */
-  authList?: Array<{
+  auth_list?: Array<{
     title: string
-    authMark: string
+    auth_mark: string
   }>
   /** 是否为一级菜单 */
-  isFirstLevel?: boolean
+  is_first_level?: boolean
   /** 是否固定标签页 */
-  fixedTab?: boolean
+  fixed_tab?: boolean
   /** 激活菜单路径 */
-  activePath?: string
+  active_path?: string
   /** 是否为全屏页面 */
-  isFullPage?: boolean
+  is_full_page?: boolean
   /** 是否为权限按钮行 */
-  isAuthButton?: boolean
+  is_auth_button?: boolean
   /** 权限标识 */
-  authMark?: string
+  auth_mark?: string
   /** 父级路径 */
-  parentPath?: string
+  parent_path?: string
 }
 
 /**

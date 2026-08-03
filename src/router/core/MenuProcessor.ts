@@ -75,7 +75,7 @@ export class MenuProcessor {
         }
 
         // 如果有外链或 iframe，保留
-        if (item.meta?.isIframe === true || item.meta?.link) {
+        if (item.meta?.is_iframe === true || item.meta?.link) {
           return true
         }
 
@@ -151,7 +151,7 @@ export class MenuProcessor {
       route.path &&
         route.path !== '/' &&
         !route.meta?.link &&
-        route.meta?.isIframe !== true &&
+        route.meta?.is_iframe !== true &&
         route.component &&
         route.component !== ''
     )

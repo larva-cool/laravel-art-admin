@@ -15,8 +15,8 @@ export const dashboardRoutes: AppRouteRecord = {
       component: '/dashboard/console',
       meta: {
         title: 'menus.dashboard.console',
-        keepAlive: false,
-        fixedTab: true
+        keep_alive: false,
+        fixed_tab: true
       }
     }
   ]

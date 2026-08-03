@@ -180,7 +180,7 @@
     const result: AppRouteRecord[] = []
 
     const flattenAndMatch = (item: AppRouteRecord) => {
-      if (item.meta?.isHide) return
+      if (item.meta?.is_hide) return
 
       const lowerItemTitle = formatMenuTitle(item.meta.title).toLowerCase()
 
@@ -191,7 +191,7 @@
 
       if (
         lowerItemTitle.includes(lowerVal) &&
-        ((item.path && item.path.trim()) || item.meta.link || item.meta.isIframe)
+        ((item.path && item.path.trim()) || item.meta.link || item.meta.is_iframe)
       ) {
         result.push({ ...item, children: undefined })
       }
@@ -329,7 +329,7 @@
 
     const cleanedItem = { ...item }
     delete cleanedItem.children
-    delete cleanedItem.meta.authList
+    delete cleanedItem.meta.auth_list
     historyResult.value.unshift(cleanedItem)
     updateHistory()
   }

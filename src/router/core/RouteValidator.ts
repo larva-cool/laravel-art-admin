@@ -106,7 +106,7 @@ export class RouteValidator {
       const hasExternalLink = !!route.meta?.link?.trim()
       const hasChildren = Array.isArray(route.children) && route.children.length > 0
       const routePath = route.path || '[未定义路径]'
-      const isIframe = route.meta?.isIframe
+      const isIframe = route.meta?.is_iframe
 
       // 如果配置了 component，则无需校验
       if (route.component) {

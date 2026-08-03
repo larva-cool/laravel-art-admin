@@ -3,9 +3,9 @@
     <template #title>
       <ArtSvgIcon :icon="item.meta.icon" :color="theme?.iconColor" class="mr-1 text-lg" />
       <span class="text-md">{{ formatMenuTitle(item.meta.title) }}</span>
-      <div v-if="item.meta.showBadge" class="art-badge art-badge-horizontal" />
-      <div v-if="item.meta.showTextBadge" class="art-text-badge">
-        {{ item.meta.showTextBadge }}
+      <div v-if="item.meta.show_badge" class="art-badge art-badge-horizontal" />
+      <div v-if="item.meta.show_text_badge" class="art-text-badge">
+        {{ item.meta.show_text_badge }}
       </div>
     </template>
 
@@ -34,12 +34,12 @@
     />
     <span class="text-md">{{ formatMenuTitle(item.meta.title) }}</span>
     <div
-      v-if="item.meta.showBadge"
+      v-if="item.meta.show_badge"
       class="art-badge"
       :style="{ right: level === 0 ? '10px' : '20px' }"
     />
-    <div v-if="item.meta.showTextBadge && level !== 0" class="art-text-badge">
-      {{ item.meta.showTextBadge }}
+    <div v-if="item.meta.show_text_badge && level !== 0" class="art-text-badge">
+      {{ item.meta.show_text_badge }}
     </div>
   </ElMenuItem>
 </template>
@@ -70,17 +70,17 @@
 
   // 过滤后的子菜单项（不包含隐藏的）
   const filteredChildren = computed(() => {
-    return props.item.children?.filter((child) => !child.meta.isHide) || []
+    return props.item.children?.filter((child) => !child.meta.is_hide) || []
   })
 
   // 父菜单如果本身就是页面，则即使没有可见子菜单也应该保留为菜单项。
   const isNavigableRoute = computed(() => {
     return !!(
-      !props.item.meta.isHide &&
+      !props.item.meta.is_hide &&
       ((props.item.path && props.item.path.trim()) ||
         props.item.meta.link ||
-        props.item.meta.isIframe === true) &&
-      (props.item.component || props.item.meta.link || props.item.meta.isIframe === true)
+        props.item.meta.is_iframe === true) &&
+      (props.item.component || props.item.meta.link || props.item.meta.is_iframe === true)
     )
   })
 

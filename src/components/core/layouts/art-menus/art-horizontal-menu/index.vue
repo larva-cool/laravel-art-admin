@@ -57,7 +57,7 @@
    * 当前激活的路由路径
    * 用于菜单高亮显示
    */
-  const routerPath = computed(() => String(route.meta.activePath || route.path))
+  const routerPath = computed(() => String(route.meta.active_path || route.path))
 
   /**
    * 递归过滤菜单项，移除隐藏的菜单
@@ -69,7 +69,7 @@
     return items
       .filter((item) => {
         // 如果当前项被隐藏，直接过滤掉
-        if (item.meta.isHide) {
+        if (item.meta.is_hide) {
           return false
         }
 

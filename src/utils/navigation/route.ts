@@ -38,11 +38,11 @@ export const isNavigableMenuItem = (menuItem: AppRouteRecord): boolean => {
     return false
   }
 
-  if (!menuItem.meta?.isHide) {
+  if (!menuItem.meta?.is_hide) {
     return true
   }
 
-  return menuItem.meta?.isFullPage === true
+  return menuItem.meta?.is_full_page === true
 }
 
 /**

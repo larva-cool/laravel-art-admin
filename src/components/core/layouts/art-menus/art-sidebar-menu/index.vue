@@ -27,7 +27,7 @@
             >
               <div
                 :class="{
-                  'is-active': menu.meta.isFirstLevel
+                  'is-active': menu.meta.is_first_level
                     ? menu.path === route.path
                     : menu.path === firstLevelMenuPath
                 }"
@@ -45,7 +45,7 @@
                 <span v-if="dualMenuShowText" class="text-md text-g-700">
                   {{ $t(menu.meta.title) }}
                 </span>
-                <div v-if="menu.meta.showBadge" class="art-badge art-badge-dual" />
+                <div v-if="menu.meta.show_badge" class="art-badge art-badge-dual" />
               </div>
             </ElTooltip>
           </li>
@@ -176,11 +176,11 @@
 
   // 路由相关
   const firstLevelMenuPath = computed(() => route.matched[0]?.path)
-  const routerPath = computed(() => String(route.meta.activePath || route.path))
+  const routerPath = computed(() => String(route.meta.active_path || route.path))
 
   // 菜单数据
   const firstLevelMenus = computed(() => {
-    return useMenuStore().menuList.filter((menu) => !menu.meta.isHide)
+    return useMenuStore().menuList.filter((menu) => !menu.meta.is_hide)
   })
 
   const menuList = computed(() => {
@@ -198,7 +198,7 @@
     }
 
     // 处理一级菜单
-    if (route.meta.isFirstLevel) {
+    if (route.meta.is_first_level) {
       return []
     }
 

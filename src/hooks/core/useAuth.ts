@@ -9,7 +9,7 @@
  * 1. 权限检查 - 检查用户是否拥有指定的权限标识
  * 2. 双模式支持 - 自动适配前端模式和后端模式的权限验证
  * 3. 前端模式 - 从用户信息中获取按钮权限列表（如 ['add', 'edit', 'delete']）
- * 4. 后端模式 - 从路由 meta 配置中获取权限列表（如 [{ authMark: 'add' }]）
+ * 4. 后端模式 - 从路由 meta 配置中获取权限列表（如 [{ auth_mark: 'add' }]）
  *
  * ## 使用示例
  *
@@ -36,7 +36,7 @@ import { useUserStore } from '@/store/modules/user'
 import { useAppMode } from '@/hooks/core/useAppMode'
 import type { AppRouteRecord } from '@/types/router'
 
-type AuthItem = NonNullable<AppRouteRecord['meta']['authList']>[number]
+type AuthItem = NonNullable<AppRouteRecord['meta']['auth_list']>[number]
 
 const userStore = useUserStore()
 
@@ -48,9 +48,9 @@ export const useAuth = () => {
   // 前端按钮权限（例如：['add', 'edit']）
   const frontendAuthList = info.value?.buttons ?? []
 
-  // 后端路由 meta 配置的权限列表（例如：[{ authMark: 'add' }]）
-  const backendAuthList: AuthItem[] = Array.isArray(route.meta.authList)
-    ? (route.meta.authList as AuthItem[])
+  // 后端路由 meta 配置的权限列表（例如：[{ auth_mark: 'add' }]）
+  const backendAuthList: AuthItem[] = Array.isArray(route.meta.auth_list)
+    ? (route.meta.auth_list as AuthItem[])
     : []
 
   /**
@@ -65,7 +65,7 @@ export const useAuth = () => {
     }
 
     // 后端模式
-    return backendAuthList.some((item) => item?.authMark === auth)
+    return backendAuthList.some((item) => item?.auth_mark === auth)
   }
 
   return {

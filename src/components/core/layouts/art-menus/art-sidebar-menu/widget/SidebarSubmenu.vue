@@ -12,7 +12,7 @@
         <span class="menu-name">
           {{ formatMenuTitle(item.meta.title) }}
         </span>
-        <div v-if="item.meta.showBadge" class="art-badge" style="right: 10px" />
+        <div v-if="item.meta.show_badge" class="art-badge" style="right: 10px" />
       </template>
 
       <SidebarSubmenu
@@ -38,7 +38,7 @@
         />
       </div>
       <div
-        v-show="item.meta.showBadge && level === 0 && !menuOpen"
+        v-show="item.meta.show_badge && level === 0 && !menuOpen"
         class="art-badge"
         style="right: 5px"
       />
@@ -47,9 +47,9 @@
         <span class="menu-name">
           {{ formatMenuTitle(item.meta.title) }}
         </span>
-        <div v-if="item.meta.showBadge" class="art-badge" />
-        <div v-if="item.meta.showTextBadge && (level > 0 || menuOpen)" class="art-text-badge">
-          {{ item.meta.showTextBadge }}
+        <div v-if="item.meta.show_badge" class="art-badge" />
+        <div v-if="item.meta.show_text_badge && (level > 0 || menuOpen)" class="art-text-badge">
+          {{ item.meta.show_text_badge }}
         </div>
       </template>
     </ElMenuItem>
@@ -127,9 +127,9 @@
    */
   const isNavigableRoute = (item: AppRouteRecord): boolean => {
     return !!(
-      !item.meta.isHide &&
-      ((item.path && item.path.trim()) || item.meta.link || item.meta.isIframe === true) &&
-      (item.component || item.meta.link || item.meta.isIframe === true)
+      !item.meta.is_hide &&
+      ((item.path && item.path.trim()) || item.meta.link || item.meta.is_iframe === true) &&
+      (item.component || item.meta.link || item.meta.is_iframe === true)
     )
   }
 
@@ -143,7 +143,7 @@
     return items
       .filter((item) => {
         // 如果当前项被隐藏，直接过滤掉
-        if (item.meta.isHide) {
+        if (item.meta.is_hide) {
           return false
         }
 
@@ -183,7 +183,7 @@
    * @returns 是否为外部链接
    */
   const isExternalLink = (item: AppRouteRecord): boolean => {
-    return !!(item.meta.link && !item.meta.isIframe)
+    return !!(item.meta.link && !item.meta.is_iframe)
   }
 
   /**

@@ -60,7 +60,7 @@
 
     // 处理一级菜单和普通路由
     const firstRoute = matched[0]
-    const isFirstLevel = firstRoute.meta?.isFirstLevel
+    const isFirstLevel = firstRoute.meta?.is_first_level
     const lastIndex = matchedLength - 1
     const currentRoute = matched[lastIndex]
     const currentRouteMeta = currentRoute.meta
@@ -75,7 +75,7 @@
     }
 
     // IFrame 页面特殊处理：如果过滤后只剩一个 iframe 页面，或者所有项都是包裹容器，则仅展示当前页
-    if (currentRouteMeta?.isIframe && (items.length === 1 || items.every(isWrapperContainer))) {
+    if (currentRouteMeta?.is_iframe && (items.length === 1 || items.every(isWrapperContainer))) {
       return [createBreadcrumbItem(currentRoute)]
     }
 
@@ -84,7 +84,7 @@
 
   // 辅助函数：判断是否为包裹容器路由
   const isWrapperContainer = (item: BreadcrumbItem): boolean =>
-    item.path === '/outside' && !!item.meta?.isIframe
+    item.path === '/outside' && !!item.meta?.is_iframe
 
   // 辅助函数：创建面包屑项目
   const createBreadcrumbItem = (route: RouteLocationMatched): BreadcrumbItem => ({
@@ -107,7 +107,7 @@
 
   // 辅助函数：查找路由的第一个有效子路由
   const findFirstValidChild = (route: RouteRecordRaw) =>
-    route.children?.find((child) => !child.redirect && !child.meta?.isHide)
+    route.children?.find((child) => !child.redirect && !child.meta?.is_hide)
 
   // 辅助函数：构建完整路径
   const buildFullPath = (childPath: string): string => `/${childPath}`.replace('//', '/')

@@ -40,7 +40,7 @@ export class RouteTransformer {
     }
 
     // 处理不同类型的路由
-    if (route.meta.isIframe) {
+    if (route.meta.is_iframe) {
       this.handleIframeRoute(converted, route, depth)
     } else if (this.isFirstLevelRoute(route, depth)) {
       this.handleFirstLevelRoute(converted, route, component as string)
@@ -103,7 +103,7 @@ export class RouteTransformer {
     converted.component = this.componentLoader.loadLayout()
     converted.path = this.extractFirstSegment(route.path || '')
     converted.name = ''
-    route.meta.isFirstLevel = true
+    route.meta.is_first_level = true
 
     converted.children = [
       {

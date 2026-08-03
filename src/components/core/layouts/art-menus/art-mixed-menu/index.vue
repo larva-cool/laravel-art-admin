@@ -19,7 +19,7 @@
       <div class="box-border flex-c flex-shrink-0 flex-nowrap h-15 whitespace-nowrap">
         <template v-for="item in processedMenuList" :key="item.meta.title">
           <div
-            v-if="!item.meta.isHide"
+            v-if="!item.meta.is_hide"
             class="menu-item relative flex-shrink-0 h-10 px-3 text-sm flex-c c-p hover:text-theme"
             :class="{
               'menu-item-active text-theme': item.isActive
@@ -37,7 +37,7 @@
             >
               {{ item.formattedTitle }}
             </span>
-            <div v-if="item.meta.showBadge" class="art-badge art-badge-mixed" />
+            <div v-if="item.meta.show_badge" class="art-badge art-badge-mixed" />
           </div>
         </template>
       </div>
@@ -101,7 +101,7 @@
    * 使用computed缓存，避免重复计算
    */
   const currentActivePath = computed(() => {
-    return String(route.meta.activePath || route.path)
+    return String(route.meta.active_path || route.path)
   })
 
   /**

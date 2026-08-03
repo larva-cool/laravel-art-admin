@@ -15,9 +15,9 @@ export const exceptionRoutes: AppRouteRecord = {
       component: '/exception/403',
       meta: {
         title: 'menus.exception.forbidden',
-        keepAlive: true,
-        isHideTab: true,
-        isFullPage: true
+        keep_alive: true,
+        is_hide_tab: true,
+        is_full_page: true
       }
     },
     {
@@ -26,9 +26,9 @@ export const exceptionRoutes: AppRouteRecord = {
       component: '/exception/404',
       meta: {
         title: 'menus.exception.notFound',
-        keepAlive: true,
-        isHideTab: true,
-        isFullPage: true
+        keep_alive: true,
+        is_hide_tab: true,
+        is_full_page: true
       }
     },
     {
@@ -37,9 +37,9 @@ export const exceptionRoutes: AppRouteRecord = {
       component: '/exception/500',
       meta: {
         title: 'menus.exception.serverError',
-        keepAlive: true,
-        isHideTab: true,
-        isFullPage: true
+        keep_alive: true,
+        is_hide_tab: true,
+        is_full_page: true
       }
     }
   ]

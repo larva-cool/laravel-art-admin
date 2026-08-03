@@ -22,7 +22,7 @@
             class="art-page-view"
             :is="Component"
             :key="route.path"
-            v-if="route.meta.keepAlive"
+            v-if="route.meta.keep_alive"
           />
         </KeepAlive>
       </Transition>
@@ -33,7 +33,7 @@
           class="art-page-view"
           :is="Component"
           :key="route.path"
-          v-if="!route.meta.keepAlive"
+          v-if="!route.meta.keep_alive"
         />
       </Transition>
     </RouterView>
@@ -69,7 +69,7 @@
   const isFirstLoad = ref(true)
 
   // 检查当前路由是否需要使用无基础布局模式
-  const isFullPage = computed(() => route.matched.some((r) => r.meta?.isFullPage))
+  const isFullPage = computed(() => route.matched.some((r) => r.meta?.is_full_page))
   const prevIsFullPage = ref(isFullPage.value)
 
   // 切换动画名称：首次加载、从全屏返回时不使用动画
