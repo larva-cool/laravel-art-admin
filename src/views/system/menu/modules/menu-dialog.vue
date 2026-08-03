@@ -31,6 +31,7 @@
               clearable
               placeholder="不选则为顶级菜单"
               style="width: 100%"
+              @update:model-value="handleParentChange"
             />
           </ElFormItem>
         </ElCol>
@@ -77,11 +78,20 @@
         </ElCol>
         <ElCol :span="12">
           <ElFormItem label="权限标识" prop="permission">
-            <ElInput
+            <ElSelect
               v-model="form.permission"
-              placeholder="如：system.admin 或 users.create"
+              filterable
               clearable
-            />
+              placeholder="请选择权限标识"
+              style="width: 100%"
+            >
+              <ElOption
+                v-for="perm in permissionOptions"
+                :key="perm.id"
+                :label="perm.display_name ? `${perm.display_name} (${perm.name})` : perm.name"
+                :value="perm.name"
+              />
+            </ElSelect>
           </ElFormItem>
         </ElCol>
       </ElRow>
@@ -163,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchCreateMenu, fetchUpdateMenu } from '@/api/system-manage'
+  import { fetchCreateMenu, fetchGetAllPermissions, fetchUpdateMenu } from '@/api/system-manage'
   import type { FormInstance, FormRules } from 'element-plus'
 
   defineOptions({ name: 'MenuDialog' })
@@ -184,6 +194,15 @@
 
   /** 父级菜单树数据 */
   const menuTreeData = ref<MenuTreeItem[]>([])
+
+  /** 权限标识选项 */
+  const permissionOptions = ref<Api.SystemManage.PermissionItem[]>([])
+
+  /** 加载权限列表 */
+  const loadPermissions = async () => {
+    if (permissionOptions.value.length > 0) return
+    permissionOptions.value = (await fetchGetAllPermissions()) || []
+  }
 
   const form = reactive({
     parent_id: null as number | null,
@@ -215,6 +234,32 @@
   }
 
   /**
+   * 在菜单树中按 ID 查找菜单
+   */
+  const findMenuById = (menus: MenuTreeItem[], id: number): MenuTreeItem | null => {
+    for (const menu of menus) {
+      if (menu.id === id) return menu
+      if (menu.children) {
+        const found = findMenuById(menu.children, id)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
+  /**
+   * 父级菜单变更时同步更新激活路径
+   */
+  const handleParentChange = (value: number | null) => {
+    if (!value) {
+      form.active_path = ''
+      return
+    }
+    const parentMenu = findMenuById(menuTreeData.value, value)
+    form.active_path = parentMenu?.component || ''
+  }
+
+  /**
    * 打开弹窗
    * @param row 编辑数据（MenuTreeItem 格式，null 表示新增）
    * @param treeData 菜单树数据（用于父级选择）
@@ -223,6 +268,7 @@
   const open = (row: MenuTreeItem | null, treeData: MenuTreeItem[], parentId?: number | null) => {
     dialogVisible.value = true
     menuTreeData.value = treeData
+    loadPermissions()
 
     if (row) {
       id.value = row.id
@@ -250,6 +296,8 @@
         permission: row.permission
       })
     } else {
+      // 从菜单树中查找父菜单，默认填入父级组件路径作为激活路径
+      const parentMenu = parentId ? findMenuById(treeData, parentId) : null
       id.value = null
       Object.assign(form, {
         parent_id: parentId ?? null,
@@ -271,7 +319,7 @@
         fixed_tab: false,
         show_badge: false,
         show_text_badge: '',
-        active_path: '',
+        active_path: parentMenu?.component || '',
         permission: ''
       })
     }
