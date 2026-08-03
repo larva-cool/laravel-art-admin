@@ -128,23 +128,33 @@ declare namespace Api {
         Api.Common.CommonSearchParams
     >
 
-    /** 角色列表 */
+    /** 角色列表（Laravel 分页） */
     type RoleList = Api.Common.PaginatedResponse<RoleListItem>
 
-    /** 角色列表项 */
+    /** 角色列表项（RoleResource） */
     interface RoleListItem {
-      roleId: number
-      roleName: string
-      roleCode: string
-      description: string
-      enabled: boolean
-      createTime: string
+      id: number
+      name: string
+      created_at: string | null
+      updated_at: string | null
+    }
+
+    /** 角色保存参数（创建/编辑） */
+    interface RoleSaveParams {
+      name: string
+      permissions?: number[]
+    }
+
+    /** 权限项 */
+    interface PermissionItem {
+      id: number
+      name: string
+      display_name: string
     }
 
     /** 角色搜索参数 */
-    type RoleSearchParams = Partial<
-      Pick<RoleListItem, 'roleId' | 'roleName' | 'roleCode' | 'description' | 'enabled'> &
-        Api.Common.CommonSearchParams
-    >
+    interface RoleSearchParams extends Api.Common.CommonSearchParams {
+      role_name?: string
+    }
   }
 }
