@@ -118,6 +118,13 @@
   }
 
   const handleSearch = (params: Partial<Api.SystemManage.RoleSearchParams>) => {
+    const paramsRecord = searchParams as Record<string, unknown>
+    Object.keys(params).forEach((key) => {
+      const val = (params as Record<string, unknown>)[key]
+      if (val === undefined || val === null || val === '') {
+        delete paramsRecord[key]
+      }
+    })
     Object.assign(searchParams, params)
     getData()
   }

@@ -147,6 +147,14 @@
   }
 
   const handleSearch = (params: Partial<Api.SystemManage.AdminSearchParams>) => {
+    const paramsRecord = searchParams as Record<string, unknown>
+    // 清空被删除/置空的搜索条件
+    Object.keys(params).forEach((key) => {
+      const val = (params as Record<string, unknown>)[key]
+      if (val === undefined || val === null || val === '') {
+        delete paramsRecord[key]
+      }
+    })
     Object.assign(searchParams, params)
     getData()
   }
