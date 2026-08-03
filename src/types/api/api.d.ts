@@ -277,5 +277,31 @@ declare namespace Api {
       roles: string[] | null
       children: MenuTreeItem[]
     }
+
+    /** 菜单保存参数（创建/编辑） */
+    interface MenuSaveParams {
+      parent_id: number
+      path?: string | null
+      name?: string | null
+      component?: string | null
+      redirect?: string | null
+      title: string
+      icon?: string | null
+      link?: string | null
+      type: MenuTypeValue
+      sort: number
+      is_enable: boolean
+      is_hide: boolean
+      is_hide_tab: boolean
+      is_iframe: boolean
+      keep_alive: boolean
+      is_full_page: boolean
+      fixed_tab: boolean
+      show_badge: boolean
+      show_text_badge?: string | null
+      active_path?: string | null
+      permission?: string | null
+      roles?: string[] | null
+    }
   }
 }

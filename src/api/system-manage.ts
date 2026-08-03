@@ -215,6 +215,42 @@ export function fetchGetMenuList() {
   })
 }
 
+// 获取菜单详情
+export function fetchGetMenuDetail(id: number) {
+  return request.get<Api.SystemManage.MenuTreeItem>({
+    url: `/admin/menus/${id}`
+  })
+}
+
+// 创建菜单
+export function fetchCreateMenu(data: Api.SystemManage.MenuSaveParams) {
+  return request.post<Api.SystemManage.MenuTreeItem>({
+    url: '/admin/menus',
+    data,
+    showSuccessMessage: true,
+    successMessage: '创建成功'
+  })
+}
+
+// 更新菜单
+export function fetchUpdateMenu(id: number, data: Api.SystemManage.MenuSaveParams) {
+  return request.put<Api.SystemManage.MenuTreeItem>({
+    url: `/admin/menus/${id}`,
+    data,
+    showSuccessMessage: true,
+    successMessage: '更新成功'
+  })
+}
+
+// 删除菜单
+export function fetchDeleteMenu(id: number) {
+  return request.del<null>({
+    url: `/admin/menus/${id}`,
+    showSuccessMessage: true,
+    successMessage: '删除成功'
+  })
+}
+
 // ========== 地区管理 ==========
 
 // 获取地区树形结构
