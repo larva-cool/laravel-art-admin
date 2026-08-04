@@ -37,6 +37,8 @@
     </ElCard>
 
     <AdminEditDialog ref="editDialogRef" @refresh="refreshCreate" />
+
+    <AdminDetailDialog ref="detailDialogRef" />
   </div>
 </template>
 
@@ -47,6 +49,7 @@
   import { ElMessageBox, ElTag } from 'element-plus'
   import AdminEditDialog from './modules/user-dialog.vue'
   import UserSearch from './modules/user-search.vue'
+  import AdminDetailDialog from './modules/admin-detail-dialog.vue'
 
   defineOptions({ name: 'Admin' })
 
@@ -54,6 +57,7 @@
 
   const showSearchBar = ref(true)
   const editDialogRef = ref<InstanceType<typeof AdminEditDialog>>()
+  const detailDialogRef = ref<InstanceType<typeof AdminDetailDialog>>()
 
   const {
     columns,
@@ -111,12 +115,13 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 120,
+          width: 180,
           fixed: 'right',
           formatter: (row: AdminListItem) =>
             h('div', [
               h(ArtButtonMore, {
                 list: [
+                  { key: 'view', label: '查看', icon: 'ri:eye-line' },
                   { key: 'edit', label: '编辑', icon: 'ri:edit-2-line', auth: 'admins.edit' },
                   {
                     key: 'toggle',
@@ -142,6 +147,9 @@
 
   const handleAction = (item: ButtonMoreItem, row: AdminListItem) => {
     switch (item.key) {
+      case 'view':
+        detailDialogRef.value?.open(row)
+        break
       case 'edit':
         editDialogRef.value?.open(row)
         break

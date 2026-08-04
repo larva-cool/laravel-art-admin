@@ -110,6 +110,17 @@ export function fetchAssignAdminRoles(id: number, roles: string[]) {
   })
 }
 
+// 获取管理员登录历史（分页）
+export function fetchAdminLoginHistories(
+  id: number | string,
+  params?: Api.SystemManage.AdminLoginHistoryParams
+) {
+  return request.get<Api.SystemManage.AdminLoginHistoryList>({
+    url: `/admin/admins/${id}/login-histories`,
+    params
+  })
+}
+
 // ========== 角色管理 ==========
 
 // 获取角色列表（分页）

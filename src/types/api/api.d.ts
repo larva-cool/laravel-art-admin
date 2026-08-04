@@ -152,6 +152,27 @@ declare namespace Api {
       status?: number
     }
 
+    /** 管理员登录历史列表（Laravel 分页） */
+    type AdminLoginHistoryList = Api.Common.PaginatedResponse<AdminLoginHistoryItem>
+
+    /** 管理员登录历史项（LoginHistoryResource） */
+    interface AdminLoginHistoryItem {
+      id: number
+      ip: string
+      port: number | null
+      platform: string | null
+      device: string | null
+      browser: string | null
+      user_agent: string | null
+      address: string | null
+      login_at: string | null
+    }
+
+    /** 管理员登录历史查询参数 */
+    interface AdminLoginHistoryParams extends Api.Common.CommonSearchParams {
+      keyword?: string
+    }
+
     /** 角色列表（Laravel 分页） */
     type RoleList = Api.Common.PaginatedResponse<RoleListItem>
 
