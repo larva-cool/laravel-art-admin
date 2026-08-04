@@ -20,6 +20,7 @@ import { LanguageEnum } from '@/enums/appEnum'
 import { router } from '@/router'
 import { resetRouterState } from '@/router/guards/beforeEach'
 import { AppRouteRecord } from '@/types/router'
+import { destroyEcho } from '@/utils/echo'
 import { setPageTitle } from '@/utils/router'
 import { StorageConfig } from '@/utils/storage/storage-config'
 import { defineStore } from 'pinia'
@@ -121,6 +122,9 @@ export const useUserStore = defineStore(
      * 通知后端吊销 token，清空所有管理员状态并跳转到登录页
      */
     const logOut = async () => {
+      // 断开 Echo WebSocket 连接
+      destroyEcho()
+
       // 通知后端吊销当前 token（忽略失败，本地始终清理）
       try {
         if (accessToken.value) {
