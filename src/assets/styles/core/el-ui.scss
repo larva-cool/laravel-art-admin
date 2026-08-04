@@ -3,8 +3,18 @@
 :root {
   // 系统主色
   --main-color: var(--el-color-primary);
-  --el-color-white: white !important;
-  --el-color-black: white !important;
+  --el-color-white: #ffffff !important;
+  --el-color-black: #000000 !important;
+  // 主题色覆盖（对应原 el-light.scss SCSS 变量定制）
+  --el-color-success: #13deb9 !important;
+  --el-color-warning: #ffae1f !important;
+  --el-color-danger: #ff4d4f !important;
+  --el-color-error: #fa896b !important;
+  // 按钮主题色
+  --el-button-hover-bg-color: var(--el-color-primary-light-9) !important;
+  --el-button-hover-border-color: var(--el-color-primary) !important;
+  --el-button-border-color: var(--el-color-primary) !important;
+  --el-button-text-color: var(--el-color-primary) !important;
   // 输入框边框颜色
   // --el-border-color: #E4E4E7 !important; // DCDFE6
   // 按钮粗度

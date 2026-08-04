@@ -129,10 +129,9 @@ export default ({ mode }: { mode: string }) => {
     },
     css: {
       preprocessorOptions: {
-        // sass variable and mixin
+        // sass mixin 全局注入（不包含 Element Plus 变量，避免模块冲突）
         scss: {
           additionalData: `
-            @use "@styles/core/el-light.scss" as *; 
             @use "@styles/core/mixin.scss" as *;
           `
         }
