@@ -243,7 +243,9 @@
       "user": "用户管理",
       "role": "角色管理",
       "userCenter": "个人中心",
-      "menu": "菜单管理"
+      "menu": "菜单管理",
+      "phoneCode": "短信验证码",
+      "mailCode": "邮件验证码"
     }
   },
   "table": {

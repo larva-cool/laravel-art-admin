@@ -323,5 +323,52 @@ declare namespace Api {
       active_path?: string | null
       permission?: string | null
     }
+
+    /** 短信验证码列表（Laravel 分页） */
+    type PhoneCodeList = Api.Common.PaginatedResponse<PhoneCodeListItem>
+
+    /** 短信验证码列表项（PhoneCodeResource） */
+    interface PhoneCodeListItem {
+      id: number
+      phone: string
+      scene: string
+      code: string
+      ip: string | null
+      /** 状态枚举 {value: 0|1, label: string} */
+      state: { value: number; label: string }
+      send_at: string | null
+      created_at: string | null
+      updated_at: string | null
+    }
+
+    /** 短信验证码搜索参数 */
+    interface PhoneCodeSearchParams extends Api.Common.CommonSearchParams {
+      phone?: string
+      scene?: string
+      state?: number
+    }
+
+    /** 邮件验证码列表（Laravel 分页） */
+    type MailCodeList = Api.Common.PaginatedResponse<MailCodeListItem>
+
+    /** 邮件验证码列表项（MailCodeResource） */
+    interface MailCodeListItem {
+      id: number
+      email: string
+      scene: string
+      code: string
+      ip: string | null
+      /** 状态枚举 {value: 0|1, label: string} */
+      state: { value: number; label: string }
+      send_at: string | null
+      created_at: string | null
+      updated_at: string | null
+    }
+
+    /** 邮件验证码搜索参数 */
+    interface MailCodeSearchParams extends Api.Common.CommonSearchParams {
+      email?: string
+      state?: number
+    }
   }
 }

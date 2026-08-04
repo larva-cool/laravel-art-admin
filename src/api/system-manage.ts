@@ -334,3 +334,37 @@ export function fetchDeleteArea(id: number) {
     successMessage: '删除成功'
   })
 }
+
+// ========== 短信验证码管理 ==========
+
+// 获取短信验证码列表（分页）
+export function fetchGetPhoneCodeList(params: Api.SystemManage.PhoneCodeSearchParams) {
+  return request.get<Api.SystemManage.PhoneCodeList>({
+    url: '/admin/phone-codes',
+    params
+  })
+}
+
+// 获取短信验证码详情
+export function fetchGetPhoneCodeDetail(id: number) {
+  return request.get<Api.SystemManage.PhoneCodeListItem>({
+    url: `/admin/phone-codes/${id}`
+  })
+}
+
+// ========== 邮件验证码管理 ==========
+
+// 获取邮件验证码列表（分页）
+export function fetchGetMailCodeList(params: Api.SystemManage.MailCodeSearchParams) {
+  return request.get<Api.SystemManage.MailCodeList>({
+    url: '/admin/mail-codes',
+    params
+  })
+}
+
+// 获取邮件验证码详情
+export function fetchGetMailCodeDetail(id: number) {
+  return request.get<Api.SystemManage.MailCodeListItem>({
+    url: `/admin/mail-codes/${id}`
+  })
+}
