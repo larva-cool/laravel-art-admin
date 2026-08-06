@@ -1,6 +1,6 @@
 <template>
   <div class="art-full-height">
-    <UserSearch
+    <AdminSearch
       v-show="showSearchBar"
       @search="handleSearch"
       @reset-search-params="resetSearchParams"
@@ -47,9 +47,9 @@
   import ArtButtonMore, { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { ElMessageBox, ElTag } from 'element-plus'
-  import AdminEditDialog from './modules/user-dialog.vue'
-  import UserSearch from './modules/user-search.vue'
   import AdminDetailDialog from './modules/admin-detail-dialog.vue'
+  import AdminEditDialog from './modules/admin-dialog.vue'
+  import AdminSearch from './modules/admin-search.vue'
 
   defineOptions({ name: 'Admin' })
 

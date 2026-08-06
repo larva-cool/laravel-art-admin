@@ -151,6 +151,9 @@ declare namespace Api {
       keyword?: string
       role?: string
       status?: number
+      last_login_ip?: string
+      last_login_start?: string
+      last_login_end?: string
     }
 
     /** 管理员登录历史列表（Laravel 分页） */

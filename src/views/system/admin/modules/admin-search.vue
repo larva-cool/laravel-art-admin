@@ -20,7 +20,7 @@
   const emit = defineEmits<Emits>()
 
   const searchBarRef = ref()
-  const formData = ref<Partial<Api.SystemManage.AdminSearchParams>>({})
+  const formData = ref<Record<string, any>>({})
   const roleOptions = ref<{ label: string; value: string }[]>([])
 
   const formItems = computed(() => [
@@ -53,6 +53,25 @@
           { label: '禁用', value: 0 }
         ]
       }
+    },
+    {
+      label: '登录IP',
+      key: 'last_login_ip',
+      type: 'input',
+      placeholder: '请输入登录IP',
+      clearable: true
+    },
+    {
+      label: '登录时间',
+      key: 'last_login_range',
+      type: 'daterange',
+      props: {
+        type: 'daterange',
+        placeholder: ['开始日期', '结束日期'],
+        clearable: true,
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD'
+      }
     }
   ])
 
@@ -69,9 +88,19 @@
     emit('resetSearchParams')
   }
 
-  async function handleSearch(params: Partial<Api.SystemManage.AdminSearchParams>) {
+  async function handleSearch(params: Record<string, any>) {
     await searchBarRef.value?.validate()
-    emit('search', params)
+
+    // 将日期范围拆分为开始/结束两个参数
+    const { last_login_range, ...rest } = params
+    const output: Partial<Api.SystemManage.AdminSearchParams> = { ...rest }
+
+    if (last_login_range && Array.isArray(last_login_range) && last_login_range.length === 2) {
+      output.last_login_start = last_login_range[0]
+      output.last_login_end = last_login_range[1]
+    }
+
+    emit('search', output)
   }
 </script>
 
