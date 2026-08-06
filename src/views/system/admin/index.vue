@@ -95,7 +95,7 @@
             return h(
               'div',
               { style: 'display: flex; gap: 4px; flex-wrap: wrap' },
-              roles.map((r) => h(ElTag, { type: 'info', size: 'small' }, () => r))
+              roles.map((r) => h(ElTag, { type: 'info', size: 'small' }, () => r.display_name))
             )
           }
         },

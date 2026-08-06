@@ -27,8 +27,14 @@
           </ElDescriptionsItem>
           <ElDescriptionsItem label="角色" :span="2">
             <template v-if="admin?.roles && admin.roles.length > 0">
-              <ElTag v-for="role in admin.roles" :key="role" type="info" size="small" class="mr-1">
-                {{ role }}
+              <ElTag
+                v-for="role in admin.roles"
+                :key="role.name"
+                type="info"
+                size="small"
+                class="mr-1"
+              >
+                {{ role.display_name }}
               </ElTag>
             </template>
             <span v-else>—</span>

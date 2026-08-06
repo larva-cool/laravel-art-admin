@@ -119,8 +119,8 @@ declare namespace Api {
       last_login_ip: string | null
       last_login_at: string | null
       last_active_at: string | null
-      /** 角色名称数组（whenLoaded） */
-      roles?: string[]
+      /** 角色信息数组（whenLoaded） */
+      roles?: { name: string; display_name: string }[]
       created_at: string | null
       updated_at: string | null
     }
@@ -203,6 +203,7 @@ declare namespace Api {
     /** 角色搜索参数 */
     interface RoleSearchParams extends Api.Common.CommonSearchParams {
       role_name?: string
+      display_name?: string
     }
 
     /** 配置列表（Laravel 分页） */

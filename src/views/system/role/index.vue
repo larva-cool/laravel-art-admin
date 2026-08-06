@@ -76,7 +76,7 @@
       },
       columnsFactory: () => [
         { prop: 'id', label: 'ID', width: 80 },
-        { prop: 'name', label: '角色Code', minWidth: 180 },
+        { prop: 'name', label: '角色编码', minWidth: 180 },
         { prop: 'display_name', label: '角色名称', minWidth: 180 },
         { prop: 'created_at', label: '创建时间', width: 200 },
         { prop: 'updated_at', label: '更新时间', width: 200 },

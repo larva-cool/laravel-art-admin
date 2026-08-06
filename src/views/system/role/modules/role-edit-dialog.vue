@@ -7,8 +7,8 @@
     @close="handleClose"
   >
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="90px">
-      <ElFormItem label="角色Code" prop="name">
-        <ElInput v-model="form.name" placeholder="请输入角色Code（英文标识）" clearable />
+      <ElFormItem label="角色编码" prop="name">
+        <ElInput v-model="form.name" placeholder="请输入角色编码（英文标识）" clearable />
       </ElFormItem>
       <ElFormItem label="角色名称" prop="display_name">
         <ElInput v-model="form.display_name" placeholder="请输入角色名称" clearable />

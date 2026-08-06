@@ -40,7 +40,7 @@
             v-for="role in roleOptions"
             :key="role.id"
             :value="role.name"
-            :label="role.name"
+            :label="role.display_name"
           />
         </ElSelect>
       </ElFormItem>
@@ -113,7 +113,7 @@
         phone: row.phone || '',
         password: '',
         status: row.status.value,
-        roles: row.roles || []
+        roles: row.roles?.map((r) => r.name) || []
       })
     } else {
       id.value = null
