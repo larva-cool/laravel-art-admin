@@ -149,6 +149,7 @@ declare namespace Api {
     /** 管理员搜索参数 */
     interface AdminSearchParams extends Api.Common.CommonSearchParams {
       keyword?: string
+      role?: string
       status?: number
     }
 
