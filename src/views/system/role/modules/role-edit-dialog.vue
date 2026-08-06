@@ -10,6 +10,9 @@
       <ElFormItem label="角色名称" prop="name">
         <ElInput v-model="form.name" placeholder="请输入角色名称（英文标识）" clearable />
       </ElFormItem>
+      <ElFormItem label="显示名称" prop="display_name">
+        <ElInput v-model="form.display_name" placeholder="请输入角色显示名称" clearable />
+      </ElFormItem>
     </ElForm>
 
     <template #footer>
@@ -36,13 +39,18 @@
   const isEdit = computed(() => id.value !== null)
   const title = computed(() => (isEdit.value ? '编辑角色' : '新增角色'))
 
-  const form = reactive<{ name: string }>({
-    name: ''
+  const form = reactive<{ name: string; display_name: string }>({
+    name: '',
+    display_name: ''
   })
 
   const rules: FormRules = {
     name: [
       { required: true, message: '请输入角色名称', trigger: 'blur' },
+      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+    ],
+    display_name: [
+      { required: true, message: '请输入显示名称', trigger: 'blur' },
       { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
     ]
   }
@@ -52,9 +60,11 @@
     if (row) {
       id.value = row.id
       form.name = row.name
+      form.display_name = row.display_name
     } else {
       id.value = null
       form.name = ''
+      form.display_name = ''
     }
   }
 
@@ -65,9 +75,9 @@
       submitting.value = true
       try {
         if (isEdit.value && id.value) {
-          await fetchUpdateRole(id.value, { name: form.name })
+          await fetchUpdateRole(id.value, { name: form.name, display_name: form.display_name })
         } else {
-          await fetchCreateRole({ name: form.name })
+          await fetchCreateRole({ name: form.name, display_name: form.display_name })
         }
         dialogVisible.value = false
         emit('refresh')

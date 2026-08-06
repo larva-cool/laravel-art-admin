@@ -180,6 +180,8 @@ declare namespace Api {
     interface RoleListItem {
       id: number
       name: string
+      display_name: string
+      permissions_count?: number
       created_at: string | null
       updated_at: string | null
     }
@@ -187,6 +189,7 @@ declare namespace Api {
     /** 角色保存参数（创建/编辑） */
     interface RoleSaveParams {
       name: string
+      display_name: string
       permissions?: number[]
     }
 
