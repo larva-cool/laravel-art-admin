@@ -21,10 +21,10 @@
 
   const formItems = [
     {
-      label: '角色名称',
+      label: '角色Code',
       key: 'role_name',
       type: 'input',
-      placeholder: '请输入角色名称',
+      placeholder: '请输入角色Code',
       clearable: true
     }
   ]

@@ -7,11 +7,11 @@
     @close="handleClose"
   >
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="90px">
-      <ElFormItem label="角色名称" prop="name">
-        <ElInput v-model="form.name" placeholder="请输入角色名称（英文标识）" clearable />
+      <ElFormItem label="角色Code" prop="name">
+        <ElInput v-model="form.name" placeholder="请输入角色Code（英文标识）" clearable />
       </ElFormItem>
-      <ElFormItem label="显示名称" prop="display_name">
-        <ElInput v-model="form.display_name" placeholder="请输入角色显示名称" clearable />
+      <ElFormItem label="角色名称" prop="display_name">
+        <ElInput v-model="form.display_name" placeholder="请输入角色名称" clearable />
       </ElFormItem>
     </ElForm>
 
@@ -23,8 +23,8 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormInstance, FormRules } from 'element-plus'
   import { fetchCreateRole, fetchUpdateRole } from '@/api/system-manage'
+  import type { FormInstance, FormRules } from 'element-plus'
 
   defineOptions({ name: 'RoleEditDialog' })
 
@@ -50,7 +50,7 @@
       { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
     ],
     display_name: [
-      { required: true, message: '请输入显示名称', trigger: 'blur' },
+      { required: true, message: '请输入角色名称', trigger: 'blur' },
       { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
     ]
   }
