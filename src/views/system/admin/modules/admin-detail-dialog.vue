@@ -55,6 +55,19 @@
       </ElTabPane>
 
       <ElTabPane label="登录历史" name="histories" lazy>
+        <div class="history-filters mt-4">
+          <ElDatePicker
+            v-model="historyDateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            clearable
+            @change="handleDateRangeChange"
+          />
+        </div>
         <ElTable
           v-loading="historyLoading"
           :data="historyList"
@@ -123,6 +136,7 @@
   const historyLoading = ref(false)
   const historyLoaded = ref(false)
   const historyTotal = ref(0)
+  const historyDateRange = ref<string[]>([])
   const historyPage = reactive({
     page: 1,
     per_page: 15
@@ -138,6 +152,7 @@
     historyLoaded.value = false
     historyList.value = []
     historyTotal.value = 0
+    historyDateRange.value = []
   }
 
   const handleClose = () => {
@@ -151,14 +166,24 @@
     }
   }
 
+  const handleDateRangeChange = () => {
+    historyPage.page = 1
+    loadHistories()
+  }
+
   const loadHistories = async () => {
     if (!admin.value) return
     historyLoading.value = true
     try {
-      const res = await fetchAdminLoginHistories(admin.value.id, {
+      const params: Record<string, any> = {
         page: historyPage.page,
         per_page: historyPage.per_page
-      })
+      }
+      if (historyDateRange.value?.length === 2) {
+        params.login_start = historyDateRange.value[0]
+        params.login_end = historyDateRange.value[1]
+      }
+      const res = await fetchAdminLoginHistories(admin.value.id, params)
       historyList.value = res?.data || []
       historyTotal.value = res?.meta?.total || 0
       historyLoaded.value = true

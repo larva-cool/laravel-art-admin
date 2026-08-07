@@ -175,6 +175,8 @@ declare namespace Api {
     /** 管理员登录历史查询参数 */
     interface AdminLoginHistoryParams extends Api.Common.CommonSearchParams {
       keyword?: string
+      login_start?: string
+      login_end?: string
     }
 
     /** 角色列表（Laravel 分页） */
