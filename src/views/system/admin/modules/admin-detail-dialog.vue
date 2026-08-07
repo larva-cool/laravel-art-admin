@@ -175,7 +175,7 @@
     if (!admin.value) return
     historyLoading.value = true
     try {
-      const params: Record<string, any> = {
+      const params: Api.SystemManage.AdminLoginHistoryParams = {
         page: historyPage.page,
         per_page: historyPage.per_page
       }
