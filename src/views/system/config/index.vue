@@ -13,15 +13,14 @@
             <ElForm
               ref="formRef"
               :model="formData"
-              :rules="formRules"
-              label-width="120px"
+              label-width="180px"
               label-position="right"
               class="config-form mt-4"
               @submit.prevent
             >
               <template v-for="item in group.items" :key="item.key">
-                <!-- text / string 输入 -->
-                <ElFormItem :label="item.name + (isRequired(item) ? ' *' : '')" :prop="item.key">
+                <ElFormItem :label="item.name">
+                  <!-- text / string 输入 -->
                   <ElInput
                     v-if="item.input_type === 'text' || item.input_type === 'string'"
                     v-model="formData[item.key]"
@@ -105,7 +104,7 @@
         </ElTabs>
 
         <!-- 操作按钮 -->
-        <div class="flex items-center justify-start gap-3 mt-6 pl-[120px]">
+        <div class="flex items-center justify-start gap-3 mt-6 pl-[180px]">
           <ElButton type="primary" :loading="submitting" @click="handleSubmit" v-ripple
             >提交</ElButton
           >
@@ -120,7 +119,6 @@
 
 <script setup lang="ts">
   import { fetchBatchUpdateSettings, fetchGetSettingGroups } from '@/api/system-manage'
-  import type { FormInstance, FormRules } from 'element-plus'
   import { ElMessage } from 'element-plus'
 
   defineOptions({ name: 'SystemConfig' })
@@ -134,24 +132,6 @@
   const activeTab = ref('')
   const formData = reactive<Record<string, any>>({})
   const originalData = ref<Record<string, any>>({})
-  const formRef = ref<FormInstance>()
-
-  /** 必填项判断（简单规则：标题和 cast_type 为 int 的关键字段加 * 号，实际后端校验） */
-  const isRequired = (item: SettingGroupItem) => {
-    return item.cast_type === 'string' && ['title', 'keywords'].some((k) => item.key.endsWith(k))
-  }
-
-  const formRules = computed<FormRules>(() => {
-    const rules: FormRules = {}
-    groups.value.forEach((g) => {
-      g.items.forEach((item) => {
-        if (item.cast_type === 'int' || item.input_type === 'int') {
-          rules[item.key] = [{ type: 'number', message: `${item.name}必须为数字`, trigger: 'blur' }]
-        }
-      })
-    })
-    return rules
-  })
 
   /** 解析 param 中的选项数据（支持 options 数组或键值对） */
   const parseOptions = (param: Record<string, any> | null) => {
@@ -159,6 +139,23 @@
     if (Array.isArray(param.options)) return param.options
     if (Array.isArray(param)) return param
     return Object.entries(param).map(([value, label]) => ({ value, label: String(label) }))
+  }
+
+  /** 根据 cast_type 转换初始值类型 */
+  const castValue = (item: SettingGroupItem): any => {
+    const v = item.value
+    switch (item.cast_type) {
+      case 'int':
+      case 'integer':
+        return v === null || v === '' ? 0 : Number(v)
+      case 'float':
+        return v === null || v === '' ? 0 : Number(v)
+      case 'bool':
+      case 'boolean':
+        return v ? 1 : 0
+      default:
+        return v ?? ''
+    }
   }
 
   /** 加载配置数据 */
@@ -170,11 +167,11 @@
       if (groups.value.length > 0) {
         activeTab.value = groups.value[0].key
       }
-      // 将所有配置项展平到 formData
+      // 将所有配置项展平到 formData，做类型转换
       const data: Record<string, any> = {}
       groups.value.forEach((g) => {
         g.items.forEach((item) => {
-          data[item.key] = item.value
+          data[item.key] = castValue(item)
         })
       })
       Object.keys(formData).forEach((k) => delete formData[k])
@@ -187,13 +184,6 @@
 
   /** 提交保存 */
   const handleSubmit = async () => {
-    if (!formRef.value) return
-    try {
-      await formRef.value.validate()
-    } catch {
-      ElMessage.warning('请检查表单填写')
-      return
-    }
     submitting.value = true
     try {
       await fetchBatchUpdateSettings({ ...formData })
@@ -208,7 +198,6 @@
   const handleReset = () => {
     Object.keys(formData).forEach((k) => delete formData[k])
     Object.assign(formData, JSON.parse(JSON.stringify(originalData.value)))
-    formRef.value?.resetFields()
     ElMessage.success('已重置')
   }
 
