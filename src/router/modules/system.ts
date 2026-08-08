@@ -51,6 +51,16 @@ export const systemRoutes: AppRouteRecord = {
           { title: '删除', auth_mark: 'delete' }
         ]
       }
+    },
+    {
+      path: 'config',
+      name: 'SystemConfig',
+      component: '/system/config',
+      meta: {
+        title: 'menus.system.config',
+        keep_alive: true,
+        icon: 'ri:settings-3-line'
+      }
     }
   ]
 }

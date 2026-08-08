@@ -240,10 +240,13 @@
     },
     "system": {
       "title": "系统管理",
-      "user": "用户管理",
+      "admin": "管理员管理",
       "role": "角色管理",
       "userCenter": "个人中心",
       "menu": "菜单管理",
+      "setting": "配置项管理",
+      "config": "系统设置",
+      "area": "地区管理",
       "phoneCode": "短信验证码",
       "mailCode": "邮件验证码"
     }

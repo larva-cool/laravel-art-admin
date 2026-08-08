@@ -237,6 +237,23 @@ export function fetchDeleteSetting(id: number) {
   })
 }
 
+// 获取分组配置（设置页面用）
+export function fetchGetSettingGroups() {
+  return request.get<Api.SystemManage.SettingGroupsResponse>({
+    url: '/admin/settings/groups'
+  })
+}
+
+// 批量保存配置
+export function fetchBatchUpdateSettings(data: Record<string, any>) {
+  return request.put<{ message: string }>({
+    url: '/admin/settings/batch',
+    data,
+    showSuccessMessage: true,
+    successMessage: '设置保存成功'
+  })
+}
+
 // ========== 菜单管理 ==========
 
 // 获取完整菜单树（包含目录/菜单/按钮，供菜单管理和权限分配使用）

@@ -247,6 +247,32 @@ declare namespace Api {
       cast_type?: string
     }
 
+    /** 配置项元数据（分组接口返回） */
+    interface SettingGroupItem {
+      name: string
+      key: string
+      field: string
+      value: string | number | boolean | null
+      cast_type: string
+      input_type: string
+      param: Record<string, any> | null
+      remark: string | null
+      sort: number
+    }
+
+    /** 配置分组 */
+    interface SettingGroup {
+      key: string
+      title: string
+      items: SettingGroupItem[]
+    }
+
+    /** 分组配置响应 */
+    interface SettingGroupsResponse {
+      groups: SettingGroup[]
+      disks: string[]
+    }
+
     /** 地区列表项（AreaResource） */
     interface AreaListItem {
       id: number
