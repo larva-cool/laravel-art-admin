@@ -453,6 +453,21 @@ declare namespace Api {
       role: 'user' | 'assistant'
       content: string
       created_at: string | null
+      /** 工具调用记录（assistant 消息可能包含） */
+      tool_calls?: Array<{
+        id: string
+        name: string
+        arguments: Record<string, unknown>
+      }> | null
+      /** 工具调用结果 */
+      tool_results?: Array<{
+        id: string
+        name: string
+        result: unknown
+        successful: boolean
+        denied?: boolean
+        error?: string | null
+      }> | null
     }
 
     /** 会话详情 */
