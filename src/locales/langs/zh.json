@@ -40,6 +40,10 @@
     "confirm": "确定",
     "logOutTips": "您是否要退出登录?"
   },
+  "chat": {
+    "placeholder": "输入消息，Enter 发送，Shift+Enter 换行",
+    "send": "发送"
+  },
   "search": {
     "placeholder": "搜索页面",
     "historyTitle": "搜索历史",
