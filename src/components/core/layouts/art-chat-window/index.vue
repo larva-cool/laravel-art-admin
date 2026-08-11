@@ -63,6 +63,7 @@
 
           <template v-for="message in messages" :key="message.id">
             <div
+              v-if="!isMessagePlaceholder(message)"
               :class="[
                 'mb-7.5 flex w-full items-start gap-2',
                 message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
@@ -209,8 +210,11 @@
             </div>
           </template>
 
-          <!-- AI 回复中（等待首个 delta 前） -->
-          <div v-if="isStreaming && !hasStreamingText" class="mb-7.5 flex w-full items-start gap-2">
+          <!-- AI 等待中：仅当存在空的占位 streaming 消息时显示（还没收到任何内容） -->
+          <div
+            v-if="isStreaming && messages.some((m) => isMessagePlaceholder(m))"
+            class="mb-7.5 flex w-full items-start gap-2"
+          >
             <ElAvatar :size="32" :src="aiAvatar" class="shrink-0" />
             <div class="flex max-w-[70%] flex-col items-start">
               <div class="mb-1 flex gap-2 text-xs">
@@ -364,9 +368,20 @@
   const currentConversationId = ref<string | null>(null)
   const messages = ref<ChatMessage[]>([])
 
-  const hasStreamingText = computed(
-    () => !!messages.value.find((m) => m.streaming && m.content.length > 0)
-  )
+  /**
+   * 判断是否是「占位」的空 streaming assistant 消息。
+   * 此时还没有任何文本/工具调用/审批内容，整行（含头像）不渲染，
+   * 由底部独立的思考中气泡展示等待状态，避免出现两个 AI 头像。
+   */
+  const isMessagePlaceholder = (m: ChatMessage): boolean => {
+    if (!m.streaming || m.role !== 'assistant') return false
+    return (
+      !m.content &&
+      (!m.toolCalls || m.toolCalls.length === 0) &&
+      (!m.toolResults || m.toolResults.length === 0) &&
+      (!m.pendingApprovals || m.pendingApprovals.length === 0)
+    )
+  }
 
   // 本地 id 生成器
   let localMsgSeq = 1
