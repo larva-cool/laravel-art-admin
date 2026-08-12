@@ -2,6 +2,8 @@
 
 基于 Vue 3 + TypeScript + Vite + Element Plus 的后台管理系统前端模板，配套后端为 [Laravel Skel Pro](https://github.com/larva-cool/laravel-skel-pro)。
 
+> 在线演示：<https://laravel-art-admin-blush.vercel.app/>
+
 ## 技术栈
 
 | 类别        | 技术                                               |
@@ -9,19 +11,19 @@
 | 框架        | Vue 3.5 + TypeScript 5.6                           |
 | 构建工具    | Vite 7.x                                           |
 | UI 组件库   | Element Plus 2.x                                   |
-| 状态管理    | Pinia 3.x + 持久化插件                             |
+| 状态管理    | Pinia 4.x + 持久化插件                             |
 | 路由        | Vue Router 4.x（Hash 模式）                        |
 | CSS 框架    | Tailwind CSS 4.x + SCSS                            |
 | 图表        | ECharts 6.x                                        |
 | HTTP 客户端 | Axios                                              |
-| 国际化      | Vue I18n 9.x                                       |
+| 国际化      | Vue I18n 11.x                                      |
 | 图标        | Iconify + Element Plus Icons                       |
 | 代码规范    | ESLint + Prettier + Stylelint + Husky + Commitlint |
 | 包管理器    | pnpm >= 8.8.0                                      |
 
 ## 环境要求
 
-- Node.js >= 20.19.0
+- Node.js >= 22.0.0
 - pnpm >= 8.8.0
 
 ## 快速开始
