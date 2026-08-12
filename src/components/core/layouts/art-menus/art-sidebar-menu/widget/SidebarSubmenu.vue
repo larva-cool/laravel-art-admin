@@ -1,6 +1,10 @@
 <template>
   <template v-for="(item, index) in filteredMenuItems" :key="getUniqueKey(item, index)">
-    <ElSubMenu v-if="hasChildren(item)" :index="item.path || item.meta.title" :level="level">
+    <ElSubMenu
+      v-if="hasChildren(item)"
+      :index="item.path ?? item.meta.title ?? String(index)"
+      :level="level"
+    >
       <template #title>
         <div class="menu-icon flex-cc">
           <ArtSvgIcon
@@ -26,7 +30,7 @@
 
     <ElMenuItem
       v-else
-      :index="isExternalLink(item) ? undefined : item.path || item.meta.title"
+      :index="(isExternalLink(item) ? undefined : item.path || item.meta.title) as string"
       :level-item="level + 1"
       @click="goPage(item)"
     >
@@ -57,11 +61,11 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import type { AppRouteRecord } from '@/types/router'
-  import { formatMenuTitle } from '@/utils/router'
-  import { handleMenuJump } from '@/utils/navigation'
   import { useSettingStore } from '@/store/modules/setting'
+  import type { AppRouteRecord } from '@/types/router'
+  import { handleMenuJump } from '@/utils/navigation'
+  import { formatMenuTitle } from '@/utils/router'
+  import { computed } from 'vue'
 
   interface MenuTheme {
     iconColor?: string

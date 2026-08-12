@@ -38,6 +38,9 @@
 import { useUserStore } from '@/store/modules/user'
 import Echo from 'laravel-echo'
 
+/** Echo 实例类型（从类构造器推导） */
+type EchoInstance = InstanceType<typeof Echo>
+
 /** Reverb 连接选项 */
 interface EchoOptions {
   /** Reverb 应用 Key */
@@ -69,7 +72,7 @@ const echoOptions: EchoOptions = {
 }
 
 /** 单例实例 */
-let echoInstance: Echo | null = null
+let echoInstance: EchoInstance | null = null
 
 /**
  * 构建认证头
@@ -87,7 +90,7 @@ function buildAuthHeaders(): Record<string, string> {
  * 首次调用时建立连接，后续调用复用同一实例。
  * 认证 token 取自 Pinia userStore，会随登录/登出自动变化。
  */
-export function useEcho(): Echo {
+export function useEcho(): EchoInstance {
   if (echoInstance) {
     return echoInstance
   }

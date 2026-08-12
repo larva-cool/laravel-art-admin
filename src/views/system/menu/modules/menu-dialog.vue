@@ -26,7 +26,8 @@
             <ElTreeSelect
               v-model="form.parent_id"
               :data="menuTreeData"
-              :props="{ label: 'title', value: 'id', children: 'children' }"
+              node-key="id"
+              :props="{ label: 'title', children: 'children' }"
               check-strictly
               clearable
               placeholder="不选则为顶级菜单"

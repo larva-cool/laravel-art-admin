@@ -11,7 +11,8 @@
         <ElTreeSelect
           v-model="form.parent_id"
           :data="areaTreeData"
-          :props="{ label: 'name', value: 'id', children: 'children' }"
+          node-key="id"
+          :props="{ label: 'name', children: 'children' }"
           check-strictly
           clearable
           placeholder="不选则为顶级地区"

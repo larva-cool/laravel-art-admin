@@ -97,17 +97,16 @@
 </template>
 
 <script setup lang="ts">
+  import { calculateResponsiveSpan, type ResponsiveBreakpoint } from '@/utils/form/responsive'
   import { useWindowSize } from '@vueuse/core'
-  import { useI18n } from 'vue-i18n'
-  import { toRaw, type Component } from 'vue'
   import {
     ElCascader,
     ElCheckbox,
     ElCheckboxGroup,
     ElDatePicker,
     ElInput,
-    ElInputTag,
     ElInputNumber,
+    ElInputTag,
     ElRadioGroup,
     ElRate,
     ElSelect,
@@ -118,7 +117,8 @@
     ElTreeSelect,
     type FormInstance
   } from 'element-plus'
-  import { calculateResponsiveSpan, type ResponsiveBreakpoint } from '@/utils/form/responsive'
+  import { toRaw, type Component, type Ref } from 'vue'
+  import { useI18n } from 'vue-i18n'
 
   defineOptions({ name: 'ArtForm' })
 
@@ -235,7 +235,9 @@
 
   const emit = defineEmits<FormEmits>()
 
-  const modelValue = defineModel<Record<string, any>>({ default: {} })
+  const modelValue = defineModel<Record<string, any>>({
+    default: () => ({}) as Record<string, any>
+  }) as Ref<Record<string, any>>
   const initialModelValue = ref<Record<string, any>>({})
 
   // 保存组件初始化时的表单快照，用于 reset 时恢复默认值。
