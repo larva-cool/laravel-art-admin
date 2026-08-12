@@ -250,6 +250,12 @@
       "menu": "菜单管理",
       "setting": "配置项管理",
       "config": "系统设置",
+      "configPage": {
+        "inputPlaceholder": "请输入{name}",
+        "selectPlaceholder": "请选择{name}",
+        "empty": "暂无配置项",
+        "resetSuccess": "已重置"
+      },
       "area": "地区管理",
       "phoneCode": "短信验证码",
       "mailCode": "邮件验证码"

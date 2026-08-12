@@ -250,6 +250,12 @@
       "menu": "Menu Manage",
       "setting": "Setting Items",
       "config": "System Config",
+      "configPage": {
+        "inputPlaceholder": "Please enter {name}",
+        "selectPlaceholder": "Please select {name}",
+        "empty": "No configuration items",
+        "resetSuccess": "Reset successfully"
+      },
       "area": "Area Manage",
       "phoneCode": "SMS Code",
       "mailCode": "Mail Code"

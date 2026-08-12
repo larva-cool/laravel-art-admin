@@ -24,7 +24,9 @@
                   <ElInput
                     v-if="item.input_type === 'text' || item.input_type === 'string'"
                     v-model="formData[item.key]"
-                    :placeholder="'请输入' + item.name"
+                    :placeholder="
+                      t('menus.system.configPage.inputPlaceholder', { name: item.name })
+                    "
                     clearable
                     class="max-w-xl"
                   />
@@ -34,7 +36,9 @@
                     v-model="formData[item.key]"
                     type="textarea"
                     :rows="4"
-                    :placeholder="'请输入' + item.name"
+                    :placeholder="
+                      t('menus.system.configPage.inputPlaceholder', { name: item.name })
+                    "
                     class="max-w-xl"
                   />
                   <!-- int 数字输入 -->
@@ -56,7 +60,9 @@
                   <ElSelect
                     v-else-if="item.input_type === 'select'"
                     v-model="formData[item.key]"
-                    :placeholder="'请选择' + item.name"
+                    :placeholder="
+                      t('menus.system.configPage.selectPlaceholder', { name: item.name })
+                    "
                     clearable
                     class="max-w-xs"
                   >
@@ -105,14 +111,14 @@
 
         <!-- 操作按钮 -->
         <div class="flex items-center justify-start gap-3 mt-6 pl-[180px]">
-          <ElButton type="primary" :loading="submitting" @click="handleSubmit" v-ripple
-            >提交</ElButton
-          >
-          <ElButton @click="handleReset">重置</ElButton>
+          <ElButton type="primary" :loading="submitting" @click="handleSubmit" v-ripple>{{
+            $t('table.form.submit')
+          }}</ElButton>
+          <ElButton @click="handleReset">{{ $t('table.form.reset') }}</ElButton>
         </div>
       </template>
 
-      <ElEmpty v-else description="暂无配置项" />
+      <ElEmpty v-else :description="$t('menus.system.configPage.empty')" />
     </ElCard>
   </div>
 </template>
@@ -120,8 +126,11 @@
 <script setup lang="ts">
   import { fetchBatchUpdateSettings, fetchGetSettingGroups } from '@/api/system-manage'
   import { ElMessage } from 'element-plus'
+  import { useI18n } from 'vue-i18n'
 
   defineOptions({ name: 'SystemConfig' })
+
+  const { t } = useI18n()
 
   type SettingGroup = Api.SystemManage.SettingGroup
   type SettingGroupItem = Api.SystemManage.SettingGroupItem
@@ -198,7 +207,7 @@
   const handleReset = () => {
     Object.keys(formData).forEach((k) => delete formData[k])
     Object.assign(formData, JSON.parse(JSON.stringify(originalData.value)))
-    ElMessage.success('已重置')
+    ElMessage.success(t('menus.system.configPage.resetSuccess'))
   }
 
   onMounted(() => {
