@@ -2,7 +2,7 @@
 
 基于 Vue 3 + TypeScript + Vite + Element Plus 的后台管理系统前端模板，配套后端为 [Laravel Skel Pro](https://github.com/larva-cool/laravel-skel-pro)。
 
-> 在线演示：<https://laravel-art-admin-blush.vercel.app/>
+> 在线演示：<http://laravel-admin.aiforge.cn/>
 
 ## 技术栈
 
