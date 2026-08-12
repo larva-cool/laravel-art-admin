@@ -21,7 +21,7 @@
  */
 
 import AppConfig from '@/config'
-import { SystemThemeEnum, MenuThemeEnum, MenuTypeEnum, ContainerWidthEnum } from '@/enums/appEnum'
+import { ContainerWidthEnum, MenuThemeEnum, MenuTypeEnum, SystemThemeEnum } from '@/enums/appEnum'
 
 /**
  * 系统设置默认值配置
@@ -80,7 +80,7 @@ export const SETTING_DEFAULT_CONFIG = {
   /** 标签页样式 */
   tabStyle: 'tab-default',
   /** 自定义圆角 */
-  customRadius: '0.75',
+  customRadius: '0.25',
   /** 容器宽度 */
   containerWidth: ContainerWidthEnum.FULL,
   /** 节日日期 */

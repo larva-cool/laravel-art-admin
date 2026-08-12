@@ -249,7 +249,7 @@
 
     :deep(.el-form-item__label) {
       font-weight: 500;
-      color: var(--el-text-color-primary);
+      color: var(--el-text-color-regular);
     }
   }
 
