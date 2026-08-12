@@ -45,7 +45,7 @@ importers:
         version: 2.0.5
       highlight.js:
         specifier: ^11.10.0
-        version: 11.11.1
+        version: 11.11.2
       laravel-echo:
         specifier: ^2.4.0
         version: 2.4.0
@@ -77,8 +77,8 @@ importers:
         specifier: ^0.6.0
         version: 0.6.1(@types/sortablejs@1.15.8)
       vue-i18n:
-        specifier: ^9.14.0
-        version: 9.14.5(vue@3.5.40(typescript@5.6.3))
+        specifier: ^11.4.8
+        version: 11.4.8(vue@3.5.40(typescript@5.6.3))
       vue-router:
         specifier: ^4.5.1
         version: 4.6.4(vue@3.5.40(typescript@5.6.3))
@@ -1097,13 +1097,6 @@ packages:
       }
     engines: { node: '>= 22' }
 
-  '@intlify/core-base@9.14.5':
-    resolution:
-      {
-        integrity: sha512-5ah5FqZG4pOoHjkvs8mjtv+gPKYU0zCISaYNjBNNqYiaITxW8ZtVih3GS/oTOqN8d9/mDLyrjD46GBApNxmlsA==
-      }
-    engines: { node: '>= 16' }
-
   '@intlify/devtools-types@11.4.8':
     resolution:
       {
@@ -1118,26 +1111,12 @@ packages:
       }
     engines: { node: '>= 22' }
 
-  '@intlify/message-compiler@9.14.5':
-    resolution:
-      {
-        integrity: sha512-IHzgEu61/YIpQV5Pc3aRWScDcnFKWvQA9kigcINcCBXN8mbW+vk9SK+lDxA6STzKQsVJxUPg9ACC52pKKo3SVQ==
-      }
-    engines: { node: '>= 16' }
-
   '@intlify/shared@11.4.8':
     resolution:
       {
         integrity: sha512-XbRgrv+XEuvDr7UCY55oibVrh+o4u+A0VB6nSL0F5Z8LcZxE/8j573LYG6bCrOigIcHdGpSNI7Rh5UpC5/B/eg==
       }
     engines: { node: '>= 22' }
-
-  '@intlify/shared@9.14.5':
-    resolution:
-      {
-        integrity: sha512-9gB+E53BYuAEMhbCAxVgG38EZrk59sxBtv3jSizNL2hEWlgjBjAw1AwpLHtNaeda12pe6W20OGEa0TwuMSRbyQ==
-      }
-    engines: { node: '>= 16' }
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution:
@@ -2814,6 +2793,7 @@ packages:
       {
         integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==
       }
+    deprecated: Active development of CryptoJS has been discontinued. This library is no longer maintained.
 
   css-functions-list@3.2.3:
     resolution:
@@ -3859,10 +3839,10 @@ packages:
       }
     hasBin: true
 
-  highlight.js@11.11.1:
+  highlight.js@11.11.2:
     resolution:
       {
-        integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==
+        integrity: sha512-oaXMACAU0kzOMXBjWpNcX+vlwSBCIAiZ9BHa7gA15NOTtT2L/l8OSZDuqS2XppOhZBPJ7hm4o8ep2kyuip2uEQ==
       }
     engines: { node: '>=12.0.0' }
 
@@ -6372,16 +6352,6 @@ packages:
     peerDependencies:
       vue: ^3.0.0
 
-  vue-i18n@9.14.5:
-    resolution:
-      {
-        integrity: sha512-0jQ9Em3ymWngyiIkj0+c/k7WgaPO+TNzjKSNq9BvBQaKJECqn9cd9fL4tkDhB5G1QBskGl9YxxbDAhgbFtpe2g==
-      }
-    engines: { node: '>= 16' }
-    deprecated: v9 and v10 no longer supported. please migrate to v11. about maintenance status, see https://vue-i18n.intlify.dev/guide/maintenance.html
-    peerDependencies:
-      vue: ^3.0.0
-
   vue-img-cutter@3.1.1:
     resolution:
       {
@@ -7173,11 +7143,6 @@ snapshots:
       '@intlify/message-compiler': 11.4.8
       '@intlify/shared': 11.4.8
 
-  '@intlify/core-base@9.14.5':
-    dependencies:
-      '@intlify/message-compiler': 9.14.5
-      '@intlify/shared': 9.14.5
-
   '@intlify/devtools-types@11.4.8':
     dependencies:
       '@intlify/core-base': 11.4.8
@@ -7188,14 +7153,7 @@ snapshots:
       '@intlify/shared': 11.4.8
       source-map-js: 1.2.1
 
-  '@intlify/message-compiler@9.14.5':
-    dependencies:
-      '@intlify/shared': 9.14.5
-      source-map-js: 1.2.1
-
   '@intlify/shared@11.4.8': {}
-
-  '@intlify/shared@9.14.5': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -8892,7 +8850,7 @@ snapshots:
 
   he@1.2.0: {}
 
-  highlight.js@11.11.1: {}
+  highlight.js@11.11.2: {}
 
   homedir-polyfill@1.0.3:
     dependencies:
@@ -9529,16 +9487,16 @@ snapshots:
     dependencies:
       htmlparser2: 8.0.2
       js-tokens: 9.0.1
-      postcss: 8.5.6
-      postcss-safe-parser: 6.0.0(postcss@8.5.6)
+      postcss: 8.5.25
+      postcss-safe-parser: 6.0.0(postcss@8.5.25)
 
   postcss-media-query-parser@0.2.3: {}
 
   postcss-resolve-nested-selector@0.1.6: {}
 
-  postcss-safe-parser@6.0.0(postcss@8.5.6):
+  postcss-safe-parser@6.0.0(postcss@8.5.25):
     dependencies:
-      postcss: 8.5.6
+      postcss: 8.5.25
 
   postcss-safe-parser@7.0.1(postcss@8.5.6):
     dependencies:
@@ -10238,13 +10196,6 @@ snapshots:
       '@intlify/core-base': 11.4.8
       '@intlify/devtools-types': 11.4.8
       '@intlify/shared': 11.4.8
-      '@vue/devtools-api': 6.6.4
-      vue: 3.5.40(typescript@5.6.3)
-
-  vue-i18n@9.14.5(vue@3.5.40(typescript@5.6.3)):
-    dependencies:
-      '@intlify/core-base': 9.14.5
-      '@intlify/shared': 9.14.5
       '@vue/devtools-api': 6.6.4
       vue: 3.5.40(typescript@5.6.3)
 
