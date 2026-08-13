@@ -46,7 +46,8 @@
   import { fetchDeleteAdmin, fetchGetAdminList, fetchToggleAdminStatus } from '@/api/system-manage'
   import ArtButtonMore, { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { ElMessageBox, ElTag } from 'element-plus'
+  import { ElAvatar, ElMessageBox, ElTag } from 'element-plus'
+  import { h } from 'vue'
   import AdminDetailDialog from './modules/admin-detail-dialog.vue'
   import AdminEditDialog from './modules/admin-dialog.vue'
   import AdminSearch from './modules/admin-search.vue'
@@ -81,6 +82,24 @@
       },
       columnsFactory: () => [
         { prop: 'id', label: 'ID', width: 110 },
+        {
+          prop: 'avatar',
+          label: '头像',
+          width: 80,
+          align: 'center',
+          formatter: (row: AdminListItem) =>
+            h(
+              ElAvatar,
+              {
+                size: 32,
+                shape: 'circle',
+                src: row.avatar || ''
+              },
+              {
+                default: () => row.username?.[0]?.toUpperCase() || '?'
+              }
+            )
+        },
         { prop: 'username', label: '用户名', minWidth: 120 },
         { prop: 'name', label: '昵称', minWidth: 120 },
         { prop: 'email', label: '邮箱', minWidth: 180, showOverflowTooltip: true },

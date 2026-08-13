@@ -113,6 +113,7 @@ declare namespace Api {
       email: string | null
       phone: string | null
       name: string
+      avatar: string | null
       /** 状态枚举 {value: 0|1, label: string} */
       status: { value: number; label: string }
       login_count: number
