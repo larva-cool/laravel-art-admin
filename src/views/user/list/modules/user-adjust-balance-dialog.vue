@@ -33,6 +33,14 @@
         />
         <div class="form-tip">正数增加余额，负数扣减余额（不低于0）</div>
       </ElFormItem>
+      <ElFormItem label="备注" prop="description">
+        <ElInput
+          v-model="form.description"
+          type="textarea"
+          :rows="2"
+          placeholder="请输入备注信息"
+        />
+      </ElFormItem>
     </ElForm>
 
     <template #footer>
@@ -62,7 +70,8 @@
 
   const form = reactive({
     type: 'points' as 'points' | 'coins',
-    amount: 0
+    amount: 0,
+    description: ''
   })
 
   const rules = computed<FormRules>(() => ({
@@ -78,6 +87,7 @@
     currentCoins.value = row.available_coins
     form.type = 'points'
     form.amount = 0
+    form.description = ''
   }
 
   const handleSubmit = async () => {
@@ -88,7 +98,8 @@
       try {
         await fetchAdjustUserBalance(id.value!, {
           type: form.type,
-          amount: form.amount
+          amount: form.amount,
+          description: form.description
         })
         dialogVisible.value = false
         emit('refresh')

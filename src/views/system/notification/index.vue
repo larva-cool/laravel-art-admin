@@ -224,7 +224,8 @@
       .catch(() => {})
   }
 
-  const handleDelete = () => {
+  const handleDelete = (row: Api.Notification.NotificationItem) => {
+    void row
     ElMessageBox.confirm('确定删除这条通知吗？', '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',

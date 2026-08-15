@@ -482,6 +482,8 @@ declare namespace Api {
       type: 'points' | 'coins'
       /** 正数增加，负数减少 */
       amount: number
+      /** 描述/备注 */
+      description?: string
     }
 
     /** 延长 VIP 参数 */
