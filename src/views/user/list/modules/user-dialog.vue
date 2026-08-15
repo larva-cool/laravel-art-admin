@@ -8,7 +8,7 @@
   >
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="90px">
       <ElFormItem label="用户名" prop="username">
-        <ElInput v-model="form.username" placeholder="用户名" disabled clearable />
+        <ElInput v-model="form.username" placeholder="请输入用户名" clearable />
       </ElFormItem>
       <ElFormItem label="昵称" prop="name">
         <ElInput v-model="form.name" placeholder="请输入昵称" clearable />
@@ -58,6 +58,10 @@
   })
 
   const rules = computed<FormRules>(() => ({
+    username: [
+      { required: true, message: '请输入用户名', trigger: 'blur' },
+      { min: 3, max: 50, message: '长度在 3 到 50 个字符', trigger: 'blur' }
+    ],
     name: [
       { required: true, message: '请输入昵称', trigger: 'blur' },
       { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
@@ -83,6 +87,7 @@
       submitting.value = true
       try {
         await fetchUpdateUser(id.value!, {
+          username: form.username,
           name: form.name,
           email: form.email || null,
           phone: form.phone || null,

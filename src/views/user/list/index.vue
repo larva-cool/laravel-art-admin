@@ -88,7 +88,7 @@
         per_page: 20
       },
       columnsFactory: () => [
-        { prop: 'id', label: 'ID', width: 90 },
+        { prop: 'id', label: 'ID', width: 120 },
         {
           prop: 'avatar',
           label: '头像',

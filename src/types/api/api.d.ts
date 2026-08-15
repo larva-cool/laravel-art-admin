@@ -469,6 +469,7 @@ declare namespace Api {
 
     /** 更新用户参数 */
     interface UserUpdateParams {
+      username?: string
       email?: string | null
       phone?: string | null
       name?: string
