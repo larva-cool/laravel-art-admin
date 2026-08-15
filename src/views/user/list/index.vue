@@ -49,7 +49,7 @@
   import { h } from 'vue'
   import UserAdjustBalanceDialog from './modules/user-adjust-balance-dialog.vue'
   import UserDetailDialog from './modules/user-detail-dialog.vue'
-  import UserDialog from './modules/user-dialog.vue'
+  import UserEditDialog from './modules/user-dialog.vue'
   import UserExtendVipDialog from './modules/user-extend-vip-dialog.vue'
   import UserResetContactDialog from './modules/user-reset-contact-dialog.vue'
   import UserResetPasswordDialog from './modules/user-reset-password-dialog.vue'
@@ -61,7 +61,7 @@
 
   const showSearchBar = ref(true)
   const detailDialogRef = ref<InstanceType<typeof UserDetailDialog>>()
-  const editDialogRef = ref<InstanceType<typeof UserDialog>>()
+  const editDialogRef = ref<InstanceType<typeof UserEditDialog>>()
   const resetPwdDialogRef = ref<InstanceType<typeof UserResetPasswordDialog>>()
   const resetContactDialogRef = ref<InstanceType<typeof UserResetContactDialog>>()
   const adjustBalanceDialogRef = ref<InstanceType<typeof UserAdjustBalanceDialog>>()
