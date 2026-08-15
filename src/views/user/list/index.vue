@@ -36,7 +36,8 @@
     <UserEditDialog ref="editDialogRef" @refresh="refreshData" />
     <UserResetPasswordDialog ref="resetPwdDialogRef" @refresh="refreshData" />
     <UserResetContactDialog ref="resetContactDialogRef" @refresh="refreshData" />
-    <UserAdjustBalanceDialog ref="adjustBalanceDialogRef" @refresh="refreshData" />
+    <UserAdjustPointsDialog ref="adjustPointsDialogRef" @refresh="refreshData" />
+    <UserAdjustCoinsDialog ref="adjustCoinsDialogRef" @refresh="refreshData" />
     <UserExtendVipDialog ref="extendVipDialogRef" @refresh="refreshData" />
   </div>
 </template>
@@ -47,7 +48,8 @@
   import { useTable } from '@/hooks/core/useTable'
   import { ElAvatar, ElMessageBox, ElTag } from 'element-plus'
   import { h } from 'vue'
-  import UserAdjustBalanceDialog from './modules/user-adjust-balance-dialog.vue'
+  import UserAdjustCoinsDialog from './modules/user-adjust-coins-dialog.vue'
+  import UserAdjustPointsDialog from './modules/user-adjust-points-dialog.vue'
   import UserDetailDialog from './modules/user-detail-dialog.vue'
   import UserEditDialog from './modules/user-dialog.vue'
   import UserExtendVipDialog from './modules/user-extend-vip-dialog.vue'
@@ -64,7 +66,8 @@
   const editDialogRef = ref<InstanceType<typeof UserEditDialog>>()
   const resetPwdDialogRef = ref<InstanceType<typeof UserResetPasswordDialog>>()
   const resetContactDialogRef = ref<InstanceType<typeof UserResetContactDialog>>()
-  const adjustBalanceDialogRef = ref<InstanceType<typeof UserAdjustBalanceDialog>>()
+  const adjustPointsDialogRef = ref<InstanceType<typeof UserAdjustPointsDialog>>()
+  const adjustCoinsDialogRef = ref<InstanceType<typeof UserAdjustCoinsDialog>>()
   const extendVipDialogRef = ref<InstanceType<typeof UserExtendVipDialog>>()
 
   const {
@@ -170,8 +173,14 @@
                     auth: 'users.edit'
                   },
                   {
-                    key: 'adjust-balance',
-                    label: '调整余额',
+                    key: 'adjust-points',
+                    label: '调整积分',
+                    icon: 'ri:copper-coin-line',
+                    auth: 'users.edit'
+                  },
+                  {
+                    key: 'adjust-coins',
+                    label: '调整金币',
                     icon: 'ri:coins-line',
                     auth: 'users.edit'
                   },
@@ -217,8 +226,11 @@
       case 'reset-phone':
         resetContactDialogRef.value?.open(row, 'phone')
         break
-      case 'adjust-balance':
-        adjustBalanceDialogRef.value?.open(row)
+      case 'adjust-points':
+        adjustPointsDialogRef.value?.open(row)
+        break
+      case 'adjust-coins':
+        adjustCoinsDialogRef.value?.open(row)
         break
       case 'extend-vip':
         extendVipDialogRef.value?.open(row)
