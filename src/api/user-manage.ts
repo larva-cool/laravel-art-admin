@@ -99,3 +99,46 @@ export function fetchUserLoginHistories(
     params
   })
 }
+
+// 获取用户社交账号（分页）
+export function fetchUserSocials(
+  id: number | string,
+  params?: Api.Common.LaravelPaginationRequest & { provider?: string }
+) {
+  return request.get<Api.UserManage.SocialList>({
+    url: `/admin/users/${id}/socials`,
+    params
+  })
+}
+
+// 获取用户积分流水（分页）
+export function fetchUserPointTrades(
+  id: number | string,
+  params?: Api.Common.LaravelPaginationRequest & {
+    keyword?: string
+    type?: string
+    start_date?: string
+    end_date?: string
+  }
+) {
+  return request.get<Api.UserManage.PointTradeList>({
+    url: `/admin/users/${id}/point-trades`,
+    params
+  })
+}
+
+// 获取用户金币流水（分页）
+export function fetchUserCoinTrades(
+  id: number | string,
+  params?: Api.Common.LaravelPaginationRequest & {
+    keyword?: string
+    type?: string
+    start_date?: string
+    end_date?: string
+  }
+) {
+  return request.get<Api.UserManage.CoinTradeList>({
+    url: `/admin/users/${id}/coin-trades`,
+    params
+  })
+}

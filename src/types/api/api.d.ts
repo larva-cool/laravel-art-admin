@@ -417,6 +417,15 @@ declare namespace Api {
     /** 用户登录历史列表 */
     type LoginHistoryList = Api.Common.PaginatedResponse<LoginHistoryItem>
 
+    /** 用户社交账号列表 */
+    type SocialList = Api.Common.PaginatedResponse<SocialItem>
+
+    /** 用户积分流水列表 */
+    type PointTradeList = Api.Common.PaginatedResponse<PointTradeItem>
+
+    /** 用户金币流水列表 */
+    type CoinTradeList = Api.Common.PaginatedResponse<CoinTradeItem>
+
     /** 用户列表项 */
     interface UserListItem {
       id: number
@@ -465,6 +474,39 @@ declare namespace Api {
       browser: string | null
       platform: string | null
       login_at: string | null
+    }
+
+    /** 社交账号项 */
+    interface SocialItem {
+      id: number
+      /** 渠道枚举 { value, label } */
+      provider: { value: string; label: string }
+      openid: string | null
+      unionid: string | null
+      expiry_at: string | null
+      created_at: string | null
+      updated_at: string | null
+    }
+
+    /** 积分流水项 */
+    interface PointTradeItem {
+      id: number
+      points: number
+      description: string | null
+      /** 类型枚举 { value, label } */
+      type: { value: string; label: string }
+      expired_at: string | null
+      created_at: string | null
+    }
+
+    /** 金币流水项 */
+    interface CoinTradeItem {
+      id: number
+      coins: number
+      description: string | null
+      /** 类型枚举 { value, label } */
+      type: { value: string; label: string }
+      created_at: string | null
     }
 
     /** 更新用户参数 */
