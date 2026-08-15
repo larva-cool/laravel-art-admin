@@ -19,7 +19,9 @@
         @refresh="handleRefresh"
       >
         <template #left>
-          <ElButton v-auth="'menus.create'" @click="handleAddMenu" v-ripple> 添加菜单 </ElButton>
+          <ElButton type="primary" v-auth="'menus.create'" @click="handleAddMenu" v-ripple>
+            添加菜单
+          </ElButton>
           <ElButton @click="toggleExpand" v-ripple>
             {{ isExpanded ? '收起' : '展开' }}
           </ElButton>

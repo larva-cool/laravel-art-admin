@@ -18,7 +18,9 @@
         @refresh="handleRefresh"
       >
         <template #left>
-          <ElButton v-auth="'areas.create'" @click="handleAdd" v-ripple> 新增地区 </ElButton>
+          <ElButton type="primary" v-auth="'areas.create'" @click="handleAdd" v-ripple>
+            新增地区
+          </ElButton>
           <ElButton @click="toggleExpand" v-ripple>
             {{ isExpanded ? '收起' : '展开' }}
           </ElButton>
