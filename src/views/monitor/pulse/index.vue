@@ -7,13 +7,13 @@
         <h3 class="text-base font-medium text-g-900">性能监控</h3>
       </div>
       <div class="flex-c gap-3">
-        <ElRadioGroup v-model="period" size="small" @change="fetchAll">
+        <ElRadioGroup v-model="period" size="small" @change="refreshAll">
           <ElRadioButton value="1_hour">1h</ElRadioButton>
           <ElRadioButton value="6_hours">6h</ElRadioButton>
           <ElRadioButton value="24_hours">24h</ElRadioButton>
           <ElRadioButton value="7_days">7d</ElRadioButton>
         </ElRadioGroup>
-        <ElButton :icon="Refresh" :loading="loading" size="small" circle @click="fetchAll" />
+        <ElButton :icon="Refresh" :loading="loading" size="small" circle @click="refreshAll" />
       </div>
     </div>
 
@@ -27,64 +27,76 @@
       </div>
       <div v-loading="serversLoading" class="mt-3">
         <ElEmpty v-if="!servers.length" description="暂无服务器数据" :image-size="60" />
-        <div v-else class="space-y-3">
+        <div v-else>
+          <!-- 表头 -->
+          <div
+            class="hidden lg:grid grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1.5fr)_auto_minmax(0,1.5fr)_minmax(0,1fr)] gap-x-4 px-2 pb-2 border-b-d text-xs uppercase font-bold text-g-500"
+          >
+            <div class="w-5"></div>
+            <div>服务器</div>
+            <div class="w-14 text-right">CPU</div>
+            <div></div>
+            <div class="w-28 text-right">内存</div>
+            <div></div>
+            <div>存储</div>
+          </div>
+          <!-- 服务器行 -->
           <div
             v-for="server in servers"
             :key="server.slug"
-            class="grid grid-cols-1 lg:grid-cols-[180px_1fr_1fr_auto] gap-4 items-center p-3 rounded-custom-sm bg-[var(--art-gray-100)]"
+            class="grid grid-cols-1 lg:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1.5fr)_auto_minmax(0,1.5fr)_minmax(0,1fr)] gap-x-4 gap-y-2 items-center py-3 border-b-d last:border-b-0"
+            :class="!server.recently_reported ? 'opacity-40' : ''"
           >
+            <!-- 状态指示灯 -->
+            <div class="flex-cc w-5" :title="server.updated_at">
+              <div
+                class="rounded-full"
+                :class="
+                  server.recently_reported
+                    ? 'w-1.5 h-1.5 bg-success animate-pulse'
+                    : 'w-2 h-2 bg-danger'
+                "
+              />
+            </div>
             <!-- 服务器名称 -->
             <div class="flex-c gap-2 min-w-0">
-              <div
-                class="w-2 h-2 rounded-full shrink-0"
-                :class="server.recently_reported ? 'bg-success animate-pulse' : 'bg-danger'"
-              />
-              <span class="font-medium text-g-800 truncate">{{ server.name }}</span>
+              <ArtSvgIcon icon="ri:server-line" class="text-lg text-g-500 shrink-0" />
+              <span class="text-sm font-medium text-g-800 truncate">{{ server.name }}</span>
             </div>
-            <!-- CPU -->
-            <div class="flex-c gap-3">
-              <div class="shrink-0 w-16">
-                <div class="text-xs text-g-500">CPU</div>
-                <div class="text-lg font-medium text-g-900 tabular-nums"
-                  >{{ server.cpu_current }}%</div
-                >
-              </div>
-              <div class="flex-1 h-10 min-w-0">
-                <PulseSparkline :data="server.cpu" :max="100" color="var(--color-primary)" />
-              </div>
+            <!-- CPU 数值 -->
+            <div
+              class="text-lg font-bold text-g-800 tabular-nums w-14 text-right whitespace-nowrap"
+            >
+              {{ server.cpu_current }}%
             </div>
-            <!-- 内存 -->
-            <div class="flex-c gap-3">
-              <div class="shrink-0 w-20">
-                <div class="text-xs text-g-500">内存</div>
-                <div class="text-lg font-medium text-g-900 tabular-nums">
-                  {{ friendlySize(server.memory_current, 1) }}
-                  <span class="text-xs text-g-500"
-                    >/ {{ friendlySize(server.memory_total, 1) }}</span
-                  >
-                </div>
-              </div>
-              <div class="flex-1 h-10 min-w-0">
-                <PulseSparkline
-                  :data="server.memory"
-                  :max="server.memory_total"
-                  color="var(--color-primary)"
-                />
-              </div>
+            <!-- CPU 图 -->
+            <div class="h-9 min-w-0">
+              <PulseSparkline :data="server.cpu" :max="100" />
+            </div>
+            <!-- 内存数值 -->
+            <div class="w-28 text-right whitespace-nowrap tabular-nums">
+              <span class="text-lg font-bold text-g-800">{{
+                friendlySize(server.memory_current, 1)
+              }}</span>
+              <span class="text-sm text-g-500">/ {{ friendlySize(server.memory_total, 1) }}</span>
+            </div>
+            <!-- 内存图 -->
+            <div class="h-9 min-w-0">
+              <PulseSparkline :data="server.memory" :max="server.memory_total" />
             </div>
             <!-- 存储 -->
-            <div class="flex-c gap-4">
+            <div class="flex-c gap-4 flex-wrap">
               <div v-for="disk in server.storage" :key="disk.directory" class="flex-c gap-2">
                 <ElProgress
                   type="dashboard"
                   :percentage="diskPercentage(disk)"
-                  :width="44"
+                  :width="40"
                   :stroke-width="4"
                   :color="diskColor(diskPercentage(disk))"
                 />
-                <div class="text-xs text-g-600 whitespace-nowrap">
-                  <div class="font-medium text-g-800">{{ friendlySize(disk.used) }}</div>
-                  <div class="text-g-500">/ {{ friendlySize(disk.total) }}</div>
+                <div class="text-xs whitespace-nowrap tabular-nums">
+                  <span class="font-bold text-g-800">{{ friendlySize(disk.used) }}</span>
+                  <span class="text-g-500">/ {{ friendlySize(disk.total) }}</span>
                 </div>
               </div>
             </div>
@@ -146,14 +158,26 @@
             </div>
             <div class="flex-c gap-2.5 text-xs text-g-500">
               <span class="flex-c gap-1"
-                ><i class="legend-dot" style="background: rgb(107 114 128 / 50%)" />入队</span
+                ><i
+                  class="legend-dot"
+                  style="background: var(--color-g-400); opacity: 0.5"
+                />入队</span
               >
               <span class="flex-c gap-1"
-                ><i class="legend-dot" style="background: rgb(147 51 234 / 50%)" />处理中</span
+                ><i
+                  class="legend-dot"
+                  style="background: var(--color-secondary); opacity: 0.5"
+                />处理中</span
               >
-              <span class="flex-c gap-1"><i class="legend-dot bg-primary" />已处理</span>
-              <span class="flex-c gap-1"><i class="legend-dot bg-warning" />重试</span>
-              <span class="flex-c gap-1"><i class="legend-dot bg-danger" />失败</span>
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: var(--color-primary)" />已处理</span
+              >
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: var(--color-warning)" />重试</span
+              >
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: var(--color-danger)" />失败</span
+              >
             </div>
           </div>
           <div v-loading="queuesLoading" class="mt-3">
@@ -163,18 +187,18 @@
                 <div class="text-sm font-medium text-g-700 mb-1.5">{{
                   queue.queue || queue.key
                 }}</div>
-                <div class="h-14">
+                <div class="h-14 rounded-custom-xs bg-[var(--art-gray-100)] p-1">
                   <PulseMultiLine
                     :series="[
                       {
                         name: '入队',
                         data: extractValues(queue.queued),
-                        color: 'rgba(107,114,128,0.5)'
+                        color: 'var(--color-g-400)'
                       },
                       {
                         name: '处理中',
                         data: extractValues(queue.processing),
-                        color: 'rgba(147,51,234,0.5)'
+                        color: 'var(--color-secondary)'
                       },
                       {
                         name: '已处理',
@@ -263,57 +287,27 @@
           </div>
           <div v-loading="slowQueriesLoading" class="mt-3">
             <ElEmpty v-if="!slowQueries.length" description="暂无慢查询" :image-size="60" />
-            <template v-else>
-              <div class="space-y-2">
-                <div
-                  v-for="query in slowQueries.slice(0, 5)"
-                  :key="`${query.sql}-${query.location}`"
-                  class="rounded-custom-sm bg-[var(--art-gray-100)] p-3 tad-200 hover:bg-[var(--art-gray-200)]"
-                >
-                  <code class="text-xs text-g-800 break-all block font-mono">{{ query.sql }}</code>
-                  <div class="flex-cb mt-2">
-                    <span v-if="query.location" class="text-xs text-g-500">{{
-                      query.location
-                    }}</span>
-                    <div class="flex-c gap-3 ml-auto">
-                      <span class="text-xs text-g-600"
-                        >次数 <strong class="text-g-800">{{ query.count }}</strong></span
-                      >
-                      <ElTag size="small" type="warning">{{ query.slowest || '<1' }} ms</ElTag>
-                    </div>
+            <div
+              v-else
+              :class="['space-y-2', slowQueries.length > 5 ? 'overflow-y-auto max-h-96 pr-1' : '']"
+            >
+              <div
+                v-for="query in slowQueries"
+                :key="`${query.sql}-${query.location}`"
+                class="rounded-custom-sm bg-[var(--art-gray-100)] p-3 tad-200 hover:bg-[var(--art-gray-200)]"
+              >
+                <code class="text-xs text-g-800 break-all block font-mono">{{ query.sql }}</code>
+                <div class="flex-cb mt-2">
+                  <span v-if="query.location" class="text-xs text-g-500">{{ query.location }}</span>
+                  <div class="flex-c gap-3 ml-auto">
+                    <span class="text-xs text-g-600"
+                      >次数 <strong class="text-g-800">{{ query.count }}</strong></span
+                    >
+                    <ElTag size="small" type="warning">{{ query.slowest || '<1' }} ms</ElTag>
                   </div>
                 </div>
               </div>
-              <ElCollapse v-if="slowQueries.length > 5" class="mt-2 slow-query-collapse">
-                <ElCollapseItem :name="'more'">
-                  <template #title>
-                    <span class="text-xs text-theme">展开剩余 {{ slowQueries.length - 5 }} 条</span>
-                  </template>
-                  <div class="space-y-2">
-                    <div
-                      v-for="query in slowQueries.slice(5)"
-                      :key="`${query.sql}-${query.location}`"
-                      class="rounded-custom-sm bg-[var(--art-gray-100)] p-3 tad-200 hover:bg-[var(--art-gray-200)]"
-                    >
-                      <code class="text-xs text-g-800 break-all block font-mono">{{
-                        query.sql
-                      }}</code>
-                      <div class="flex-cb mt-2">
-                        <span v-if="query.location" class="text-xs text-g-500">{{
-                          query.location
-                        }}</span>
-                        <div class="flex-c gap-3 ml-auto">
-                          <span class="text-xs text-g-600"
-                            >次数 <strong class="text-g-800">{{ query.count }}</strong></span
-                          >
-                          <ElTag size="small" type="warning">{{ query.slowest || '<1' }} ms</ElTag>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </ElCollapseItem>
-              </ElCollapse>
-            </template>
+            </div>
           </div>
         </div>
       </ElCol>
@@ -336,65 +330,33 @@
           </div>
           <div v-loading="exceptionsLoading" class="mt-3">
             <ElEmpty v-if="!exceptions.length" description="暂无异常" :image-size="60" />
-            <template v-else>
-              <div class="space-y-1.5">
-                <div
-                  v-for="item in exceptions.slice(0, 5)"
-                  :key="`${item.class}-${item.location}`"
-                  class="p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
-                >
-                  <code class="text-xs text-g-800 break-all block font-mono" :title="item.class">{{
-                    item.class
-                  }}</code>
-                  <div class="flex-cb mt-1">
-                    <span
-                      v-if="item.location"
-                      class="text-xs text-g-500 truncate max-w-[60%]"
-                      :title="item.location"
-                    >
-                      {{ item.location }}
-                    </span>
-                    <div class="flex-c gap-2 shrink-0">
-                      <span class="text-xs text-g-500">{{ formatTime(item.latest) }}</span>
-                      <ElTag size="small" type="danger">{{ item.count }}</ElTag>
-                    </div>
+            <div
+              v-else
+              :class="['space-y-1.5', exceptions.length > 5 ? 'overflow-y-auto max-h-96 pr-1' : '']"
+            >
+              <div
+                v-for="item in exceptions"
+                :key="`${item.class}-${item.location}`"
+                class="p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
+              >
+                <code class="text-xs text-g-800 break-all block font-mono" :title="item.class">{{
+                  item.class
+                }}</code>
+                <div class="flex-cb mt-1">
+                  <span
+                    v-if="item.location"
+                    class="text-xs text-g-500 truncate max-w-[60%]"
+                    :title="item.location"
+                  >
+                    {{ item.location }}
+                  </span>
+                  <div class="flex-c gap-2 shrink-0">
+                    <span class="text-xs text-g-500">{{ formatTime(item.latest) }}</span>
+                    <ElTag size="small" type="danger">{{ item.count }}</ElTag>
                   </div>
                 </div>
               </div>
-              <ElCollapse v-if="exceptions.length > 5" class="mt-2">
-                <ElCollapseItem :name="'more'">
-                  <template #title>
-                    <span class="text-xs text-theme">展开剩余 {{ exceptions.length - 5 }} 条</span>
-                  </template>
-                  <div class="space-y-1.5">
-                    <div
-                      v-for="item in exceptions.slice(5)"
-                      :key="`${item.class}-${item.location}`"
-                      class="p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
-                    >
-                      <code
-                        class="text-xs text-g-800 break-all block font-mono"
-                        :title="item.class"
-                        >{{ item.class }}</code
-                      >
-                      <div class="flex-cb mt-1">
-                        <span
-                          v-if="item.location"
-                          class="text-xs text-g-500 truncate max-w-[60%]"
-                          :title="item.location"
-                        >
-                          {{ item.location }}
-                        </span>
-                        <div class="flex-c gap-2 shrink-0">
-                          <span class="text-xs text-g-500">{{ formatTime(item.latest) }}</span>
-                          <ElTag size="small" type="danger">{{ item.count }}</ElTag>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </ElCollapseItem>
-              </ElCollapse>
-            </template>
+            </div>
           </div>
         </div>
       </ElCol>
@@ -780,11 +742,9 @@
     }
   }
 
-  /** 拉取全部数据 */
-  async function fetchAll() {
-    loading.value = isFirstLoad.value
-
-    await Promise.all([
+  /** 切换周期或手动刷新时，触发所有接口重新拉取 */
+  function refreshAll() {
+    Promise.all([
       fetchServers(),
       fetchQueues(),
       fetchCache(),
@@ -795,28 +755,51 @@
       fetchSlowOutgoingRequests(),
       fetchUsage()
     ])
-
-    if (isFirstLoad.value) {
-      isFirstLoad.value = false
-      loading.value = false
-    }
   }
 
-  // ===== 生命周期 =====
+  // ===== 生命周期与轮询 =====
 
-  let pollTimer: ReturnType<typeof setInterval> | null = null
+  /** 各接口独立的轮询定时器 */
+  const pollTimers: ReturnType<typeof setInterval>[] = []
+
+  /** 注册一个接口的轮询，首次立即执行，之后每 interval 毫秒执行一次 */
+  function startPoll(fetchFn: () => Promise<void>, interval: number): void {
+    fetchFn()
+    pollTimers.push(setInterval(fetchFn, interval))
+  }
 
   onMounted(() => {
-    fetchAll()
-    // 5 秒轮询，与 Pulse 官方面板一致
-    pollTimer = setInterval(fetchAll, 5000)
+    // 服务器资源：5s
+    startPoll(fetchServers, 5000)
+    // 队列吞吐：5s
+    startPoll(fetchQueues, 5000)
+    // 缓存命中：5s
+    startPoll(fetchCache, 5000)
+    // 异常统计：10s（变化频率较低）
+    startPoll(fetchExceptions, 10000)
+    // 慢查询：10s
+    startPoll(fetchSlowQueries, 10000)
+    // 慢请求：10s
+    startPoll(fetchSlowRequests, 10000)
+    // 慢任务：10s
+    startPoll(fetchSlowJobs, 10000)
+    // 慢外部请求：10s
+    startPoll(fetchSlowOutgoingRequests, 10000)
+    // 用户使用量：15s（变化频率最低）
+    startPoll(fetchUsage, 15000)
+
+    // 首次加载完成后关闭全局 loading
+    Promise.all([fetchServers(), fetchQueues(), fetchCache()]).then(() => {
+      if (isFirstLoad.value) {
+        isFirstLoad.value = false
+        loading.value = false
+      }
+    })
   })
 
   onBeforeUnmount(() => {
-    if (pollTimer) {
-      clearInterval(pollTimer)
-      pollTimer = null
-    }
+    pollTimers.forEach(clearInterval)
+    pollTimers.length = 0
   })
 </script>
 
@@ -826,15 +809,48 @@
    */
   import { echarts, type EChartsOption } from '@/plugins/echarts'
   import { useSettingStore } from '@/store/modules/setting'
+  import { getCssVar, hexToRgba } from '@/utils/ui'
   import { storeToRefs } from 'pinia'
   import { defineComponent, h, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+
+  /** 确保返回有效的 hex 颜色，否则回退到默认主题色 */
+  function safeHex(color: string): string {
+    const c = color.trim()
+    if (/^#[0-9A-Fa-f]{3}$|^#[0-9A-Fa-f]{6}$/.test(c)) return c
+    return '#409eff'
+  }
+
+  /** 获取主题色 hex 值 */
+  function themeColor(): string {
+    return safeHex(getCssVar('--el-color-primary-light-1'))
+  }
+
+  /** 将 CSS 变量字符串解析为有效 hex */
+  function resolveHex(color: string): string {
+    if (color.startsWith('var(')) {
+      const varName = color.match(/var\((--[^)]+)\)/)?.[1]
+      if (varName) return safeHex(getCssVar(varName))
+    }
+    return safeHex(color)
+  }
+
+  /** 暗黑模式 tooltip 配置 */
+  function tooltipStyle(isDark: boolean) {
+    return {
+      trigger: 'axis' as const,
+      backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)',
+      borderColor: isDark ? '#333' : '#ddd',
+      borderWidth: 1,
+      textStyle: { color: isDark ? '#fff' : '#333' }
+    }
+  }
 
   export const PulseSparkline = defineComponent({
     name: 'PulseSparkline',
     props: {
       data: { type: Array as () => Array<{ time: string; value: number | null }>, required: true },
       max: { type: Number, default: null },
-      color: { type: String, default: '#9333ea' }
+      color: { type: String, default: '' }
     },
     setup(props) {
       const chartRef = ref<HTMLElement>()
@@ -844,9 +860,15 @@
 
       let themeStop: (() => void) | null = null
 
+      const resolveColor = (): string => {
+        if (props.color) return resolveHex(props.color)
+        return themeColor()
+      }
+
       const buildOptions = (): EChartsOption => {
         const labels = props.data.map((p) => p.time)
         const values = props.data.map((p) => p.value ?? 0)
+        const color = resolveColor()
 
         return {
           animation: false,
@@ -854,7 +876,7 @@
           xAxis: { type: 'category', show: false, data: labels, boundaryGap: false },
           yAxis: { type: 'value', show: false, min: 0, max: props.max ?? undefined },
           tooltip: {
-            trigger: 'axis',
+            ...tooltipStyle(isDark.value),
             formatter: (params: any) => {
               const p = params[0]
               return `${p.axisValue}<br/>${p.value}${props.max === 100 ? '%' : ''}`
@@ -866,11 +888,11 @@
               data: values,
               smooth: true,
               symbol: 'none',
-              lineStyle: { width: 2, color: props.color },
+              lineStyle: { width: 2, color },
               areaStyle: {
                 color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  { offset: 0, color: props.color + '30' },
-                  { offset: 1, color: props.color + '02' }
+                  { offset: 0, color: hexToRgba(color, 0.2).rgba },
+                  { offset: 1, color: hexToRgba(color, 0.02).rgba }
                 ])
               }
             }
@@ -936,7 +958,7 @@
           xAxis: { type: 'category', show: false, data: props.labels, boundaryGap: false },
           yAxis: { type: 'value', show: false, min: 0, max: maxVal || undefined },
           tooltip: {
-            trigger: 'axis',
+            ...tooltipStyle(isDark.value),
             formatter: (params: any) => {
               let html = ''
               params.forEach((p: any) => {
@@ -945,14 +967,23 @@
               return html
             }
           },
-          series: props.series.map((s) => ({
-            name: s.name,
-            type: 'line',
-            data: s.data,
-            smooth: true,
-            symbol: 'none',
-            lineStyle: { width: 2, color: s.color }
-          }))
+          series: props.series.map((s) => {
+            const hex = resolveHex(s.color)
+            return {
+              name: s.name,
+              type: 'line' as const,
+              data: s.data,
+              smooth: true,
+              symbol: 'none',
+              lineStyle: { width: 2, color: hex },
+              areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: hexToRgba(hex, 0.15).rgba },
+                  { offset: 1, color: hexToRgba(hex, 0.01).rgba }
+                ])
+              }
+            }
+          })
         }
       }
 
@@ -995,16 +1026,5 @@
     width: 12px;
     height: 2px;
     border-radius: 1px;
-  }
-
-  .slow-query-collapse :deep(.el-collapse-item__header) {
-    height: 32px;
-    font-size: 12px;
-    line-height: 32px;
-    border-bottom: none;
-  }
-
-  .slow-query-collapse :deep(.el-collapse-item__wrap) {
-    border-bottom: none;
   }
 </style>
