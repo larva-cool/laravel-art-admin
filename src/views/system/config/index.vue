@@ -1,8 +1,15 @@
 <template>
-  <div class="art-full-height p-4">
-    <ElCard v-loading="loading" class="config-card" shadow="never">
-      <template v-if="groups.length > 0">
-        <!-- 标签页 -->
+  <div class="art-full-height p-4" v-loading="loading">
+    <template v-if="groups.length > 0">
+      <!-- 分组标签页 -->
+      <div class="art-card p-5">
+        <div class="art-card-header mb-4">
+          <div class="title">
+            <h4>系统配置</h4>
+            <p>分组管理应用配置项</p>
+          </div>
+        </div>
+
         <ElTabs v-model="activeTab" class="config-tabs">
           <ElTabPane
             v-for="group in groups"
@@ -13,13 +20,12 @@
             <ElForm
               ref="formRef"
               :model="formData"
-              label-width="180px"
-              label-position="right"
-              class="config-form mt-4"
+              label-position="top"
+              class="mt-2"
               @submit.prevent
             >
-              <template v-for="item in group.items" :key="item.key">
-                <ElFormItem :label="item.name">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                <ElFormItem v-for="item in group.items" :key="item.key" :label="item.name">
                   <!-- text / string 输入 -->
                   <ElInput
                     v-if="item.input_type === 'text' || item.input_type === 'string'"
@@ -28,18 +34,16 @@
                       t('menus.system.configPage.inputPlaceholder', { name: item.name })
                     "
                     clearable
-                    class="max-w-xl"
                   />
                   <!-- textarea 多行文本 -->
                   <ElInput
                     v-else-if="item.input_type === 'textarea'"
                     v-model="formData[item.key]"
                     type="textarea"
-                    :rows="4"
+                    :rows="3"
                     :placeholder="
                       t('menus.system.configPage.inputPlaceholder', { name: item.name })
                     "
-                    class="max-w-xl"
                   />
                   <!-- int 数字输入 -->
                   <ElInputNumber
@@ -47,15 +51,24 @@
                     v-model="formData[item.key]"
                     :min="0"
                     controls-position="right"
-                    class="max-w-xs"
+                    class="w-full"
+                  />
+                  <!-- float 数字输入 -->
+                  <ElInputNumber
+                    v-else-if="item.input_type === 'float'"
+                    v-model="formData[item.key]"
+                    :min="0"
+                    :precision="2"
+                    controls-position="right"
+                    class="w-full"
                   />
                   <!-- bool 开关 -->
-                  <ElSwitch
-                    v-else-if="item.input_type === 'bool'"
-                    v-model="formData[item.key]"
-                    :active-value="1"
-                    :inactive-value="0"
-                  />
+                  <div v-else-if="item.input_type === 'bool'" class="flex-c gap-2">
+                    <ElSwitch v-model="formData[item.key]" :active-value="1" :inactive-value="0" />
+                    <span class="text-xs text-g-500">
+                      {{ formData[item.key] === 1 ? '已开启' : '已关闭' }}
+                    </span>
+                  </div>
                   <!-- select 下拉选择 -->
                   <ElSelect
                     v-else-if="item.input_type === 'select'"
@@ -64,7 +77,7 @@
                       t('menus.system.configPage.selectPlaceholder', { name: item.name })
                     "
                     clearable
-                    class="max-w-xs"
+                    class="w-full"
                   >
                     <ElOption
                       v-for="opt in parseOptions(item.param)"
@@ -81,7 +94,7 @@
                     <ElRadio
                       v-for="opt in parseOptions(item.param)"
                       :key="opt.value"
-                      :label="opt.value"
+                      :value="opt.value"
                     >
                       {{ opt.label }}
                     </ElRadio>
@@ -94,32 +107,35 @@
                     <ElCheckbox
                       v-for="opt in parseOptions(item.param)"
                       :key="opt.value"
-                      :label="opt.value"
+                      :value="opt.value"
                     >
                       {{ opt.label }}
                     </ElCheckbox>
                   </ElCheckboxGroup>
                   <!-- 默认降级为 input -->
-                  <ElInput v-else v-model="formData[item.key]" clearable class="max-w-xl" />
+                  <ElInput v-else v-model="formData[item.key]" clearable />
+
                   <!-- 备注提示 -->
-                  <span v-if="item.remark" class="config-remark ml-3">{{ item.remark }}</span>
+                  <div v-if="item.remark" class="text-xs text-g-500 mt-1 leading-tight">
+                    {{ item.remark }}
+                  </div>
                 </ElFormItem>
-              </template>
+              </div>
             </ElForm>
           </ElTabPane>
         </ElTabs>
 
         <!-- 操作按钮 -->
-        <div class="flex items-center justify-start gap-3 mt-6 pl-[180px]">
-          <ElButton type="primary" :loading="submitting" @click="handleSubmit" v-ripple>{{
-            $t('table.form.submit')
-          }}</ElButton>
+        <div class="flex-c gap-3 mt-4 pt-4 border-t-d">
+          <ElButton type="primary" :loading="submitting" @click="handleSubmit" v-ripple>
+            {{ $t('table.form.submit') }}
+          </ElButton>
           <ElButton @click="handleReset">{{ $t('table.form.reset') }}</ElButton>
         </div>
-      </template>
+      </div>
+    </template>
 
-      <ElEmpty v-else :description="$t('menus.system.configPage.empty')" />
-    </ElCard>
+    <ElEmpty v-else :description="$t('menus.system.configPage.empty')" />
   </div>
 </template>
 
@@ -176,7 +192,6 @@
       if (groups.value.length > 0) {
         activeTab.value = groups.value[0].key
       }
-      // 将所有配置项展平到 formData，做类型转换
       const data: Record<string, any> = {}
       groups.value.forEach((g) => {
         g.items.forEach((item) => {
@@ -196,7 +211,6 @@
     submitting.value = true
     try {
       await fetchBatchUpdateSettings({ ...formData })
-      // 保存成功后刷新基准数据
       originalData.value = JSON.parse(JSON.stringify(formData))
     } finally {
       submitting.value = false
@@ -216,28 +230,20 @@
 </script>
 
 <style scoped lang="scss">
-  .config-card {
-    border-radius: 8px;
-
-    :deep(.el-card__body) {
-      padding: 0 24px 24px;
-    }
-  }
-
   .config-tabs {
     :deep(.el-tabs__header) {
       margin-bottom: 0;
     }
 
     :deep(.el-tabs__nav-wrap::after) {
-      height: 2px;
+      height: 1px;
     }
 
     :deep(.el-tabs__item) {
-      height: 50px;
-      padding: 0 20px;
-      font-size: 15px;
-      line-height: 50px;
+      height: 44px;
+      padding: 0 16px;
+      font-size: 14px;
+      line-height: 44px;
 
       &.is-active {
         font-weight: 600;
@@ -246,24 +252,8 @@
     }
 
     :deep(.el-tabs__active-bar) {
-      height: 3px;
+      height: 2px;
       border-radius: 2px;
     }
-  }
-
-  .config-form {
-    :deep(.el-form-item) {
-      margin-bottom: 18px;
-    }
-
-    :deep(.el-form-item__label) {
-      font-weight: 500;
-      color: var(--el-text-color-regular);
-    }
-  }
-
-  .config-remark {
-    font-size: 13px;
-    color: var(--el-text-color-secondary);
   }
 </style>
