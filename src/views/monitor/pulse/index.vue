@@ -1,162 +1,168 @@
 <template>
   <div class="pulse-monitor">
-    <!-- 顶部工具栏：周期选择 + 刷新 -->
-    <div class="flex items-center justify-between mb-4">
-      <ElRadioGroup v-model="period" size="small" @change="fetchAll">
-        <ElRadioButton value="1_hour">1 小时</ElRadioButton>
-        <ElRadioButton value="6_hours">6 小时</ElRadioButton>
-        <ElRadioButton value="24_hours">24 小时</ElRadioButton>
-        <ElRadioButton value="7_days">7 天</ElRadioButton>
-      </ElRadioGroup>
-      <ElButton :icon="Refresh" :loading="loading" size="small" @click="fetchAll"> 刷新 </ElButton>
+    <!-- 顶部工具栏 -->
+    <div class="art-card p-4 mb-4 flex-cb">
+      <div class="flex-c gap-2">
+        <ArtSvgIcon icon="ri:pulse-line" class="text-lg text-theme" />
+        <h3 class="text-base font-medium text-g-900">性能监控</h3>
+      </div>
+      <div class="flex-c gap-3">
+        <ElRadioGroup v-model="period" size="small" @change="fetchAll">
+          <ElRadioButton value="1_hour">1h</ElRadioButton>
+          <ElRadioButton value="6_hours">6h</ElRadioButton>
+          <ElRadioButton value="24_hours">24h</ElRadioButton>
+          <ElRadioButton value="7_days">7d</ElRadioButton>
+        </ElRadioGroup>
+        <ElButton :icon="Refresh" :loading="loading" size="small" circle @click="fetchAll" />
+      </div>
     </div>
 
     <!-- 服务器资源（全宽） -->
-    <ElCard shadow="never" class="mb-4">
-      <template #header>
-        <div class="flex items-center gap-2">
-          <ElIcon :size="18"><Monitor /></ElIcon>
-          <span class="font-bold">服务器资源</span>
+    <div class="art-card p-5 mb-4">
+      <div class="art-card-header">
+        <div class="title">
+          <h4>服务器资源</h4>
+          <p>CPU · 内存 · 磁盘</p>
         </div>
-      </template>
-      <div v-loading="loading">
+      </div>
+      <div v-loading="serversLoading" class="mt-3">
         <ElEmpty v-if="!servers.length" description="暂无服务器数据" :image-size="60" />
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-3">
           <div
             v-for="server in servers"
             :key="server.slug"
-            class="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto_1fr_auto] gap-4 items-center"
+            class="grid grid-cols-1 lg:grid-cols-[180px_1fr_1fr_auto] gap-4 items-center p-3 rounded-custom-sm bg-[var(--art-gray-100)]"
           >
             <!-- 服务器名称 -->
-            <div class="flex items-center gap-2 min-w-0">
+            <div class="flex-c gap-2 min-w-0">
               <div
                 class="w-2 h-2 rounded-full shrink-0"
-                :class="server.recently_reported ? 'bg-green-500 animate-pulse' : 'bg-red-500'"
+                :class="server.recently_reported ? 'bg-success animate-pulse' : 'bg-danger'"
               />
-              <span class="font-bold truncate">{{ server.name }}</span>
+              <span class="font-medium text-g-800 truncate">{{ server.name }}</span>
             </div>
             <!-- CPU -->
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-g-500 w-10 shrink-0">CPU</span>
-              <span class="text-lg font-bold tabular-nums w-12 shrink-0"
-                >{{ server.cpu_current }}%</span
-              >
-              <div class="flex-1 h-8 min-w-0">
-                <PulseSparkline :data="server.cpu" :max="100" color="#9333ea" />
+            <div class="flex-c gap-3">
+              <div class="shrink-0 w-16">
+                <div class="text-xs text-g-500">CPU</div>
+                <div class="text-lg font-medium text-g-900 tabular-nums"
+                  >{{ server.cpu_current }}%</div
+                >
+              </div>
+              <div class="flex-1 h-10 min-w-0">
+                <PulseSparkline :data="server.cpu" :max="100" color="var(--color-primary)" />
               </div>
             </div>
-            <!-- Memory -->
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-g-500 w-12 shrink-0">内存</span>
-              <span class="text-lg font-bold tabular-nums whitespace-nowrap">
-                {{ friendlySize(server.memory_current, 1) }}
-              </span>
-              <span class="text-sm text-g-500 whitespace-nowrap">
-                / {{ friendlySize(server.memory_total, 1) }}
-              </span>
-            </div>
-            <!-- Memory 图 + 存储 -->
-            <div class="flex items-center gap-4">
-              <div class="flex-1 h-8 min-w-0">
-                <PulseSparkline :data="server.memory" :max="server.memory_total" color="#9333ea" />
+            <!-- 内存 -->
+            <div class="flex-c gap-3">
+              <div class="shrink-0 w-20">
+                <div class="text-xs text-g-500">内存</div>
+                <div class="text-lg font-medium text-g-900 tabular-nums">
+                  {{ friendlySize(server.memory_current, 1) }}
+                  <span class="text-xs text-g-500"
+                    >/ {{ friendlySize(server.memory_total, 1) }}</span
+                  >
+                </div>
+              </div>
+              <div class="flex-1 h-10 min-w-0">
+                <PulseSparkline
+                  :data="server.memory"
+                  :max="server.memory_total"
+                  color="var(--color-primary)"
+                />
               </div>
             </div>
             <!-- 存储 -->
-            <div class="flex items-center gap-4">
-              <div
-                v-for="disk in server.storage"
-                :key="disk.directory"
-                class="flex items-center gap-2"
-              >
-                <div class="text-right whitespace-nowrap">
-                  <span class="font-bold tabular-nums">{{ friendlySize(disk.used) }}</span>
-                  <span class="text-sm text-g-500">/ {{ friendlySize(disk.total) }}</span>
-                </div>
+            <div class="flex-c gap-4">
+              <div v-for="disk in server.storage" :key="disk.directory" class="flex-c gap-2">
                 <ElProgress
                   type="dashboard"
                   :percentage="diskPercentage(disk)"
-                  :width="40"
+                  :width="44"
                   :stroke-width="4"
                   :color="diskColor(diskPercentage(disk))"
                 />
+                <div class="text-xs text-g-600 whitespace-nowrap">
+                  <div class="font-medium text-g-800">{{ friendlySize(disk.used) }}</div>
+                  <div class="text-g-500">/ {{ friendlySize(disk.total) }}</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </ElCard>
+    </div>
 
     <!-- 第二行：使用量 + 队列 + 缓存 -->
-    <ElRow :gutter="16" class="mb-4">
+    <ElRow :gutter="20" class="mb-4">
       <!-- 用户使用量 -->
       <ElCol :xs="24" :md="8">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <ElIcon :size="18"><TrendCharts /></ElIcon>
-                <span class="font-bold">用户使用量</span>
-              </div>
-              <ElSelect v-model="usageType" size="small" style="width: 120px" @change="fetchUsage">
-                <ElOption label="请求数" value="requests" />
-                <ElOption label="慢请求" value="slow_requests" />
-                <ElOption label="任务数" value="jobs" />
-              </ElSelect>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>用户使用量</h4>
+              <p>Top 10 排行</p>
             </div>
-          </template>
-          <div v-loading="usageLoading">
+            <ElSelect v-model="usageType" size="small" style="width: 110px" @change="fetchUsage">
+              <ElOption label="请求数" value="requests" />
+              <ElOption label="慢请求" value="slow_requests" />
+              <ElOption label="任务数" value="jobs" />
+            </ElSelect>
+          </div>
+          <div v-loading="usageLoading" class="mt-3">
             <ElEmpty v-if="!usage.length" description="暂无数据" :image-size="60" />
-            <div v-else class="space-y-2">
+            <div v-else class="space-y-1.5">
               <div
                 v-for="(user, index) in usage"
                 :key="user.key"
-                class="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--el-fill-color-light)]"
+                class="flex-c gap-3 p-2 rounded-custom-xs hover:bg-hover-color tad-200"
               >
-                <span class="text-g-500 text-sm w-5 text-center">{{ index + 1 }}</span>
-                <ElAvatar :size="32" :src="user.avatar ?? undefined">
+                <span
+                  class="text-xs font-medium w-5 h-5 rounded-full flex-cc shrink-0"
+                  :class="index < 3 ? 'bg-theme text-white' : 'text-g-500 bg-[var(--art-gray-200)]'"
+                >
+                  {{ index + 1 }}
+                </span>
+                <ElAvatar :size="30" :src="user.avatar ?? undefined">
                   {{ user.name?.charAt(0) ?? '?' }}
                 </ElAvatar>
-                <div class="flex-1 min-w-0">
-                  <div class="text-sm font-medium truncate">{{ user.name ?? user.key }}</div>
-                </div>
-                <span class="text-lg font-bold tabular-nums">{{ formatNumber(user.count) }}</span>
+                <span class="flex-1 text-sm text-g-700 truncate">{{ user.name ?? user.key }}</span>
+                <span class="text-base font-medium text-g-900 tabular-nums">{{
+                  formatNumber(user.count)
+                }}</span>
               </div>
             </div>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
 
       <!-- 队列吞吐 -->
       <ElCol :xs="24" :md="8">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <ElIcon :size="18"><List /></ElIcon>
-                <span class="font-bold">队列吞吐</span>
-              </div>
-              <div class="flex items-center gap-3 text-xs text-g-500">
-                <span class="flex items-center gap-1"
-                  ><i class="legend-dot bg-gray-400" />入队</span
-                >
-                <span class="flex items-center gap-1"
-                  ><i class="legend-dot bg-purple-400" />处理中</span
-                >
-                <span class="flex items-center gap-1"
-                  ><i class="legend-dot bg-purple-600" />已处理</span
-                >
-                <span class="flex items-center gap-1"
-                  ><i class="legend-dot bg-yellow-500" />已重试</span
-                >
-                <span class="flex items-center gap-1"><i class="legend-dot bg-red-500" />失败</span>
-              </div>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>队列吞吐</h4>
+              <p>实时队列状态</p>
             </div>
-          </template>
-          <div v-loading="queuesLoading">
+            <div class="flex-c gap-2.5 text-xs text-g-500">
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: rgb(107 114 128 / 50%)" />入队</span
+              >
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: rgb(147 51 234 / 50%)" />处理中</span
+              >
+              <span class="flex-c gap-1"><i class="legend-dot bg-primary" />已处理</span>
+              <span class="flex-c gap-1"><i class="legend-dot bg-warning" />重试</span>
+              <span class="flex-c gap-1"><i class="legend-dot bg-danger" />失败</span>
+            </div>
+          </div>
+          <div v-loading="queuesLoading" class="mt-3">
             <ElEmpty v-if="!queues.length" description="暂无队列数据" :image-size="60" />
             <div v-else class="space-y-3">
               <div v-for="queue in queues" :key="queue.key">
-                <div class="text-sm font-bold mb-1">{{ queue.queue || queue.key }}</div>
+                <div class="text-sm font-medium text-g-700 mb-1.5">{{
+                  queue.queue || queue.key
+                }}</div>
                 <div class="h-14">
                   <PulseMultiLine
                     :series="[
@@ -170,9 +176,21 @@
                         data: extractValues(queue.processing),
                         color: 'rgba(147,51,234,0.5)'
                       },
-                      { name: '已处理', data: extractValues(queue.processed), color: '#9333ea' },
-                      { name: '已重试', data: extractValues(queue.released), color: '#eab308' },
-                      { name: '失败', data: extractValues(queue.failed), color: '#e11d48' }
+                      {
+                        name: '已处理',
+                        data: extractValues(queue.processed),
+                        color: 'var(--color-primary)'
+                      },
+                      {
+                        name: '已重试',
+                        data: extractValues(queue.released),
+                        color: 'var(--color-warning)'
+                      },
+                      {
+                        name: '失败',
+                        data: extractValues(queue.failed),
+                        color: 'var(--color-danger)'
+                      }
                     ]"
                     :labels="extractLabels(queue.queued)"
                   />
@@ -180,119 +198,115 @@
               </div>
             </div>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
 
       <!-- 缓存命中率 -->
       <ElCol :xs="24" :md="8">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <ElIcon :size="18"><Promotion /></ElIcon>
-              <span class="font-bold">缓存命中率</span>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>缓存命中率</h4>
+              <p>缓存性能指标</p>
             </div>
-          </template>
-          <div v-loading="cacheLoading">
+          </div>
+          <div v-loading="cacheLoading" class="mt-3">
             <ElEmpty
               v-if="cache.hits === 0 && cache.misses === 0"
               description="暂无数据"
               :image-size="60"
             />
             <div v-else>
-              <div class="grid grid-cols-3 gap-2 text-center mb-3">
-                <div>
-                  <div class="text-xl font-bold tabular-nums">{{ formatNumber(cache.hits) }}</div>
-                  <div class="text-xs text-g-500">命中</div>
+              <div class="grid grid-cols-3 gap-2 text-center mb-4">
+                <div class="p-2 rounded-custom-xs bg-[var(--art-gray-100)]">
+                  <div class="text-xl font-medium text-g-900 tabular-nums">{{
+                    formatNumber(cache.hits)
+                  }}</div>
+                  <div class="text-xs text-g-500 mt-0.5">命中</div>
                 </div>
-                <div>
-                  <div class="text-xl font-bold tabular-nums">{{ formatNumber(cache.misses) }}</div>
-                  <div class="text-xs text-g-500">未命中</div>
+                <div class="p-2 rounded-custom-xs bg-[var(--art-gray-100)]">
+                  <div class="text-xl font-medium text-g-900 tabular-nums">{{
+                    formatNumber(cache.misses)
+                  }}</div>
+                  <div class="text-xs text-g-500 mt-0.5">未命中</div>
                 </div>
-                <div>
-                  <div class="text-xl font-bold tabular-nums">{{ cacheHitRate }}%</div>
-                  <div class="text-xs text-g-500">命中率</div>
+                <div class="p-2 rounded-custom-xs bg-theme/10">
+                  <div class="text-xl font-medium text-theme tabular-nums">{{ cacheHitRate }}%</div>
+                  <div class="text-xs text-g-500 mt-0.5">命中率</div>
                 </div>
               </div>
-              <ElTable :data="cache.keys" size="small" max-height="300" stripe>
-                <ElTableColumn prop="key" label="Key" min-width="200" show-overflow-tooltip />
-                <ElTableColumn prop="hits" label="命中" width="80" align="right" />
-                <ElTableColumn prop="misses" label="未命中" width="80" align="right" />
-                <ElTableColumn label="命中率" width="80" align="right">
-                  <template #default="{ row }"> {{ keyHitRate(row) }}% </template>
-                </ElTableColumn>
-              </ElTable>
+              <ArtTable :data="cache.keys" :columns="cacheColumns" :showPagination="false" />
             </div>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
     </ElRow>
 
-    <!-- 慢查询（宽） + 异常 -->
-    <ElRow :gutter="16" class="mb-4">
+    <!-- 慢查询 + 异常 -->
+    <ElRow :gutter="20" class="mb-4">
       <ElCol :xs="24" :lg="16">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <ElIcon :size="18"><Coin /></ElIcon>
-                <span class="font-bold">慢查询</span>
-              </div>
-              <ElSelect
-                v-model="slowQueryOrderBy"
-                size="small"
-                style="width: 100px"
-                @change="fetchSlowQueries"
-              >
-                <ElOption label="最慢" value="slowest" />
-                <ElOption label="次数" value="count" />
-              </ElSelect>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>慢查询</h4>
+              <p>数据库性能瓶颈</p>
             </div>
-          </template>
-          <div v-loading="slowQueriesLoading">
+            <ElSelect
+              v-model="slowQueryOrderBy"
+              size="small"
+              style="width: 100px"
+              @change="fetchSlowQueries"
+            >
+              <ElOption label="最慢" value="slowest" />
+              <ElOption label="次数" value="count" />
+            </ElSelect>
+          </div>
+          <div v-loading="slowQueriesLoading" class="mt-3">
             <ElEmpty v-if="!slowQueries.length" description="暂无慢查询" :image-size="60" />
             <template v-else>
               <div class="space-y-2">
                 <div
                   v-for="query in slowQueries.slice(0, 5)"
                   :key="`${query.sql}-${query.location}`"
-                  class="rounded-md bg-gray-700 dark:bg-gray-800 p-3"
+                  class="rounded-custom-sm bg-[var(--art-gray-100)] p-3 tad-200 hover:bg-[var(--art-gray-200)]"
                 >
-                  <code class="text-xs text-gray-100 break-all">{{ query.sql }}</code>
-                  <div class="flex items-center justify-between mt-2">
-                    <span v-if="query.location" class="text-xs text-gray-400">{{
+                  <code class="text-xs text-g-800 break-all block font-mono">{{ query.sql }}</code>
+                  <div class="flex-cb mt-2">
+                    <span v-if="query.location" class="text-xs text-g-500">{{
                       query.location
                     }}</span>
-                    <div class="flex items-center gap-4 ml-auto">
-                      <span class="text-xs text-gray-300"
-                        >次数: <strong>{{ query.count }}</strong></span
+                    <div class="flex-c gap-3 ml-auto">
+                      <span class="text-xs text-g-600"
+                        >次数 <strong class="text-g-800">{{ query.count }}</strong></span
                       >
-                      <span class="text-xs text-gray-300"
-                        >最慢: <strong>{{ query.slowest || '<1' }}</strong> ms</span
-                      >
+                      <ElTag size="small" type="warning">{{ query.slowest || '<1' }} ms</ElTag>
                     </div>
                   </div>
                 </div>
               </div>
-              <ElCollapse v-if="slowQueries.length > 5" class="mt-2">
-                <ElCollapseItem :name="'more'" :title="`展开剩余 ${slowQueries.length - 5} 条`">
+              <ElCollapse v-if="slowQueries.length > 5" class="mt-2 slow-query-collapse">
+                <ElCollapseItem :name="'more'">
+                  <template #title>
+                    <span class="text-xs text-theme">展开剩余 {{ slowQueries.length - 5 }} 条</span>
+                  </template>
                   <div class="space-y-2">
                     <div
                       v-for="query in slowQueries.slice(5)"
                       :key="`${query.sql}-${query.location}`"
-                      class="rounded-md bg-gray-700 dark:bg-gray-800 p-3"
+                      class="rounded-custom-sm bg-[var(--art-gray-100)] p-3 tad-200 hover:bg-[var(--art-gray-200)]"
                     >
-                      <code class="text-xs text-gray-100 break-all">{{ query.sql }}</code>
-                      <div class="flex items-center justify-between mt-2">
-                        <span v-if="query.location" class="text-xs text-gray-400">{{
+                      <code class="text-xs text-g-800 break-all block font-mono">{{
+                        query.sql
+                      }}</code>
+                      <div class="flex-cb mt-2">
+                        <span v-if="query.location" class="text-xs text-g-500">{{
                           query.location
                         }}</span>
-                        <div class="flex items-center gap-4 ml-auto">
-                          <span class="text-xs text-gray-300"
-                            >次数: <strong>{{ query.count }}</strong></span
+                        <div class="flex-c gap-3 ml-auto">
+                          <span class="text-xs text-g-600"
+                            >次数 <strong class="text-g-800">{{ query.count }}</strong></span
                           >
-                          <span class="text-xs text-gray-300"
-                            >最慢: <strong>{{ query.slowest || '<1' }}</strong> ms</span
-                          >
+                          <ElTag size="small" type="warning">{{ query.slowest || '<1' }} ms</ElTag>
                         </div>
                       </div>
                     </div>
@@ -301,72 +315,79 @@
               </ElCollapse>
             </template>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
       <ElCol :xs="24" :lg="8">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <ElIcon :size="18"><WarnTriangleFilled /></ElIcon>
-                <span class="font-bold">异常统计</span>
-              </div>
-              <ElSelect
-                v-model="exceptionsOrderBy"
-                size="small"
-                style="width: 100px"
-                @change="fetchExceptions"
-              >
-                <ElOption label="次数" value="count" />
-                <ElOption label="最近" value="latest" />
-              </ElSelect>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>异常统计</h4>
+              <p>异常捕获记录</p>
             </div>
-          </template>
-          <div v-loading="exceptionsLoading">
+            <ElSelect
+              v-model="exceptionsOrderBy"
+              size="small"
+              style="width: 100px"
+              @change="fetchExceptions"
+            >
+              <ElOption label="次数" value="count" />
+              <ElOption label="最近" value="latest" />
+            </ElSelect>
+          </div>
+          <div v-loading="exceptionsLoading" class="mt-3">
             <ElEmpty v-if="!exceptions.length" description="暂无异常" :image-size="60" />
             <template v-else>
-              <div class="space-y-2">
+              <div class="space-y-1.5">
                 <div
                   v-for="item in exceptions.slice(0, 5)"
                   :key="`${item.class}-${item.location}`"
-                  class="p-2 rounded-lg hover:bg-[var(--el-fill-color-light)]"
+                  class="p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
                 >
-                  <code class="text-xs break-all" :title="item.class">{{ item.class }}</code>
-                  <div class="flex items-center justify-between mt-1">
+                  <code class="text-xs text-g-800 break-all block font-mono" :title="item.class">{{
+                    item.class
+                  }}</code>
+                  <div class="flex-cb mt-1">
                     <span
                       v-if="item.location"
-                      class="text-xs text-g-500 truncate"
+                      class="text-xs text-g-500 truncate max-w-[60%]"
                       :title="item.location"
                     >
                       {{ item.location }}
                     </span>
-                    <div class="flex items-center gap-4 ml-auto shrink-0">
+                    <div class="flex-c gap-2 shrink-0">
                       <span class="text-xs text-g-500">{{ formatTime(item.latest) }}</span>
-                      <span class="text-sm font-bold tabular-nums">{{ item.count }}</span>
+                      <ElTag size="small" type="danger">{{ item.count }}</ElTag>
                     </div>
                   </div>
                 </div>
               </div>
               <ElCollapse v-if="exceptions.length > 5" class="mt-2">
-                <ElCollapseItem :name="'more'" :title="`展开剩余 ${exceptions.length - 5} 条`">
-                  <div class="space-y-2">
+                <ElCollapseItem :name="'more'">
+                  <template #title>
+                    <span class="text-xs text-theme">展开剩余 {{ exceptions.length - 5 }} 条</span>
+                  </template>
+                  <div class="space-y-1.5">
                     <div
                       v-for="item in exceptions.slice(5)"
                       :key="`${item.class}-${item.location}`"
-                      class="p-2 rounded-lg hover:bg-[var(--el-fill-color-light)]"
+                      class="p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
                     >
-                      <code class="text-xs break-all" :title="item.class">{{ item.class }}</code>
-                      <div class="flex items-center justify-between mt-1">
+                      <code
+                        class="text-xs text-g-800 break-all block font-mono"
+                        :title="item.class"
+                        >{{ item.class }}</code
+                      >
+                      <div class="flex-cb mt-1">
                         <span
                           v-if="item.location"
-                          class="text-xs text-g-500 truncate"
+                          class="text-xs text-g-500 truncate max-w-[60%]"
                           :title="item.location"
                         >
                           {{ item.location }}
                         </span>
-                        <div class="flex items-center gap-4 ml-auto shrink-0">
+                        <div class="flex-c gap-2 shrink-0">
                           <span class="text-xs text-g-500">{{ formatTime(item.latest) }}</span>
-                          <span class="text-sm font-bold tabular-nums">{{ item.count }}</span>
+                          <ElTag size="small" type="danger">{{ item.count }}</ElTag>
                         </div>
                       </div>
                     </div>
@@ -375,118 +396,116 @@
               </ElCollapse>
             </template>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
     </ElRow>
 
     <!-- 慢请求 + 慢任务 + 慢外部请求 -->
-    <ElRow :gutter="16">
+    <ElRow :gutter="20">
       <ElCol :xs="24" :lg="8">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <ElIcon :size="18"><Timer /></ElIcon>
-                <span class="font-bold">慢请求</span>
-              </div>
-              <ElSelect
-                v-model="slowReqOrderBy"
-                size="small"
-                style="width: 100px"
-                @change="fetchSlowRequests"
-              >
-                <ElOption label="最慢" value="slowest" />
-                <ElOption label="次数" value="count" />
-              </ElSelect>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>慢请求</h4>
+              <p>HTTP 路由耗时</p>
             </div>
-          </template>
-          <div v-loading="slowRequestsLoading">
+            <ElSelect
+              v-model="slowReqOrderBy"
+              size="small"
+              style="width: 100px"
+              @change="fetchSlowRequests"
+            >
+              <ElOption label="最慢" value="slowest" />
+              <ElOption label="次数" value="count" />
+            </ElSelect>
+          </div>
+          <div v-loading="slowRequestsLoading" class="mt-3">
             <ElEmpty v-if="!slowRequests.length" description="暂无慢请求" :image-size="60" />
-            <ElTable v-else :data="slowRequests" size="small" stripe>
-              <ElTableColumn label="路由" min-width="200">
-                <template #default="{ row }">
-                  <code class="text-xs">{{ row.method }}</code>
-                  <span class="text-xs ml-1 break-all">{{ row.uri }}</span>
-                </template>
-              </ElTableColumn>
-              <ElTableColumn prop="count" label="次数" width="60" align="right" />
-              <ElTableColumn label="最慢" width="80" align="right">
-                <template #default="{ row }">{{ row.slowest }} ms</template>
-              </ElTableColumn>
-            </ElTable>
+            <div v-else class="space-y-1.5">
+              <div
+                v-for="item in slowRequests"
+                :key="`${item.method}-${item.uri}`"
+                class="flex-c gap-2 p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
+              >
+                <ElTag size="small" :type="methodTagType(item.method)">{{ item.method }}</ElTag>
+                <span class="flex-1 text-xs text-g-700 truncate font-mono">{{ item.uri }}</span>
+                <span class="text-xs text-g-500 shrink-0">{{ item.count }}次</span>
+                <ElTag size="small" type="warning">{{ item.slowest }}ms</ElTag>
+              </div>
+            </div>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
       <ElCol :xs="24" :lg="8">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <ElIcon :size="18"><Briefcase /></ElIcon>
-                <span class="font-bold">慢任务</span>
-              </div>
-              <ElSelect
-                v-model="slowJobOrderBy"
-                size="small"
-                style="width: 100px"
-                @change="fetchSlowJobs"
-              >
-                <ElOption label="最慢" value="slowest" />
-                <ElOption label="次数" value="count" />
-              </ElSelect>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>慢任务</h4>
+              <p>队列任务耗时</p>
             </div>
-          </template>
-          <div v-loading="slowJobsLoading">
+            <ElSelect
+              v-model="slowJobOrderBy"
+              size="small"
+              style="width: 100px"
+              @change="fetchSlowJobs"
+            >
+              <ElOption label="最慢" value="slowest" />
+              <ElOption label="次数" value="count" />
+            </ElSelect>
+          </div>
+          <div v-loading="slowJobsLoading" class="mt-3">
             <ElEmpty v-if="!slowJobs.length" description="暂无慢任务" :image-size="60" />
-            <ElTable v-else :data="slowJobs" size="small" stripe>
-              <ElTableColumn prop="job" label="任务" min-width="200" show-overflow-tooltip />
-              <ElTableColumn prop="count" label="次数" width="60" align="right" />
-              <ElTableColumn label="最慢" width="80" align="right">
-                <template #default="{ row }">{{ row.slowest }} ms</template>
-              </ElTableColumn>
-            </ElTable>
+            <div v-else class="space-y-1.5">
+              <div
+                v-for="item in slowJobs"
+                :key="item.job"
+                class="flex-c gap-2 p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
+              >
+                <span class="flex-1 text-xs text-g-700 truncate font-mono">{{ item.job }}</span>
+                <span class="text-xs text-g-500 shrink-0">{{ item.count }}次</span>
+                <ElTag size="small" type="warning">{{ item.slowest }}ms</ElTag>
+              </div>
+            </div>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
       <ElCol :xs="24" :lg="8">
-        <ElCard shadow="never" class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <ElIcon :size="18"><Link /></ElIcon>
-                <span class="font-bold">慢外部请求</span>
-              </div>
-              <ElSelect
-                v-model="slowOutgoingOrderBy"
-                size="small"
-                style="width: 100px"
-                @change="fetchSlowOutgoingRequests"
-              >
-                <ElOption label="最慢" value="slowest" />
-                <ElOption label="次数" value="count" />
-              </ElSelect>
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>慢外部请求</h4>
+              <p> outgoing HTTP 耗时</p>
             </div>
-          </template>
-          <div v-loading="slowOutgoingLoading">
+            <ElSelect
+              v-model="slowOutgoingOrderBy"
+              size="small"
+              style="width: 100px"
+              @change="fetchSlowOutgoingRequests"
+            >
+              <ElOption label="最慢" value="slowest" />
+              <ElOption label="次数" value="count" />
+            </ElSelect>
+          </div>
+          <div v-loading="slowOutgoingLoading" class="mt-3">
             <ElEmpty
               v-if="!slowOutgoingRequests.length"
               description="暂无慢外部请求"
               :image-size="60"
             />
-            <ElTable v-else :data="slowOutgoingRequests" size="small" stripe>
-              <ElTableColumn label="地址" min-width="200">
-                <template #default="{ row }">
-                  <code class="text-xs">{{ row.method }}</code>
-                  <span class="text-xs ml-1 break-all">{{ row.uri }}</span>
-                </template>
-              </ElTableColumn>
-              <ElTableColumn prop="count" label="次数" width="60" align="right" />
-              <ElTableColumn label="最慢" width="80" align="right">
-                <template #default="{ row }">{{ row.slowest }} ms</template>
-              </ElTableColumn>
-            </ElTable>
+            <div v-else class="space-y-1.5">
+              <div
+                v-for="item in slowOutgoingRequests"
+                :key="`${item.method}-${item.uri}`"
+                class="flex-c gap-2 p-2.5 rounded-custom-xs hover:bg-hover-color tad-200"
+              >
+                <ElTag size="small" :type="methodTagType(item.method)">{{ item.method }}</ElTag>
+                <span class="flex-1 text-xs text-g-700 truncate font-mono">{{ item.uri }}</span>
+                <span class="text-xs text-g-500 shrink-0">{{ item.count }}次</span>
+                <ElTag size="small" type="warning">{{ item.slowest }}ms</ElTag>
+              </div>
+            </div>
           </div>
-        </ElCard>
+        </div>
       </ElCol>
     </ElRow>
   </div>
@@ -515,18 +534,7 @@
     type PulseSlowRequestItem,
     type PulseUsageItem
   } from '@/api/monitor'
-  import {
-    Briefcase,
-    Coin,
-    Link,
-    List,
-    Monitor,
-    Promotion,
-    Refresh,
-    Timer,
-    TrendCharts,
-    WarnTriangleFilled
-  } from '@element-plus/icons-vue'
+  import { Refresh } from '@element-plus/icons-vue'
 
   defineOptions({ name: 'PulseMonitor' })
 
@@ -628,6 +636,37 @@
   function extractLabels(series: PulseSeriesPoint[]): string[] {
     return series.map((p) => p.time)
   }
+
+  /** HTTP 方法对应的 Tag 类型 */
+  function methodTagType(method: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' {
+    switch (method.toUpperCase()) {
+      case 'GET':
+        return 'success'
+      case 'POST':
+        return 'warning'
+      case 'PUT':
+      case 'PATCH':
+        return 'primary'
+      case 'DELETE':
+        return 'danger'
+      default:
+        return 'info'
+    }
+  }
+
+  /** 缓存 key 表格列配置 */
+  const cacheColumns = [
+    { prop: 'key', label: 'Key', minWidth: 200, showOverflowTooltip: true },
+    { prop: 'hits', label: '命中', width: 80, align: 'right' as const },
+    { prop: 'misses', label: '未命中', width: 80, align: 'right' as const },
+    {
+      prop: 'hitRate',
+      label: '命中率',
+      width: 80,
+      align: 'right' as const,
+      formatter: (row: any) => `${keyHitRate(row)}%`
+    }
+  ]
 
   // ===== API 请求 =====
 
@@ -958,11 +997,14 @@
     border-radius: 1px;
   }
 
-  :deep(.el-card__header) {
-    padding: 10px 16px;
+  .slow-query-collapse :deep(.el-collapse-item__header) {
+    height: 32px;
+    font-size: 12px;
+    line-height: 32px;
+    border-bottom: none;
   }
 
-  :deep(.el-card__body) {
-    padding: 16px;
+  .slow-query-collapse :deep(.el-collapse-item__wrap) {
+    border-bottom: none;
   }
 </style>
