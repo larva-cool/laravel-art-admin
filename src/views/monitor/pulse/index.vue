@@ -250,20 +250,56 @@
           </template>
           <div v-loading="slowQueriesLoading">
             <ElEmpty v-if="!slowQueries.length" description="暂无慢查询" :image-size="60" />
-            <ElTable v-else :data="slowQueries" size="small" stripe>
-              <ElTableColumn label="查询语句" min-width="300">
-                <template #default="{ row }">
-                  <code class="text-xs text-g-700 dark:text-g-300 break-all">{{ row.sql }}</code>
-                  <div v-if="row.location" class="text-xs text-g-500 mt-1">{{ row.location }}</div>
-                </template>
-              </ElTableColumn>
-              <ElTableColumn prop="count" label="次数" width="80" align="right" />
-              <ElTableColumn label="最慢" width="100" align="right">
-                <template #default="{ row }">
-                  <strong>{{ row.slowest || '<1' }}</strong> ms
-                </template>
-              </ElTableColumn>
-            </ElTable>
+            <template v-else>
+              <div class="space-y-2">
+                <div
+                  v-for="query in slowQueries.slice(0, 5)"
+                  :key="`${query.sql}-${query.location}`"
+                  class="rounded-md bg-gray-700 dark:bg-gray-800 p-3"
+                >
+                  <code class="text-xs text-gray-100 break-all">{{ query.sql }}</code>
+                  <div class="flex items-center justify-between mt-2">
+                    <span v-if="query.location" class="text-xs text-gray-400">{{
+                      query.location
+                    }}</span>
+                    <div class="flex items-center gap-4 ml-auto">
+                      <span class="text-xs text-gray-300"
+                        >次数: <strong>{{ query.count }}</strong></span
+                      >
+                      <span class="text-xs text-gray-300"
+                        >最慢: <strong>{{ query.slowest || '<1' }}</strong> ms</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ElCollapse v-if="slowQueries.length > 5" class="mt-2">
+                <ElCollapseItem :name="'more'" :title="`展开剩余 ${slowQueries.length - 5} 条`">
+                  <div class="space-y-2">
+                    <div
+                      v-for="query in slowQueries.slice(5)"
+                      :key="`${query.sql}-${query.location}`"
+                      class="rounded-md bg-gray-700 dark:bg-gray-800 p-3"
+                    >
+                      <code class="text-xs text-gray-100 break-all">{{ query.sql }}</code>
+                      <div class="flex items-center justify-between mt-2">
+                        <span v-if="query.location" class="text-xs text-gray-400">{{
+                          query.location
+                        }}</span>
+                        <div class="flex items-center gap-4 ml-auto">
+                          <span class="text-xs text-gray-300"
+                            >次数: <strong>{{ query.count }}</strong></span
+                          >
+                          <span class="text-xs text-gray-300"
+                            >最慢: <strong>{{ query.slowest || '<1' }}</strong> ms</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ElCollapseItem>
+              </ElCollapse>
+            </template>
           </div>
         </ElCard>
       </ElCol>
@@ -288,24 +324,56 @@
           </template>
           <div v-loading="exceptionsLoading">
             <ElEmpty v-if="!exceptions.length" description="暂无异常" :image-size="60" />
-            <ElTable v-else :data="exceptions" size="small" stripe>
-              <ElTableColumn label="异常类型" min-width="200">
-                <template #default="{ row }">
-                  <code class="text-xs break-all" :title="row.class">{{ row.class }}</code>
-                  <div
-                    v-if="row.location"
-                    class="text-xs text-g-500 mt-1 truncate"
-                    :title="row.location"
-                  >
-                    {{ row.location }}
+            <template v-else>
+              <div class="space-y-2">
+                <div
+                  v-for="item in exceptions.slice(0, 5)"
+                  :key="`${item.class}-${item.location}`"
+                  class="p-2 rounded-lg hover:bg-[var(--el-fill-color-light)]"
+                >
+                  <code class="text-xs break-all" :title="item.class">{{ item.class }}</code>
+                  <div class="flex items-center justify-between mt-1">
+                    <span
+                      v-if="item.location"
+                      class="text-xs text-g-500 truncate"
+                      :title="item.location"
+                    >
+                      {{ item.location }}
+                    </span>
+                    <div class="flex items-center gap-4 ml-auto shrink-0">
+                      <span class="text-xs text-g-500">{{ formatTime(item.latest) }}</span>
+                      <span class="text-sm font-bold tabular-nums">{{ item.count }}</span>
+                    </div>
                   </div>
-                </template>
-              </ElTableColumn>
-              <ElTableColumn prop="latest" label="最近" width="120" align="right">
-                <template #default="{ row }">{{ formatTime(row.latest) }}</template>
-              </ElTableColumn>
-              <ElTableColumn prop="count" label="次数" width="80" align="right" />
-            </ElTable>
+                </div>
+              </div>
+              <ElCollapse v-if="exceptions.length > 5" class="mt-2">
+                <ElCollapseItem :name="'more'" :title="`展开剩余 ${exceptions.length - 5} 条`">
+                  <div class="space-y-2">
+                    <div
+                      v-for="item in exceptions.slice(5)"
+                      :key="`${item.class}-${item.location}`"
+                      class="p-2 rounded-lg hover:bg-[var(--el-fill-color-light)]"
+                    >
+                      <code class="text-xs break-all" :title="item.class">{{ item.class }}</code>
+                      <div class="flex items-center justify-between mt-1">
+                        <span
+                          v-if="item.location"
+                          class="text-xs text-g-500 truncate"
+                          :title="item.location"
+                        >
+                          {{ item.location }}
+                        </span>
+                        <div class="flex items-center gap-4 ml-auto shrink-0">
+                          <span class="text-xs text-g-500">{{ formatTime(item.latest) }}</span>
+                          <span class="text-sm font-bold tabular-nums">{{ item.count }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ElCollapseItem>
+              </ElCollapse>
+            </template>
           </div>
         </ElCard>
       </ElCol>
@@ -673,16 +741,21 @@
     }
   }
 
-  /** 拉取全部数据（分组串行，避免并发请求导致数据库缓存死锁） */
+  /** 拉取全部数据 */
   async function fetchAll() {
     loading.value = isFirstLoad.value
 
-    // 第一组：服务器 + 队列 + 缓存
-    await Promise.all([fetchServers(), fetchQueues(), fetchCache()])
-    // 第二组：异常 + 慢查询 + 慢请求
-    await Promise.all([fetchExceptions(), fetchSlowQueries(), fetchSlowRequests()])
-    // 第三组：慢任务 + 慢外部请求 + 用户使用量
-    await Promise.all([fetchSlowJobs(), fetchSlowOutgoingRequests(), fetchUsage()])
+    await Promise.all([
+      fetchServers(),
+      fetchQueues(),
+      fetchCache(),
+      fetchExceptions(),
+      fetchSlowQueries(),
+      fetchSlowRequests(),
+      fetchSlowJobs(),
+      fetchSlowOutgoingRequests(),
+      fetchUsage()
+    ])
 
     if (isFirstLoad.value) {
       isFirstLoad.value = false
