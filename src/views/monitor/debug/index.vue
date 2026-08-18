@@ -1,13 +1,13 @@
 <template>
   <div class="debug-panel">
     <!-- 顶部工具栏 -->
-    <div class="art-card p-4 mb-4 flex-cb flex-wrap gap-3">
-      <div class="flex-c gap-2">
+    <div class="art-card p-4 mb-4 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-2">
         <ArtSvgIcon icon="ri:bug-line" class="text-lg text-theme" />
         <h3 class="text-base font-medium text-g-900">调试面板</h3>
         <ElTag size="small" :type="statusTagType">{{ statusLabel }}</ElTag>
       </div>
-      <div class="flex-c gap-2">
+      <div class="flex items-center gap-2">
         <ElInput
           v-model="tagFilter"
           placeholder="按标签筛选，如 admin:1"
@@ -667,28 +667,6 @@
 <style scoped>
   @reference '@/assets/styles/core/tailwind.css';
 
-  @layer utilities {
-    .flex-c {
-      @apply flex items-center;
-    }
-
-    .flex-cb {
-      @apply flex items-center justify-between;
-    }
-
-    .tad-200 {
-      transition: all 0.2s ease;
-    }
-
-    .rounded-custom-xs {
-      border-radius: calc(var(--custom-radius) / 2);
-    }
-
-    .border-b-d {
-      border-bottom: 1px solid var(--default-border);
-    }
-  }
-
   .debug-panel {
     padding: 4px;
   }
@@ -700,7 +678,11 @@
   }
 
   .related-head {
-    @apply flex-c px-3 py-2 border-b-d text-xs font-medium text-g-500;
+    @apply px-3 py-2 text-xs font-medium text-g-500;
+
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--default-border);
 
     .related-summary {
       @apply ml-2 font-normal text-g-400;
@@ -708,7 +690,12 @@
   }
 
   .related-row {
-    @apply flex-c gap-3 px-3 py-2 border-b-d tad-200;
+    @apply gap-3 px-3 py-2;
+
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--default-border);
+    transition: all 0.2s ease;
 
     &:last-child {
       border-bottom: 0;
