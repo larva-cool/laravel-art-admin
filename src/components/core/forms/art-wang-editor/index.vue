@@ -18,13 +18,14 @@
 </template>
 
 <script setup lang="ts">
-  import '@wangeditor/editor/dist/css/style.css'
-  import { onBeforeUnmount, onMounted, shallowRef, computed } from 'vue'
-  import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
   import { useUserStore } from '@/store/modules/user'
-  import EmojiText from '@/utils/ui/emojo'
-  import { IDomEditor, IToolbarConfig, IEditorConfig } from '@wangeditor/editor'
   import request from '@/utils/http'
+  import EmojiText from '@/utils/ui/emojo'
+  import { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
+  import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
+  import '@wangeditor/editor/dist/css/style.css'
+  import { ElMessage } from 'element-plus'
+  import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue'
 
   defineOptions({ name: 'ArtWangEditor' })
 
@@ -137,7 +138,10 @@
 
   // 自定义上传
   if (props.uploadConfig?.isCustomUpload && props.uploadConfig?.server && editorConfig.MENU_CONF) {
-    editorConfig.MENU_CONF.uploadImage.customUpload = async (file: File, insertFn: InsertFnType) => {
+    editorConfig.MENU_CONF.uploadImage.customUpload = async (
+      file: File,
+      insertFn: InsertFnType
+    ) => {
       try {
         const formData = new FormData()
         formData.append(mergedUploadConfig.value.fieldName, file)
@@ -146,7 +150,7 @@
           url: props.uploadConfig?.server,
           data: formData,
           headers: {
-            'Content-Type':'multipart/form-data',
+            'Content-Type': 'multipart/form-data',
             Authorization: userStore.accessToken
           }
         })

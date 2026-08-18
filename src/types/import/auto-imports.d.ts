@@ -7,7 +7,7 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue').EffectScope
-  const ElButton: typeof import('element-plus/es')['ElButton']
+  const ElButton: (typeof import('element-plus/es'))['ElButton']
   const ElLoading: typeof import('element-plus/es').ElLoading
   const ElMessage: typeof import('element-plus/es').ElMessage
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
@@ -102,8 +102,8 @@ declare global {
   const refThrottled: typeof import('@vueuse/core').refThrottled
   const refWithControl: typeof import('@vueuse/core').refWithControl
   const resolveComponent: typeof import('vue').resolveComponent
-  const resolveRef: typeof import('@vueuse/core')['resolveRef']
-  const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
+  const resolveRef: (typeof import('@vueuse/core'))['resolveRef']
+  const resolveUnref: (typeof import('@vueuse/core'))['resolveUnref']
   const setActivePinia: typeof import('pinia').setActivePinia
   const setMapStoreSuffix: typeof import('pinia').setMapStoreSuffix
   const shallowReactive: typeof import('vue').shallowReactive
@@ -319,6 +319,24 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
+  export type {
+    Component,
+    Slot,
+    Slots,
+    ComponentPublicInstance,
+    ComputedRef,
+    DirectiveBinding,
+    ExtractDefaultPropTypes,
+    ExtractPropTypes,
+    ExtractPublicPropTypes,
+    InjectionKey,
+    PropType,
+    Ref,
+    ShallowRef,
+    MaybeRef,
+    MaybeRefOrGetter,
+    VNode,
+    WritableComputedRef
+  } from 'vue'
   import('vue')
 }

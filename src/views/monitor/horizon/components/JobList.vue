@@ -38,14 +38,12 @@
             {{ formatTime(job.failed_at || job.completed_at || job.created_at || '') }}
           </div>
           <div v-if="type === 'failed'" class="w-12 text-right">
-            <ElButton size="small" type="primary" text @click.stop="handleRetry(String(job.id))"
-              >重试</ElButton
-            >
+            <ElButton type="primary" text @click.stop="handleRetry(String(job.id))">重试</ElButton>
           </div>
         </div>
         <!-- 加载更多 -->
         <div v-if="hasMore" class="mt-4 text-center">
-          <ElButton size="small" text :loading="loading" @click="loadMore">加载更多</ElButton>
+          <ElButton text :loading="loading" @click="loadMore">加载更多</ElButton>
         </div>
         <div v-else-if="jobs.length" class="mt-4 text-center text-xs text-g-400">
           共 {{ total }} 条

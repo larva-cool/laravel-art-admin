@@ -35,7 +35,7 @@
 
     <div class="flex flex-col md:flex-row items-start gap-4">
       <!-- 左侧：类型导航 + 监控标签 -->
-      <div class="w-full md:w-44 shrink-0">
+      <div class="w-full md:w-66 shrink-0">
         <div class="art-card p-4 mb-4">
           <div class="text-xs uppercase font-bold text-g-500 mb-2">条目类型</div>
           <div class="space-y-0.5">
@@ -519,7 +519,7 @@
           </div>
 
           <!-- 请求类：请求体 / 响应体 分两组卡片（对齐 Telescope 原版） -->
-          <template v-if="requestDetailGroups.length">
+          <div v-if="requestDetailGroups.length">
             <div v-for="group in requestDetailGroups" :key="group.key" class="detail-card">
               <ElTabs v-model="group.active" class="detail-tabs">
                 <ElTabPane
@@ -535,7 +535,7 @@
                 </ElTabPane>
               </ElTabs>
             </div>
-          </template>
+          </div>
 
           <!-- 非请求类：单卡片内容 Tab -->
           <div v-else-if="detailTabs.length" class="detail-card">
@@ -554,7 +554,7 @@
 
                 <!-- SQL 展示 -->
                 <pre v-else-if="tab.mode === 'sql'" class="json-block">{{
-                  formatSql(tab.data)
+                  formatSql(tab.data as string)
                 }}</pre>
               </ElTabPane>
             </ElTabs>
@@ -572,8 +572,7 @@
 
           <!-- 同批次关联条目 -->
           <div v-if="relatedGroups.length" class="detail-card related-entries">
-            <div class="detail-card-head">同批次关联条目</div>
-            <ElTabs v-model="relatedTab">
+            <ElTabs v-model="relatedTab" class="detail-tabs">
               <ElTabPane
                 v-for="group in relatedGroups"
                 :key="group.type"
@@ -754,6 +753,7 @@
     const content = entry.content
     const groups: Array<{
       key: string
+      title: string
       active: string
       tabs: Array<{ key: string; label: string; mode: 'json' | 'text'; data: unknown }>
     }> = []
@@ -766,7 +766,7 @@
       reqTabs.push({ key: 'headers', label: 'Headers', mode: 'json', data: content.headers })
     }
     if (reqTabs.length) {
-      groups.push({ key: 'request', active: reqTabs[0].key, tabs: reqTabs })
+      groups.push({ key: 'request', title: '请求', active: reqTabs[0].key, tabs: reqTabs })
     }
 
     const resTabs: (typeof groups)[0]['tabs'] = []
@@ -785,7 +785,7 @@
       resTabs.push({ key: 'session', label: 'Session', mode: 'json', data: content.session })
     }
     if (resTabs.length) {
-      groups.push({ key: 'response', active: resTabs[0].key, tabs: resTabs })
+      groups.push({ key: 'response', title: '响应', active: resTabs[0].key, tabs: resTabs })
     }
     return groups
   })
@@ -1372,6 +1372,16 @@
     :deep(.el-tabs__content) {
       padding: 12px 16px 16px;
     }
+
+    :deep(.el-tab-pane) {
+      padding: 0 10px;
+    }
+
+    &.detail-tabs--no-top-padding {
+      :deep(.el-tabs__header) {
+        padding-top: 0;
+      }
+    }
   }
 
   .json-block {
@@ -1409,14 +1419,14 @@
     border: 0;
   }
 
-  .related-entries :deep(.el-tabs__header) {
-    margin: 0 16px;
+  .related-entries {
+    margin-top: 16px;
   }
 
   .related-entries :deep(.el-tabs__content) {
     min-height: 160px;
     max-height: 320px;
-    padding: 0 16px 16px;
+    padding: 12px 16px 16px;
     overflow-y: auto;
   }
 

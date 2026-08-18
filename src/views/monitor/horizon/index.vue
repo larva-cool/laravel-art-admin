@@ -11,7 +11,7 @@
         <span class="text-xs text-g-400">最近刷新：{{ lastRefresh }}</span>
       </div>
       <div class="flex items-center gap-2">
-        <ElButton :icon="Refresh" :loading="loading" size="small" circle @click="refreshCore" />
+        <ElButton :icon="Refresh" :loading="loading" circle @click="refreshCore" />
       </div>
     </div>
 
@@ -228,15 +228,14 @@
                 <h4>标签监控</h4>
                 <p>监控指定标签下的任务</p>
               </div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-2">
                 <ElInput
                   v-model="newTag"
                   placeholder="输入标签名称"
-                  size="small"
                   style="width: 180px"
                   @keyup.enter="addTag"
                 />
-                <ElButton size="small" type="primary" :icon="Plus" @click="addTag">添加</ElButton>
+                <ElButton type="primary" :icon="Plus" @click="addTag">添加</ElButton>
               </div>
             </div>
             <div v-loading="tagsLoading" class="mt-3">
@@ -266,23 +265,71 @@
 
         <!-- ===== Metrics: Jobs ===== -->
         <template v-else-if="activeView === 'metrics-jobs'">
-          <div v-loading="jobMetricsLoading" class="min-h-[200px]">
-            <ElEmpty v-if="!jobMetricsList.length" description="暂无任务指标" :image-size="60" />
-            <div v-else class="space-y-4">
-              <div v-for="jobId in jobMetricsList" :key="jobId" class="art-card p-5">
-                <div class="art-card-header">
-                  <div class="title">
-                    <h4>{{ simplifyName(jobId) }}</h4>
-                    <p>{{ jobId }}</p>
-                  </div>
+          <!-- 列表视图 -->
+          <div v-if="!selectedMetric" class="art-card p-5">
+            <div class="art-card-header">
+              <div class="title">
+                <h4>任务指标</h4>
+                <p>共 {{ jobMetricsList.length }} 个任务</p>
+              </div>
+            </div>
+            <div v-loading="jobMetricsLoading" class="mt-3">
+              <ElEmpty
+                v-if="!jobMetricsList.length && !jobMetricsLoading"
+                description="暂无任务指标"
+                :image-size="60"
+              />
+              <div v-else class="space-y-1.5">
+                <div
+                  v-for="jobId in jobMetricsList"
+                  :key="jobId"
+                  class="flex items-center gap-2 py-2.5 px-1 border-b-d last:border-b-0 hover:bg-hover-color transition-all duration-200 rounded-md cursor-pointer"
+                  @click="showMetricDetail('jobs', jobId)"
+                >
+                  <span class="text-sm text-g-800 truncate font-mono">{{ jobId }}</span>
+                  <ElIcon class="ml-auto text-g-400"><ArrowRight /></ElIcon>
                 </div>
-                <div class="mt-3">
-                  <MetricsChart
-                    :snapshots="jobMetricsDetail[jobId] || []"
-                    :title="jobId"
-                    type="job"
-                  />
+              </div>
+            </div>
+          </div>
+          <!-- 详情视图 -->
+          <div v-else class="space-y-4">
+            <div class="art-card p-4 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <ElButton text :icon="ArrowLeft" @click="selectedMetric = ''">返回</ElButton>
+                <span class="text-sm font-medium text-g-800">{{ selectedMetric }}</span>
+              </div>
+            </div>
+            <div v-loading="metricDetailLoading" class="art-card p-5">
+              <div class="art-card-header">
+                <div class="title">
+                  <h4>吞吐量</h4>
+                  <p>Throughput</p>
                 </div>
+              </div>
+              <div class="mt-3">
+                <ElEmpty
+                  v-if="!metricSnapshots.length && !metricDetailLoading"
+                  description="数据不足"
+                  :image-size="60"
+                />
+                <MetricsChart v-else :snapshots="metricSnapshots" metric="throughput" />
+              </div>
+            </div>
+            <div class="art-card p-5">
+              <div class="art-card-header">
+                <div class="title">
+                  <h4>运行时间</h4>
+                  <p>Runtime</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <ElEmpty
+                  v-if="!metricSnapshots.length && !metricDetailLoading"
+                  description="数据不足"
+                  :image-size="60"
+                />
+                <MetricsChart v-else :snapshots="metricSnapshots" metric="runtime" />
               </div>
             </div>
           </div>
@@ -290,23 +337,71 @@
 
         <!-- ===== Metrics: Queues ===== -->
         <template v-else-if="activeView === 'metrics-queues'">
-          <div v-loading="queueMetricsLoading" class="min-h-[200px]">
-            <ElEmpty v-if="!queueMetricsList.length" description="暂无队列指标" :image-size="60" />
-            <div v-else class="space-y-4">
-              <div v-for="queueId in queueMetricsList" :key="queueId" class="art-card p-5">
-                <div class="art-card-header">
-                  <div class="title">
-                    <h4>{{ queueId }}</h4>
-                    <p>队列吞吐量与运行时间</p>
-                  </div>
+          <!-- 列表视图 -->
+          <div v-if="!selectedMetric" class="art-card p-5">
+            <div class="art-card-header">
+              <div class="title">
+                <h4>队列指标</h4>
+                <p>共 {{ queueMetricsList.length }} 个队列</p>
+              </div>
+            </div>
+            <div v-loading="queueMetricsLoading" class="mt-3">
+              <ElEmpty
+                v-if="!queueMetricsList.length && !queueMetricsLoading"
+                description="暂无队列指标"
+                :image-size="60"
+              />
+              <div v-else class="space-y-1.5">
+                <div
+                  v-for="queueId in queueMetricsList"
+                  :key="queueId"
+                  class="flex items-center gap-2 py-2.5 px-1 border-b-d last:border-b-0 hover:bg-hover-color transition-all duration-200 rounded-md cursor-pointer"
+                  @click="showMetricDetail('queues', queueId)"
+                >
+                  <span class="text-sm text-g-800 truncate font-mono">{{ queueId }}</span>
+                  <ElIcon class="ml-auto text-g-400"><ArrowRight /></ElIcon>
                 </div>
-                <div class="mt-3">
-                  <MetricsChart
-                    :snapshots="queueMetricsDetail[queueId] || []"
-                    :title="queueId"
-                    type="queue"
-                  />
+              </div>
+            </div>
+          </div>
+          <!-- 详情视图 -->
+          <div v-else class="space-y-4">
+            <div class="art-card p-4 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <ElButton text :icon="ArrowLeft" @click="selectedMetric = ''">返回</ElButton>
+                <span class="text-sm font-medium text-g-800">{{ selectedMetric }}</span>
+              </div>
+            </div>
+            <div v-loading="metricDetailLoading" class="art-card p-5">
+              <div class="art-card-header">
+                <div class="title">
+                  <h4>吞吐量</h4>
+                  <p>Throughput</p>
                 </div>
+              </div>
+              <div class="mt-3">
+                <ElEmpty
+                  v-if="!metricSnapshots.length && !metricDetailLoading"
+                  description="数据不足"
+                  :image-size="60"
+                />
+                <MetricsChart v-else :snapshots="metricSnapshots" metric="throughput" />
+              </div>
+            </div>
+            <div class="art-card p-5">
+              <div class="art-card-header">
+                <div class="title">
+                  <h4>运行时间</h4>
+                  <p>Runtime</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <ElEmpty
+                  v-if="!metricSnapshots.length && !metricDetailLoading"
+                  description="数据不足"
+                  :image-size="60"
+                />
+                <MetricsChart v-else :snapshots="metricSnapshots" metric="runtime" />
               </div>
             </div>
           </div>
@@ -493,7 +588,7 @@
               <span class="text-xs text-g-500"
                 >失败任务（{{ batchDetail.failedJobs.length }}）</span
               >
-              <ElButton type="primary" size="small" @click="retryBatch(batchDetail.batch.id)"
+              <ElButton type="primary" @click="retryBatch(batchDetail.batch.id)"
                 >重试全部失败任务</ElButton
               >
             </div>
@@ -546,7 +641,7 @@
     type HorizonBatchDetail,
     type HorizonJob
   } from '@/api/queue'
-  import { Refresh, Plus, Delete } from '@element-plus/icons-vue'
+  import { Refresh, Plus, Delete, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
   import { ElMessage } from 'element-plus'
   import MetricsChart from './components/MetricsChart.vue'
   import JobList from './components/JobList.vue'
@@ -580,6 +675,7 @@
 
   function switchView(key: string) {
     activeView.value = key
+    selectedMetric.value = ''
     if (key === 'metrics-jobs' && !jobMetricsList.value.length) fetchJobMetrics()
     if (key === 'metrics-queues' && !queueMetricsList.value.length) fetchQueueMetrics()
     if (key === 'batches' && !batches.value.length) fetchBatches()
@@ -600,11 +696,12 @@
 
   // ===== 指标 =====
   const jobMetricsList = ref<string[]>([])
-  const jobMetricsDetail = ref<Record<string, HorizonMetricSnapshot[]>>({})
   const jobMetricsLoading = ref(false)
   const queueMetricsList = ref<string[]>([])
-  const queueMetricsDetail = ref<Record<string, HorizonMetricSnapshot[]>>({})
   const queueMetricsLoading = ref(false)
+  const selectedMetric = ref('')
+  const metricSnapshots = ref<HorizonMetricSnapshot[]>([])
+  const metricDetailLoading = ref(false)
 
   // ===== 批处理 =====
   const batches = ref<HorizonBatch[]>([])
@@ -687,12 +784,6 @@
       default:
         return 'info'
     }
-  }
-
-  function simplifyName(name: string): string {
-    if (!name) return '—'
-    const parts = name.split('\\')
-    return parts[parts.length - 1]
   }
 
   function humanTime(seconds: number): string {
@@ -795,16 +886,7 @@
   async function fetchJobMetrics() {
     jobMetricsLoading.value = true
     try {
-      const list = await fetchHorizonJobMetrics()
-      jobMetricsList.value = list
-      const results = await Promise.all(
-        list.map(async (id) => ({ id, snapshots: await fetchHorizonJobMetricsDetail(id) }))
-      )
-      const detailMap: Record<string, HorizonMetricSnapshot[]> = {}
-      results.forEach(({ id, snapshots }) => {
-        detailMap[id] = snapshots
-      })
-      jobMetricsDetail.value = detailMap
+      jobMetricsList.value = await fetchHorizonJobMetrics()
     } finally {
       jobMetricsLoading.value = false
     }
@@ -813,18 +895,24 @@
   async function fetchQueueMetrics() {
     queueMetricsLoading.value = true
     try {
-      const list = await fetchHorizonQueueMetrics()
-      queueMetricsList.value = list
-      const results = await Promise.all(
-        list.map(async (id) => ({ id, snapshots: await fetchHorizonQueueMetricsDetail(id) }))
-      )
-      const detailMap: Record<string, HorizonMetricSnapshot[]> = {}
-      results.forEach(({ id, snapshots }) => {
-        detailMap[id] = snapshots
-      })
-      queueMetricsDetail.value = detailMap
+      queueMetricsList.value = await fetchHorizonQueueMetrics()
     } finally {
       queueMetricsLoading.value = false
+    }
+  }
+
+  async function showMetricDetail(type: 'jobs' | 'queues', slug: string) {
+    selectedMetric.value = slug
+    metricDetailLoading.value = true
+    metricSnapshots.value = []
+    try {
+      if (type === 'jobs') {
+        metricSnapshots.value = await fetchHorizonJobMetricsDetail(slug)
+      } else {
+        metricSnapshots.value = await fetchHorizonQueueMetricsDetail(slug)
+      }
+    } finally {
+      metricDetailLoading.value = false
     }
   }
 

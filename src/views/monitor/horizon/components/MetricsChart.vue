@@ -12,8 +12,7 @@
 
   const props = defineProps<{
     snapshots: HorizonMetricSnapshot[]
-    title: string
-    type: 'job' | 'queue'
+    metric: 'throughput' | 'runtime'
   }>()
 
   const chartRef = ref<HTMLElement>()
@@ -31,27 +30,19 @@
     return safeHex(getCssVar('--el-color-primary'))
   }
 
-  function secondaryColor(): string {
-    return safeHex(getCssVar('--el-color-success'))
-  }
-
   function buildOption(): EChartsOption {
     const primary = themeColor()
-    const secondary = secondaryColor()
     const isDarkMode = isDark.value
     const textColor = isDarkMode ? '#aaa' : '#666'
     const splitLineColor = isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'
 
     const labels = props.snapshots.map((s) => s.time)
-    const runtimes = props.snapshots.map((s) => s.runtime)
-    const throughputs = props.snapshots.map((s) => s.throughput)
+    const values = props.snapshots.map((s) =>
+      props.metric === 'throughput' ? s.throughput : s.runtime
+    )
+    const metricLabel = props.metric === 'throughput' ? '吞吐量' : '运行时间'
 
     return {
-      title: {
-        text: props.title,
-        left: 'center',
-        textStyle: { fontSize: 13, fontWeight: 500, color: textColor }
-      },
       tooltip: {
         trigger: 'axis',
         backgroundColor: isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)',
@@ -59,42 +50,27 @@
         borderWidth: 1,
         textStyle: { color: isDarkMode ? '#fff' : '#333' }
       },
-      legend: {
-        data: ['运行时间', '吞吐量'],
-        bottom: 0,
-        textStyle: { color: textColor }
-      },
-      grid: { left: 50, right: 50, top: 40, bottom: 30 },
+      grid: { left: 50, right: 20, top: 20, bottom: 30 },
       xAxis: {
         type: 'category',
         data: labels,
         axisLabel: { color: textColor, fontSize: 10 },
         axisLine: { lineStyle: { color: splitLineColor } }
       },
-      yAxis: [
-        {
-          type: 'value',
-          name: '秒',
-          nameTextStyle: { color: textColor, fontSize: 10 },
-          axisLabel: { color: textColor, fontSize: 10 },
-          splitLine: { lineStyle: { color: splitLineColor } }
-        },
-        {
-          type: 'value',
-          name: '吞吐',
-          nameTextStyle: { color: textColor, fontSize: 10 },
-          axisLabel: { color: textColor, fontSize: 10 },
-          splitLine: { show: false }
-        }
-      ],
+      yAxis: {
+        type: 'value',
+        name: metricLabel,
+        nameTextStyle: { color: textColor, fontSize: 10 },
+        axisLabel: { color: textColor, fontSize: 10 },
+        splitLine: { lineStyle: { color: splitLineColor } }
+      },
       series: [
         {
-          name: '运行时间',
+          name: metricLabel,
           type: 'line',
           smooth: true,
           symbol: 'none',
-          data: runtimes,
-          itemStyle: { color: primary },
+          data: values,
           lineStyle: { width: 2, color: primary },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -102,14 +78,6 @@
               { offset: 1, color: primary + '00' }
             ])
           }
-        },
-        {
-          name: '吞吐量',
-          type: 'bar',
-          yAxisIndex: 1,
-          data: throughputs,
-          itemStyle: { color: secondary, opacity: 0.5 },
-          barWidth: '60%'
         }
       ]
     }
