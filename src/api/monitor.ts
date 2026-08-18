@@ -67,6 +67,38 @@ export interface PulseQueuesResponse {
   config: PulseRecorderConfig
 }
 
+/** Reverb WebSocket 连接统计 */
+export interface PulseReverbConnectionsApp {
+  app_id: string
+  current: number | null
+  peak: number
+  avg: PulseSeriesPoint[]
+  max: PulseSeriesPoint[]
+}
+
+/** Reverb 连接响应 */
+export interface PulseReverbConnectionsResponse {
+  period: PulsePeriod
+  apps: PulseReverbConnectionsApp[]
+  config: PulseRecorderConfig
+}
+
+/** Reverb 消息吞吐 */
+export interface PulseReverbMessagesApp {
+  app_id: string
+  sent_total: number
+  received_total: number
+  sent: PulseSeriesPoint[]
+  received: PulseSeriesPoint[]
+}
+
+/** Reverb 消息响应 */
+export interface PulseReverbMessagesResponse {
+  period: PulsePeriod
+  apps: PulseReverbMessagesApp[]
+  config: PulseRecorderConfig
+}
+
 /** 缓存命中率响应 */
 export interface PulseCacheResponse {
   period: PulsePeriod
@@ -200,6 +232,22 @@ export function fetchPulseServers(params?: PulseParams) {
 /** 队列吞吐 */
 export function fetchPulseQueues(params?: PulseParams) {
   return request.get<PulseQueuesResponse>({ url: '/admin/monitor/queues', params })
+}
+
+/** Reverb WebSocket 连接数 */
+export function fetchPulseReverbConnections(params?: PulseParams) {
+  return request.get<PulseReverbConnectionsResponse>({
+    url: '/admin/monitor/reverb/connections',
+    params
+  })
+}
+
+/** Reverb 消息吞吐 */
+export function fetchPulseReverbMessages(params?: PulseParams) {
+  return request.get<PulseReverbMessagesResponse>({
+    url: '/admin/monitor/reverb/messages',
+    params
+  })
 }
 
 /** 缓存命中率 */

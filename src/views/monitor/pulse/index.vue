@@ -105,6 +105,112 @@
       </div>
     </div>
 
+    <!-- Reverb 实时状态 -->
+    <ElRow :gutter="20" class="mb-4">
+      <!-- WebSocket 连接 -->
+      <ElCol :xs="24" :md="12">
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>WebSocket 连接</h4>
+              <p>实时连接数统计</p>
+            </div>
+            <div class="flex-c gap-2.5 text-xs text-g-500">
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: var(--color-primary)" />平均</span
+              >
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: var(--color-warning)" />峰值</span
+              >
+            </div>
+          </div>
+          <div v-loading="reverbConnectionsLoading" class="mt-3">
+            <ElEmpty v-if="!reverbConnections.length" description="暂无连接数据" :image-size="60" />
+            <div v-else class="space-y-3">
+              <div v-for="app in reverbConnections" :key="app.app_id">
+                <div class="flex-cb mb-1.5">
+                  <span class="text-sm font-medium text-g-700">{{ app.app_id }}</span>
+                  <span class="text-xs text-g-500 tabular-nums">
+                    当前 <strong class="text-g-800">{{ Math.round(app.current ?? 0) }}</strong>
+                    <span class="mx-1">·</span>
+                    峰值 <strong class="text-g-800">{{ Math.round(app.peak) }}</strong>
+                  </span>
+                </div>
+                <div class="h-14 rounded-custom-xs bg-(--art-gray-100) p-1">
+                  <PulseMultiLine
+                    :series="[
+                      {
+                        name: '平均',
+                        data: extractValues(app.avg),
+                        color: 'var(--color-primary)'
+                      },
+                      {
+                        name: '峰值',
+                        data: extractValues(app.max),
+                        color: 'var(--color-warning)'
+                      }
+                    ]"
+                    :labels="extractLabels(app.avg)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ElCol>
+      <!-- 消息吞吐 -->
+      <ElCol :xs="24" :md="12">
+        <div class="art-card p-5 h-full">
+          <div class="art-card-header">
+            <div class="title">
+              <h4>消息吞吐</h4>
+              <p>WebSocket 消息统计</p>
+            </div>
+            <div class="flex-c gap-2.5 text-xs text-g-500">
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: var(--color-primary)" />发送</span
+              >
+              <span class="flex-c gap-1"
+                ><i class="legend-dot" style="background: var(--color-success)" />接收</span
+              >
+            </div>
+          </div>
+          <div v-loading="reverbMessagesLoading" class="mt-3">
+            <ElEmpty v-if="!reverbMessages.length" description="暂无消息数据" :image-size="60" />
+            <div v-else class="space-y-3">
+              <div v-for="app in reverbMessages" :key="app.app_id">
+                <div class="flex-cb mb-1.5">
+                  <span class="text-sm font-medium text-g-700">{{ app.app_id }}</span>
+                  <span class="text-xs text-g-500 tabular-nums">
+                    发 <strong class="text-g-800">{{ formatNumber(app.sent_total) }}</strong>
+                    <span class="mx-1">·</span>
+                    收 <strong class="text-g-800">{{ formatNumber(app.received_total) }}</strong>
+                  </span>
+                </div>
+                <div class="h-14 rounded-custom-xs bg-(--art-gray-100) p-1">
+                  <PulseMultiLine
+                    :series="[
+                      {
+                        name: '发送',
+                        data: extractValues(app.sent),
+                        color: 'var(--color-primary)'
+                      },
+                      {
+                        name: '接收',
+                        data: extractValues(app.received),
+                        color: 'var(--color-success)'
+                      }
+                    ]"
+                    :labels="extractLabels(app.sent)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ElCol>
+    </ElRow>
+
     <!-- 第二行：使用量 + 队列 + 缓存 -->
     <ElRow :gutter="20" class="mb-4">
       <!-- 用户使用量 -->
@@ -478,6 +584,8 @@
     fetchPulseCache,
     fetchPulseExceptions,
     fetchPulseQueues,
+    fetchPulseReverbConnections,
+    fetchPulseReverbMessages,
     fetchPulseServers,
     fetchPulseSlowJobs,
     fetchPulseSlowOutgoingRequests,
@@ -488,6 +596,8 @@
     type PulseExceptionItem,
     type PulsePeriod,
     type PulseQueue,
+    type PulseReverbConnectionsApp,
+    type PulseReverbMessagesApp,
     type PulseSeriesPoint,
     type PulseServer,
     type PulseSlowJobItem,
@@ -508,6 +618,8 @@
   // ----- 数据 -----
   const servers = ref<PulseServer[]>([])
   const queues = ref<PulseQueue[]>([])
+  const reverbConnections = ref<PulseReverbConnectionsApp[]>([])
+  const reverbMessages = ref<PulseReverbMessagesApp[]>([])
   const cache = ref<PulseCacheResponse['all'] & { keys: any[] }>({ hits: 0, misses: 0, keys: [] })
   const exceptions = ref<PulseExceptionItem[]>([])
   const slowQueries = ref<PulseSlowQueryItem[]>([])
@@ -527,6 +639,8 @@
   // ----- 独立 loading -----
   const serversLoading = ref(false)
   const queuesLoading = ref(false)
+  const reverbConnectionsLoading = ref(false)
+  const reverbMessagesLoading = ref(false)
   const cacheLoading = ref(false)
   const exceptionsLoading = ref(false)
   const slowQueriesLoading = ref(false)
@@ -660,6 +774,26 @@
     }
   }
 
+  async function fetchReverbConnections() {
+    startLoading(reverbConnectionsLoading)
+    try {
+      const res = await fetchPulseReverbConnections({ period: period.value })
+      reverbConnections.value = res.apps
+    } finally {
+      stopLoading(reverbConnectionsLoading)
+    }
+  }
+
+  async function fetchReverbMessages() {
+    startLoading(reverbMessagesLoading)
+    try {
+      const res = await fetchPulseReverbMessages({ period: period.value })
+      reverbMessages.value = res.apps
+    } finally {
+      stopLoading(reverbMessagesLoading)
+    }
+  }
+
   async function fetchCache() {
     startLoading(cacheLoading)
     try {
@@ -747,6 +881,8 @@
     Promise.all([
       fetchServers(),
       fetchQueues(),
+      fetchReverbConnections(),
+      fetchReverbMessages(),
       fetchCache(),
       fetchExceptions(),
       fetchSlowQueries(),
@@ -773,6 +909,10 @@
     startPoll(fetchServers, 5000)
     // 队列吞吐：5s
     startPoll(fetchQueues, 5000)
+    // Reverb 连接：5s
+    startPoll(fetchReverbConnections, 5000)
+    // Reverb 消息：5s
+    startPoll(fetchReverbMessages, 5000)
     // 缓存命中：5s
     startPoll(fetchCache, 5000)
     // 异常统计：10s（变化频率较低）
