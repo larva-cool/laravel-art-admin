@@ -33,9 +33,9 @@
       </div>
     </div>
 
-    <ElRow :gutter="20">
+    <div class="flex flex-col md:flex-row items-start gap-4">
       <!-- 左侧：类型导航 + 监控标签 -->
-      <ElCol :xs="24" :md="6" :lg="5">
+      <div class="w-full md:w-44 shrink-0">
         <div class="art-card p-4 mb-4">
           <div class="text-xs uppercase font-bold text-g-500 mb-2">条目类型</div>
           <div class="space-y-0.5">
@@ -57,14 +57,14 @@
         </div>
 
         <div class="art-card p-4">
-          <div class="art-card-header">
-            <div class="title">
-              <h4>监控标签</h4>
-              <p>命中标签的条目将被强制记录</p>
-            </div>
+          <div
+            class="text-xs uppercase font-bold text-g-500 mb-2"
+            title="命中标签的条目将被强制记录"
+          >
+            监控标签
           </div>
-          <div v-loading="tagsLoading" class="mt-3">
-            <div v-auth="'debug.manage'" class="flex-c gap-2 mb-3">
+          <div v-loading="tagsLoading">
+            <div v-auth="'debug.manage'" class="flex-c gap-1.5 mb-3">
               <ElInput
                 v-model="newTag"
                 placeholder="输入标签"
@@ -73,8 +73,8 @@
               />
               <ElButton size="small" type="primary" @click="handleMonitorTag">添加</ElButton>
             </div>
-            <ElEmpty v-if="!monitoredTags.length" description="暂无监控标签" :image-size="50" />
-            <div v-else class="flex flex-wrap gap-2">
+            <p v-if="!monitoredTags.length" class="text-xs text-g-500">暂无监控标签</p>
+            <div v-else class="flex flex-wrap gap-1.5">
               <ElTag
                 v-for="tag in monitoredTags"
                 :key="tag"
@@ -87,10 +87,10 @@
             </div>
           </div>
         </div>
-      </ElCol>
+      </div>
 
       <!-- 右侧：条目列表 -->
-      <ElCol :xs="24" :md="18" :lg="19">
+      <div class="flex-1 min-w-0 w-full">
         <div class="art-card p-5">
           <div class="art-card-header">
             <div class="title">
@@ -131,8 +131,8 @@
             </div>
           </div>
         </div>
-      </ElCol>
-    </ElRow>
+      </div>
+    </div>
 
     <!-- 详情抽屉 -->
     <ElDrawer v-model="detailVisible" title="条目详情" size="46%" destroy-on-close>
