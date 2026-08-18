@@ -1564,18 +1564,9 @@
       }
     }
 
-    /* Element Plus 顶部 tabs 会把首个 item（nth-child(2)）的 padding-left 清零导致贴边，恢复为与卡片内边距一致 */
-    :deep(.el-tabs__header .el-tabs__nav .el-tabs__item:nth-child(2)) {
-      padding-left: 16px;
-    }
-
     :deep(.el-tabs__active-bar) {
       height: 2px;
       background-color: var(--theme-color);
-    }
-
-    :deep(.el-tabs__content) {
-      padding: 12px 16px 16px;
     }
 
     :deep(.el-tab-pane) {
@@ -1587,6 +1578,16 @@
         padding-top: 0;
       }
     }
+  }
+
+  /* Element Plus 顶部 tabs 内置规则会把首个 item（active-bar 之后的 nth-child(2)）的 padding-left 清零导致贴边，此处恢复与卡片内边距一致 */
+  .detail-tabs :deep(.el-tabs__item:nth-child(2)) {
+    padding-left: 16px;
+  }
+
+  /* Element Plus 默认给 header 加了 margin-bottom: 15px，此处清除以使内容区紧贴 header */
+  .detail-tabs > :deep(.el-tabs__header) {
+    margin-bottom: 0;
   }
 
   .json-block {
