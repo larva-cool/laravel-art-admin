@@ -50,7 +50,7 @@
                   textColor="var(--art-gray-700)"
                   :successText="$t('login.sliderSuccessText')"
                   progressBarBg="var(--main-color)"
-                  background="'#F1F1F4'"
+                  :background="isDark ? '#26272F' : '#F1F1F4'"
                   handlerBg="var(--default-box-color)"
                 />
               </div>
@@ -89,12 +89,16 @@
 <script setup lang="ts">
   import { fetchLogin } from '@/api/auth'
   import AppConfig from '@/config'
+  import { useSettingStore } from '@/store/modules/setting'
   import { useUserStore } from '@/store/modules/user'
   import { HttpError } from '@/utils/http/error'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
   import { useI18n } from 'vue-i18n'
 
   defineOptions({ name: 'Login' })
+
+  const settingStore = useSettingStore()
+  const { isDark } = storeToRefs(settingStore)
 
   const { t, locale } = useI18n()
   const formKey = ref(0)
