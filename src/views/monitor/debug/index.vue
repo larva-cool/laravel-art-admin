@@ -171,7 +171,7 @@
             <div class="text-xs uppercase font-bold text-g-500 mb-2">
               同批次条目（{{ detail.batch.length }}）
             </div>
-            <div class="space-y-1">
+            <div class="batch-list space-y-1">
               <div
                 v-for="item in detail.batch"
                 :key="item.id"
@@ -529,6 +529,11 @@
 <style scoped>
   .debug-panel {
     padding: 4px;
+  }
+
+  .batch-list {
+    max-height: 220px;
+    overflow-y: auto;
   }
 
   .json-block {
