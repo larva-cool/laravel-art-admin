@@ -665,7 +665,7 @@
                     "
                     @click="item.id !== detail.entry.id && loadDetail(item.id)"
                   >
-                    <div class="min-w-0">
+                    <div class="flex-1 min-w-0">
                       <div
                         class="text-xs text-g-800 truncate font-mono"
                         :title="relatedTitle(item)"
@@ -1657,6 +1657,7 @@
     display: flex;
     gap: 12px;
     align-items: center;
+    justify-content: space-between;
     padding: 8px 0;
     border-bottom: 1px solid var(--default-border);
     transition: all 0.2s ease;
