@@ -150,7 +150,7 @@ export function monitorHorizonTag(tag: string) {
 
 /** 取消监控标签 */
 export function stopMonitoringHorizonTag(tag: string) {
-  return request.delete({ url: `/admin/queue/monitoring/tags/${encodeURIComponent(tag)}` })
+  return request.del<void>({ url: `/admin/queue/monitoring/tags/${encodeURIComponent(tag)}` })
 }
 
 /** 任务指标列表 */

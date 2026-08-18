@@ -665,6 +665,30 @@
 </script>
 
 <style scoped>
+  @reference '@/assets/styles/core/tailwind.css';
+
+  @layer utilities {
+    .flex-c {
+      @apply flex items-center;
+    }
+
+    .flex-cb {
+      @apply flex items-center justify-between;
+    }
+
+    .tad-200 {
+      transition: all 0.2s ease;
+    }
+
+    .rounded-custom-xs {
+      border-radius: calc(var(--custom-radius) / 2);
+    }
+
+    .border-b-d {
+      border-bottom: 1px solid var(--default-border);
+    }
+  }
+
   .debug-panel {
     padding: 4px;
   }
