@@ -1126,25 +1126,24 @@
 
   /** 各类型关联条目的表头文案 [左列, 右列] */
   function relatedColumns(groupType: string): [string, string] {
-    const key = groupType in relatedColumnMap ? groupType : 'default'
-    return relatedColumnMap[key]
+    return relatedColumnMap[groupType] || relatedColumnMap.default
   }
 
   const relatedColumnMap: Record<string, [string, string]> = {
-    exception: t('monitor.debug.relatedColumn.exception'),
-    log: t('monitor.debug.relatedColumn.log'),
-    view: t('monitor.debug.relatedColumn.view'),
-    query: t('monitor.debug.relatedColumn.query'),
-    model: t('monitor.debug.relatedColumn.model'),
-    gate: t('monitor.debug.relatedColumn.gate'),
-    job: t('monitor.debug.relatedColumn.job'),
-    mail: t('monitor.debug.relatedColumn.mail'),
-    notification: t('monitor.debug.relatedColumn.notification'),
-    event: t('monitor.debug.relatedColumn.event'),
-    cache: t('monitor.debug.relatedColumn.cache'),
-    redis: t('monitor.debug.relatedColumn.redis'),
-    client_request: t('monitor.debug.relatedColumn.client_request'),
-    default: t('monitor.debug.relatedColumn.default')
+    exception: ['异常', '关联日志'],
+    log: ['日志', '关联条目'],
+    view: ['视图', '关联查询'],
+    query: ['SQL 查询', '关联模型'],
+    model: ['模型', '关联事件'],
+    gate: ['权限', '关联用户'],
+    job: ['队列任务', '关联任务'],
+    mail: ['邮件', '关联通知'],
+    notification: ['通知', '关联通道'],
+    event: ['事件', '关联监听器'],
+    cache: ['缓存', '关联操作'],
+    redis: ['Redis', '关联命令'],
+    client_request: ['HTTP 请求', '关联路由'],
+    default: ['条目', '详情']
   }
 
   /** 关联条目主标题 */
@@ -1563,6 +1562,11 @@
         font-weight: 500;
         color: var(--theme-color);
       }
+    }
+
+    /* Element Plus 顶部 tabs 会把首个 item（nth-child(2)）的 padding-left 清零导致贴边，恢复为与卡片内边距一致 */
+    :deep(.el-tabs__header .el-tabs__nav .el-tabs__item:nth-child(2)) {
+      padding-left: 16px;
     }
 
     :deep(.el-tabs__active-bar) {

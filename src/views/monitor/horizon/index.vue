@@ -651,10 +651,7 @@
                 v-for="job in batchDetail.failedJobs"
                 :key="job.id"
                 class="flex items-center gap-2 p-2 rounded-md bg-(--art-gray-100) cursor-pointer"
-                @click="
-                  showJobDetail(String(job.id))
-                  batchDrawerVisible = false
-                "
+                @click="handleJobFromBatch(String(job.id))"
               >
                 <ElTag type="danger" size="small">{{ $t('monitor.horizon.failed') }}</ElTag>
                 <span class="text-xs text-g-700 truncate font-mono">{{ job.name }}</span>
@@ -1038,6 +1035,11 @@
     if (!jobDetail.value) return
     await handleRetry(String(jobDetail.value.id))
     jobDrawerVisible.value = false
+  }
+
+  function handleJobFromBatch(id: string) {
+    showJobDetail(id)
+    batchDrawerVisible.value = false
   }
 
   function refreshCore() {

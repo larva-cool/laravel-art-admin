@@ -3,7 +3,7 @@
     <div v-loading="loading" class="min-h-[300px]">
       <ElEmpty
         v-if="!jobs.length && !loading"
-        :description="$t('monitor.horizon.emptySuffix', { title })"
+        :description="$t('monitor.horizon.emptySuffix', { title: effectiveTitle })"
         :image-size="60"
       />
       <div v-else>
@@ -86,11 +86,12 @@
       extraParams?: Record<string, any>
     }>(),
     {
-      title: t('monitor.horizon.jobListTitle'),
       type: 'pending',
       extraParams: () => ({})
     }
   )
+
+  const effectiveTitle = computed(() => props.title || t('monitor.horizon.jobListTitle'))
 
   defineEmits<{
     showDetail: [id: string]
