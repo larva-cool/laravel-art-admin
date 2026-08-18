@@ -607,6 +607,9 @@
     type PulseUsageItem
   } from '@/api/monitor'
   import { Refresh } from '@element-plus/icons-vue'
+  import { useI18n } from 'vue-i18n'
+
+  const { t } = useI18n()
 
   defineOptions({ name: 'PulseMonitor' })
 
@@ -665,15 +668,16 @@
 
   /** 格式化时间为相对时间 */
   function formatTime(time: string): string {
+    if (!time) return '—'
     const date = new Date(time)
     const diff = Date.now() - date.getTime()
     const seconds = Math.floor(diff / 1000)
-    if (seconds < 60) return `${seconds}秒前`
+    if (seconds < 60) return t('monitor.common.time.secondsAgo', { n: seconds })
     const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `${minutes}分钟前`
+    if (minutes < 60) return t('monitor.common.time.minutesAgo', { n: minutes })
     const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours}小时前`
-    return `${Math.floor(hours / 24)}天前`
+    if (hours < 24) return t('monitor.common.time.hoursAgo', { n: hours })
+    return t('monitor.common.time.daysAgo', { n: Math.floor(hours / 24) })
   }
 
   /** 磁盘使用率 */
@@ -733,11 +737,11 @@
   /** 缓存 key 表格列配置 */
   const cacheColumns = [
     { prop: 'key', label: 'Key', minWidth: 200, showOverflowTooltip: true },
-    { prop: 'hits', label: '命中', width: 80, align: 'right' as const },
-    { prop: 'misses', label: '未命中', width: 80, align: 'right' as const },
+    { prop: 'hits', label: t('monitor.pulse.hits'), width: 80, align: 'right' as const },
+    { prop: 'misses', label: t('monitor.pulse.misses'), width: 80, align: 'right' as const },
     {
       prop: 'hitRate',
-      label: '命中率',
+      label: t('monitor.pulse.hitRate'),
       width: 80,
       align: 'right' as const,
       formatter: (row: any) => `${keyHitRate(row)}%`
