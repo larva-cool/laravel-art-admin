@@ -167,28 +167,72 @@
             <pre class="json-block">{{ formatJson(detail.entry.content) }}</pre>
           </div>
 
-          <div v-if="detail.batch.length > 1" class="mt-4">
-            <div class="text-xs uppercase font-bold text-g-500 mb-2">
-              同批次条目（{{ detail.batch.length }}）
-            </div>
-            <div class="batch-list space-y-1">
-              <div
-                v-for="item in detail.batch"
-                :key="item.id"
-                class="flex-c gap-2 px-2 py-1.5 rounded-custom-xs tad-200"
-                :class="
-                  item.id === detail.entry.id
-                    ? 'bg-theme/10'
-                    : 'cursor-pointer hover:bg-hover-color'
-                "
-                @click="item.id !== detail.entry.id && loadDetail(item.id)"
+          <!-- 同批次关联条目：按类型分 Tab（对齐原版 Telescope RelatedEntries 布局） -->
+          <div v-if="relatedGroups.length" class="mt-4 related-entries">
+            <ElTabs v-model="relatedTab">
+              <ElTabPane
+                v-for="group in relatedGroups"
+                :key="group.type"
+                :name="group.type"
+                :label="`${group.label} (${group.entries.length})`"
               >
-                <ElTag size="small" type="info">{{ typeLabel(item.type) }}</ElTag>
-                <span class="flex-1 text-xs text-g-700 truncate font-mono">
-                  {{ entryTitle(item) }}
-                </span>
-              </div>
-            </div>
+                <div class="related-head">
+                  <div>
+                    {{ relatedColumns(group.type)[0] }}
+                    <small v-if="group.type === 'query'" class="related-summary">
+                      {{ group.entries.length }} 条查询，{{ queriesSummary.duplicated }} 条重复
+                    </small>
+                  </div>
+                  <div class="text-right">
+                    {{ relatedColumns(group.type)[1] }}
+                    <small v-if="group.type === 'query'" class="related-summary">
+                      {{ queriesSummary.time }}ms
+                    </small>
+                  </div>
+                </div>
+                <div class="related-body">
+                  <div
+                    v-for="item in group.entries"
+                    :key="item.id"
+                    class="related-row"
+                    :class="
+                      item.id === detail.entry.id
+                        ? 'bg-theme/10'
+                        : 'cursor-pointer hover:bg-hover-color'
+                    "
+                    @click="item.id !== detail.entry.id && loadDetail(item.id)"
+                  >
+                    <div class="min-w-0">
+                      <div
+                        class="text-xs text-g-800 truncate font-mono"
+                        :title="relatedTitle(item)"
+                      >
+                        {{ relatedTitle(item) }}
+                      </div>
+                      <div
+                        v-if="relatedSubtitle(item)"
+                        class="mt-0.5 text-xs text-g-500 truncate"
+                        :title="relatedSubtitle(item)"
+                      >
+                        {{ relatedSubtitle(item) }}
+                      </div>
+                    </div>
+                    <div class="flex-c justify-end gap-2 shrink-0">
+                      <span v-if="entryMeta(item)" class="text-xs text-g-500 tabular-nums">
+                        {{ entryMeta(item) }}
+                      </span>
+                      <ElTag
+                        v-if="entryBadge(item) !== group.label"
+                        size="small"
+                        :type="entryBadgeType(item)"
+                      >
+                        {{ entryBadge(item) }}
+                      </ElTag>
+                    </div>
+                  </div>
+                </div>
+              </ElTabPane>
+            </ElTabs>
           </div>
         </template>
       </div>
@@ -253,6 +297,99 @@
   const detailVisible = ref(false)
   const detailLoading = ref(false)
   const detail = ref<DebugEntryResponse | null>(null)
+  /** 当前激活的关联条目 Tab（对应条目类型） */
+  const relatedTab = ref('')
+
+  /** 关联条目 Tab 顺序，与原版 Telescope 保持一致 */
+  const relatedTabOrder: DebugEntryType[] = [
+    'exception',
+    'log',
+    'view',
+    'query',
+    'model',
+    'gate',
+    'job',
+    'mail',
+    'notification',
+    'event',
+    'cache',
+    'redis',
+    'client_request'
+  ]
+
+  /** 同批次关联条目按类型分组（排除 request / command 自身入口类型） */
+  const relatedGroups = computed(() => {
+    const batch = detail.value?.batch ?? []
+    return relatedTabOrder
+      .map((groupType) => ({
+        type: groupType,
+        label: typeLabel(groupType),
+        entries: batch.filter((item) => item.type === groupType)
+      }))
+      .filter((group) => group.entries.length > 0)
+  })
+
+  /** 查询类关联条目汇总（总耗时与重复条数） */
+  const queriesSummary = computed(() => {
+    const queries = detail.value?.batch.filter((item) => item.type === 'query') ?? []
+    const time = queries.reduce((total, item) => total + parseFloat(item.content.time ?? 0), 0)
+    const uniqueHashes = new Set(
+      queries.map((item) => `${item.content.hash}-${item.content.connection}`)
+    )
+    return { time: time.toFixed(2), duplicated: queries.length - uniqueHashes.size }
+  })
+
+  /** 各类型关联条目的表头文案 [左列, 右列] */
+  function relatedColumns(groupType: string): [string, string] {
+    const map: Record<string, [string, string]> = {
+      exception: ['异常信息', '位置'],
+      log: ['日志内容', '级别'],
+      view: ['视图', 'Composer 数'],
+      query: ['查询语句', '耗时'],
+      model: ['模型', '动作'],
+      gate: ['权限', '结果'],
+      job: ['任务', '状态'],
+      mail: ['邮件', '状态'],
+      notification: ['通知', '渠道'],
+      event: ['事件', '监听器数'],
+      cache: ['键名', '动作'],
+      redis: ['命令', '耗时'],
+      client_request: ['请求地址', '状态']
+    }
+    return map[groupType] ?? ['内容', '状态']
+  }
+
+  /** 关联条目主标题 */
+  function relatedTitle(entry: DebugEntry): string {
+    if (entry.type === 'exception') {
+      return String(entry.content.class ?? '')
+    }
+    if (entry.type === 'mail') {
+      return String(entry.content.mailable ?? '-')
+    }
+    if (entry.type === 'notification') {
+      return String(entry.content.notification ?? '-')
+    }
+    return entryTitle(entry)
+  }
+
+  /** 关联条目副标题 */
+  function relatedSubtitle(entry: DebugEntry): string {
+    switch (entry.type) {
+      case 'exception':
+        return String(entry.content.message ?? '')
+      case 'job':
+        return `连接：${entry.content.connection ?? '-'} | 队列：${entry.content.queue ?? '-'}`
+      case 'mail':
+        return `主题：${entry.content.subject ?? '-'}`
+      case 'notification':
+        return `接收者：${entry.content.notifiable ?? '-'}`
+      case 'view':
+        return String(entry.content.path ?? '')
+      default:
+        return ''
+    }
+  }
 
   /** 类型对应的中文名 */
   function typeLabel(value: string): string {
@@ -500,6 +637,7 @@
     detailLoading.value = true
     try {
       detail.value = await fetchDebugEntry(id)
+      relatedTab.value = relatedGroups.value[0]?.type ?? ''
     } finally {
       detailLoading.value = false
     }
@@ -531,9 +669,26 @@
     padding: 4px;
   }
 
-  .batch-list {
-    max-height: 220px;
+  .related-entries :deep(.el-tabs__content) {
+    min-height: 160px;
+    max-height: 320px;
     overflow-y: auto;
+  }
+
+  .related-head {
+    @apply flex-c px-3 py-2 border-b-d text-xs font-medium text-g-500;
+
+    .related-summary {
+      @apply ml-2 font-normal text-g-400;
+    }
+  }
+
+  .related-row {
+    @apply flex-c gap-3 px-3 py-2 border-b-d tad-200;
+
+    &:last-child {
+      border-bottom: 0;
+    }
   }
 
   .json-block {
