@@ -42,7 +42,7 @@
             <div
               v-for="item in entryTypes"
               :key="item.value"
-              class="flex-c gap-2 px-2.5 py-2 rounded-custom-xs cursor-pointer tad-200"
+              class="flex items-center gap-2 px-2.5 py-2 rounded-md cursor-pointer transition-all duration-200"
               :class="
                 type === item.value
                   ? 'bg-theme/10 text-theme font-medium'
@@ -64,7 +64,7 @@
             监控标签
           </div>
           <div v-loading="tagsLoading">
-            <div v-auth="'debug.manage'" class="flex-c gap-1.5 mb-3">
+            <div v-auth="'debug.manage'" class="flex items-center gap-1.5 mb-3">
               <ElInput
                 v-model="newTag"
                 placeholder="输入标签"
@@ -105,7 +105,7 @@
               <div
                 v-for="entry in entries"
                 :key="entry.id"
-                class="flex-c gap-3 p-2.5 rounded-custom-xs cursor-pointer hover:bg-hover-color tad-200"
+                class="flex items-center gap-3 p-2.5 rounded-md cursor-pointer hover:bg-hover-color transition-all duration-200"
                 @click="openDetail(entry)"
               >
                 <ElTag v-if="entryBadge(entry)" size="small" :type="entryBadgeType(entry)">
@@ -217,7 +217,7 @@
                         {{ relatedSubtitle(item) }}
                       </div>
                     </div>
-                    <div class="flex-c justify-end gap-2 shrink-0">
+                    <div class="flex items-center justify-end gap-2 shrink-0">
                       <span v-if="entryMeta(item)" class="text-xs text-g-500 tabular-nums">
                         {{ entryMeta(item) }}
                       </span>
@@ -665,8 +665,6 @@
 </script>
 
 <style scoped>
-  @reference '@/assets/styles/core/tailwind.css';
-
   .debug-panel {
     padding: 4px;
   }
@@ -678,22 +676,27 @@
   }
 
   .related-head {
-    @apply px-3 py-2 text-xs font-medium text-g-500;
-
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--art-gray-500);
     border-bottom: 1px solid var(--default-border);
 
     .related-summary {
-      @apply ml-2 font-normal text-g-400;
+      margin-left: 8px;
+      font-weight: 400;
+      color: var(--art-gray-400);
     }
   }
 
   .related-row {
-    @apply gap-3 px-3 py-2;
-
     display: flex;
+    gap: 12px;
     align-items: center;
+    padding: 8px 12px;
     border-bottom: 1px solid var(--default-border);
     transition: all 0.2s ease;
 
