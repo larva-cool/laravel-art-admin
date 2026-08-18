@@ -131,7 +131,7 @@
               >
                 <span
                   class="text-xs font-medium w-5 h-5 rounded-full flex-cc shrink-0"
-                  :class="index < 3 ? 'bg-theme text-white' : 'text-g-500 bg-[var(--art-gray-200)]'"
+                  :class="index < 3 ? 'bg-theme text-white' : 'text-g-500 bg-(--art-gray-200)'"
                 >
                   {{ index + 1 }}
                 </span>
@@ -187,7 +187,7 @@
                 <div class="text-sm font-medium text-g-700 mb-1.5">{{
                   queue.queue || queue.key
                 }}</div>
-                <div class="h-14 rounded-custom-xs bg-[var(--art-gray-100)] p-1">
+                <div class="h-14 rounded-custom-xs bg-(--art-gray-100) p-1">
                   <PulseMultiLine
                     :series="[
                       {
@@ -242,13 +242,13 @@
             />
             <div v-else>
               <div class="grid grid-cols-3 gap-2 text-center mb-4">
-                <div class="p-2 rounded-custom-xs bg-[var(--art-gray-100)]">
+                <div class="p-2 rounded-custom-xs bg-(--art-gray-100)">
                   <div class="text-xl font-medium text-g-900 tabular-nums">{{
                     formatNumber(cache.hits)
                   }}</div>
                   <div class="text-xs text-g-500 mt-0.5">命中</div>
                 </div>
-                <div class="p-2 rounded-custom-xs bg-[var(--art-gray-100)]">
+                <div class="p-2 rounded-custom-xs bg-(--art-gray-100)">
                   <div class="text-xl font-medium text-g-900 tabular-nums">{{
                     formatNumber(cache.misses)
                   }}</div>
@@ -294,7 +294,7 @@
               <div
                 v-for="query in slowQueries"
                 :key="`${query.sql}-${query.location}`"
-                class="rounded-custom-sm bg-[var(--art-gray-100)] p-3 tad-200 hover:bg-[var(--art-gray-200)]"
+                class="rounded-custom-sm bg-(--art-gray-100) p-3 tad-200 hover:bg-(--art-gray-200)"
               >
                 <code class="text-xs text-g-800 break-all block font-mono">{{ query.sql }}</code>
                 <div class="flex-cb mt-2">
