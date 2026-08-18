@@ -1,111 +1,123 @@
 <template>
   <div class="horizon-monitor">
-    <!-- 顶部状态栏 -->
-    <div class="art-card p-4 mb-4 flex-cb">
-      <div class="flex-c gap-3">
+    <!-- 顶部工具栏 -->
+    <div class="art-card p-4 mb-4 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-2">
         <ArtSvgIcon icon="ri:flow-chart" class="text-lg text-theme" />
         <h3 class="text-base font-medium text-g-900">队列监控</h3>
-        <span class="status-badge" :class="'status-' + (stats?.status || 'inactive')">
+        <ElTag size="small" :type="statusTagType(stats?.status || 'inactive')" effect="dark">
           {{ statusLabel(stats?.status || 'inactive') }}
-        </span>
+        </ElTag>
         <span class="text-xs text-g-400">最近刷新：{{ lastRefresh }}</span>
       </div>
-      <ElButton :icon="Refresh" :loading="loading" size="small" circle @click="refreshCore" />
+      <div class="flex items-center gap-2">
+        <ElButton :icon="Refresh" :loading="loading" size="small" circle @click="refreshCore" />
+      </div>
     </div>
 
-    <!-- 主体：侧边栏 + 内容区 -->
-    <div class="flex gap-4">
-      <!-- 侧边栏 -->
-      <aside class="horizon-sidebar art-card p-3 shrink-0">
-        <nav class="space-y-0.5">
-          <a
-            v-for="item in navItems"
-            :key="item.key"
-            class="nav-item"
-            :class="{ active: activeView === item.key }"
-            @click="switchView(item.key)"
-          >
-            <ArtSvgIcon :icon="item.icon" class="nav-icon" />
-            <span>{{ item.label }}</span>
-          </a>
-        </nav>
-      </aside>
+    <div class="flex flex-col md:flex-row items-start gap-4">
+      <!-- 左侧：导航 -->
+      <div class="w-full md:w-66 shrink-0">
+        <div class="art-card p-4 mb-4">
+          <div class="text-xs uppercase font-bold text-g-500 mb-2">监控导航</div>
+          <div class="space-y-0.5">
+            <div
+              v-for="item in navItems"
+              :key="item.key"
+              class="flex items-center gap-2 px-2.5 py-2 rounded-md cursor-pointer transition-all duration-200"
+              :class="
+                activeView === item.key
+                  ? 'bg-theme/10 text-theme font-medium'
+                  : 'text-g-700 hover:bg-hover-color'
+              "
+              @click="switchView(item.key)"
+            >
+              <ArtSvgIcon :icon="item.icon" class="text-base shrink-0" />
+              <span class="text-sm truncate">{{ item.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <!-- 主内容区 -->
-      <main class="flex-1 min-w-0">
+      <!-- 右侧：内容 -->
+      <div class="flex-1 min-w-0 w-full">
         <!-- ===== Dashboard ===== -->
         <template v-if="activeView === 'dashboard'">
           <div v-loading="loading" class="min-h-[400px]">
-            <!-- Overview 卡片 -->
-            <div class="art-card overflow-hidden mb-4">
-              <div class="card-header">
-                <h4>Overview</h4>
+            <!-- Overview -->
+            <div class="art-card p-5 mb-4">
+              <div class="art-card-header">
+                <div class="title">
+                  <h4>Overview</h4>
+                  <p>系统整体状态概览</p>
+                </div>
               </div>
-              <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[var(--default-border)]">
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">每分钟处理</div>
-                  <div class="text-xl font-bold text-g-900 mt-2 tabular-nums">{{
+              <div class="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">每分钟处理</div>
+                  <div class="text-xl font-bold text-g-900 mt-1.5 tabular-nums">{{
                     stats?.jobsPerMinute ?? 0
                   }}</div>
+                  <div class="text-xs text-g-400 mt-0.5">jobs/min</div>
                 </div>
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">最近任务</div>
-                  <div class="text-xl font-bold text-g-900 mt-2 tabular-nums">{{
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">最近任务</div>
+                  <div class="text-xl font-bold text-g-900 mt-1.5 tabular-nums">{{
                     stats?.recentJobs ?? 0
                   }}</div>
                   <div class="text-xs text-g-400 mt-0.5"
                     >近 {{ stats?.periods?.recentJobs ?? 0 }} 分钟</div
                   >
                 </div>
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">失败任务</div>
-                  <div class="text-xl font-bold text-g-900 mt-2 tabular-nums">{{
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">失败任务</div>
+                  <div class="text-xl font-bold text-g-900 mt-1.5 tabular-nums">{{
                     stats?.failedJobs ?? 0
                   }}</div>
                   <div class="text-xs text-g-400 mt-0.5"
                     >近 {{ stats?.periods?.failedJobs ?? 0 }} 分钟</div
                   >
                 </div>
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">状态</div>
-                  <div class="flex-c gap-2 mt-2">
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">状态</div>
+                  <div class="flex items-center gap-2 mt-1.5">
                     <span
-                      class="status-dot"
-                      :class="'status-' + (stats?.status || 'inactive')"
+                      class="rounded-full"
+                      :class="statusDotClass(stats?.status || 'inactive')"
+                      style="width: 8px; height: 8px"
                     ></span>
                     <span class="text-base font-medium text-g-800">{{
                       statusLabel(stats?.status || 'inactive')
                     }}</span>
-                    <span
-                      v-if="stats?.status === 'running' && stats.pausedMasters > 0"
-                      class="text-xs text-g-400"
-                    >
-                      ({{ stats.pausedMasters }} 已暂停)
-                    </span>
                   </div>
+                  <div
+                    v-if="stats?.status === 'running' && stats.pausedMasters > 0"
+                    class="text-xs text-g-400 mt-0.5"
+                    >{{ stats.pausedMasters }} 个已暂停</div
+                  >
                 </div>
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">总进程数</div>
-                  <div class="text-xl font-bold text-g-900 mt-2 tabular-nums">{{
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">总进程数</div>
+                  <div class="text-xl font-bold text-g-900 mt-1.5 tabular-nums">{{
                     stats?.processes ?? 0
                   }}</div>
                 </div>
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">最大等待时间</div>
-                  <div class="text-base font-medium text-g-800 mt-2">{{ maxWaitTime }}</div>
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">最大等待时间</div>
+                  <div class="text-base font-medium text-g-800 mt-1.5">{{ maxWaitTime }}</div>
                   <div v-if="maxWaitQueue" class="text-xs text-g-400 mt-0.5">{{
                     maxWaitQueue
                   }}</div>
                 </div>
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">最长运行时</div>
-                  <div class="text-base font-medium text-g-800 mt-2">{{
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">最长运行时</div>
+                  <div class="text-base font-medium text-g-800 mt-1.5">{{
                     stats?.queueWithMaxRuntime || '—'
                   }}</div>
                 </div>
-                <div class="p-4 bg-[var(--art-bg-color)]">
-                  <div class="text-xs text-g-500 font-bold">最大吞吐量</div>
-                  <div class="text-base font-medium text-g-800 mt-2">{{
+                <div class="p-3 rounded-md bg-(--art-gray-100)">
+                  <div class="text-xs uppercase font-bold text-g-500">最大吞吐量</div>
+                  <div class="text-base font-medium text-g-800 mt-1.5">{{
                     stats?.queueWithMaxThroughput || '—'
                   }}</div>
                 </div>
@@ -113,36 +125,59 @@
             </div>
 
             <!-- Current Workload -->
-            <div v-if="workload.length" class="art-card overflow-hidden mb-4">
-              <div class="card-header">
-                <h4>Current Workload</h4>
+            <div v-if="workload.length" class="art-card p-5 mb-4">
+              <div class="art-card-header">
+                <div class="title">
+                  <h4>Current Workload</h4>
+                  <p>当前各队列工作负载</p>
+                </div>
               </div>
-              <div class="workload-table">
-                <div class="workload-head">
+              <div class="mt-3">
+                <div
+                  class="hidden lg:grid grid-cols-[minmax(0,2fr)_100px_100px_120px] gap-x-4 px-1 pb-2 border-b-d text-xs uppercase font-bold text-g-500"
+                >
                   <div>队列</div>
                   <div class="text-right">任务数</div>
                   <div class="text-right">进程数</div>
                   <div class="text-right">等待</div>
                 </div>
-                <div v-for="item in workload" :key="item.name + item.queue" class="workload-row">
-                  <div class="font-medium text-g-800">{{ item.name.replace(/,/g, ', ') }}</div>
-                  <div class="text-right text-g-600 tabular-nums">{{ item.length ?? 0 }}</div>
-                  <div class="text-right text-g-600 tabular-nums">{{ item.processes ?? 0 }}</div>
-                  <div class="text-right text-g-600 tabular-nums">{{ humanTime(item.wait) }}</div>
+                <div
+                  v-for="item in workload"
+                  :key="item.name + item.queue"
+                  class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_100px_100px_120px] gap-x-4 gap-y-1 items-center py-2.5 px-1 border-b-d last:border-b-0 hover:bg-hover-color transition-all duration-200 rounded-md"
+                >
+                  <div class="text-sm font-medium text-g-800">{{
+                    item.name.replace(/,/g, ', ')
+                  }}</div>
+                  <div class="text-sm text-g-600 tabular-nums lg:text-right">{{
+                    item.length ?? 0
+                  }}</div>
+                  <div class="text-sm text-g-600 tabular-nums lg:text-right">{{
+                    item.processes ?? 0
+                  }}</div>
+                  <div class="text-sm text-g-600 tabular-nums lg:text-right">{{
+                    humanTime(item.wait)
+                  }}</div>
                 </div>
               </div>
             </div>
 
             <!-- Worker Cards -->
-            <div v-for="worker in masters" :key="worker.name" class="art-card overflow-hidden mb-4">
-              <div class="card-header flex-cb">
-                <h4>{{ worker.name }}</h4>
-                <span class="status-badge" :class="'status-' + worker.status">{{
-                  statusLabel(worker.status)
-                }}</span>
+            <div v-for="worker in masters" :key="worker.name" class="art-card p-5 mb-4">
+              <div class="art-card-header">
+                <div class="title">
+                  <h4>{{ worker.name }}</h4>
+                  <p>
+                    <ElTag size="small" :type="statusTagType(worker.status)" effect="light">{{
+                      statusLabel(worker.status)
+                    }}</ElTag>
+                  </p>
+                </div>
               </div>
-              <div class="workload-table">
-                <div class="workload-head">
+              <div class="mt-3">
+                <div
+                  class="hidden lg:grid grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_100px_120px] gap-x-4 px-1 pb-2 border-b-d text-xs uppercase font-bold text-g-500"
+                >
                   <div>Supervisor</div>
                   <div>队列</div>
                   <div class="text-right">进程数</div>
@@ -151,28 +186,30 @@
                 <div
                   v-for="supervisor in worker.supervisors"
                   :key="supervisor.name"
-                  class="workload-row"
+                  class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_100px_120px] gap-x-4 gap-y-1 items-center py-2.5 px-1 border-b-d last:border-b-0 hover:bg-hover-color transition-all duration-200 rounded-md"
                 >
-                  <div class="flex-c gap-1.5">
+                  <div class="flex items-center gap-1.5">
                     <span
                       v-if="supervisor.status === 'paused'"
-                      class="status-dot status-paused"
+                      class="rounded-full bg-warning"
+                      style="width: 8px; height: 8px"
                     ></span>
                     <span
                       v-else-if="supervisor.status === 'inactive'"
-                      class="status-dot status-inactive"
+                      class="rounded-full bg-danger"
+                      style="width: 8px; height: 8px"
                     ></span>
-                    <span class="text-g-800">{{
+                    <span class="text-sm text-g-800">{{
                       supervisorName(supervisor.name, worker.name)
                     }}</span>
                   </div>
-                  <div class="text-g-600 text-sm">{{
+                  <div class="text-sm text-g-600 truncate">{{
                     supervisor.options?.queue?.replace(/,/g, ', ') || '—'
                   }}</div>
-                  <div class="text-right text-g-600 tabular-nums">{{
+                  <div class="text-sm text-g-600 tabular-nums lg:text-right">{{
                     countProcesses(supervisor.processes)
                   }}</div>
-                  <div class="text-right text-g-600">{{
+                  <div class="text-sm text-g-600 lg:text-right">{{
                     supervisor.options?.balance
                       ? capitalize(supervisor.options.balance)
                       : 'Disabled'
@@ -185,32 +222,33 @@
 
         <!-- ===== Monitoring ===== -->
         <template v-else-if="activeView === 'monitoring'">
-          <div class="art-card p-4">
-            <div class="flex-cb mb-4">
-              <h4 class="text-base font-medium text-g-900">标签监控</h4>
-              <ElInput
-                v-model="newTag"
-                placeholder="输入标签名称"
-                size="small"
-                style="width: 200px"
-                @keyup.enter="addTag"
-              >
-                <template #append>
-                  <ElButton :icon="Plus" @click="addTag" />
-                </template>
-              </ElInput>
+          <div class="art-card p-5">
+            <div class="art-card-header">
+              <div class="title">
+                <h4>标签监控</h4>
+                <p>监控指定标签下的任务</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <ElInput
+                  v-model="newTag"
+                  placeholder="输入标签名称"
+                  size="small"
+                  style="width: 180px"
+                  @keyup.enter="addTag"
+                />
+                <ElButton size="small" type="primary" :icon="Plus" @click="addTag">添加</ElButton>
+              </div>
             </div>
-            <div v-loading="tagsLoading" class="min-h-[200px]">
-              <ElEmpty v-if="!monitoringTags.length" description="暂无监控标签" :image-size="80" />
-              <div v-else class="space-y-2">
+            <div v-loading="tagsLoading" class="mt-3">
+              <ElEmpty v-if="!monitoringTags.length" description="暂无监控标签" :image-size="60" />
+              <div v-else class="space-y-1.5">
                 <div
                   v-for="tag in monitoringTags"
                   :key="tag.tag"
-                  class="flex-cb p-3 rounded-custom-xs hover:bg-hover-color tad-200"
-                  style="border-bottom: 1px solid var(--default-border)"
+                  class="flex items-center justify-between p-2.5 rounded-md hover:bg-hover-color transition-all duration-200 border-b-d last:border-b-0"
                 >
-                  <ElTag type="info" effect="plain">{{ tag.tag }}</ElTag>
-                  <div class="flex-c gap-3">
+                  <ElTag type="info" effect="plain" size="small">{{ tag.tag }}</ElTag>
+                  <div class="flex items-center gap-3">
                     <span class="text-sm text-g-700 tabular-nums">{{ tag.count }} 个任务</span>
                     <ElButton
                       type="danger"
@@ -229,15 +267,22 @@
         <!-- ===== Metrics: Jobs ===== -->
         <template v-else-if="activeView === 'metrics-jobs'">
           <div v-loading="jobMetricsLoading" class="min-h-[200px]">
-            <ElEmpty v-if="!jobMetricsList.length" description="暂无任务指标" :image-size="80" />
+            <ElEmpty v-if="!jobMetricsList.length" description="暂无任务指标" :image-size="60" />
             <div v-else class="space-y-4">
-              <div v-for="jobId in jobMetricsList" :key="jobId" class="art-card p-4">
-                <div class="text-sm font-medium text-g-800 mb-2">{{ simplifyName(jobId) }}</div>
-                <MetricsChart
-                  :snapshots="jobMetricsDetail[jobId] || []"
-                  :title="jobId"
-                  type="job"
-                />
+              <div v-for="jobId in jobMetricsList" :key="jobId" class="art-card p-5">
+                <div class="art-card-header">
+                  <div class="title">
+                    <h4>{{ simplifyName(jobId) }}</h4>
+                    <p>{{ jobId }}</p>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <MetricsChart
+                    :snapshots="jobMetricsDetail[jobId] || []"
+                    :title="jobId"
+                    type="job"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -246,15 +291,22 @@
         <!-- ===== Metrics: Queues ===== -->
         <template v-else-if="activeView === 'metrics-queues'">
           <div v-loading="queueMetricsLoading" class="min-h-[200px]">
-            <ElEmpty v-if="!queueMetricsList.length" description="暂无队列指标" :image-size="80" />
+            <ElEmpty v-if="!queueMetricsList.length" description="暂无队列指标" :image-size="60" />
             <div v-else class="space-y-4">
-              <div v-for="queueId in queueMetricsList" :key="queueId" class="art-card p-4">
-                <div class="text-sm font-medium text-g-800 mb-2">{{ queueId }}</div>
-                <MetricsChart
-                  :snapshots="queueMetricsDetail[queueId] || []"
-                  :title="queueId"
-                  type="queue"
-                />
+              <div v-for="queueId in queueMetricsList" :key="queueId" class="art-card p-5">
+                <div class="art-card-header">
+                  <div class="title">
+                    <h4>{{ queueId }}</h4>
+                    <p>队列吞吐量与运行时间</p>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <MetricsChart
+                    :snapshots="queueMetricsDetail[queueId] || []"
+                    :title="queueId"
+                    type="queue"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -262,53 +314,69 @@
 
         <!-- ===== Batches ===== -->
         <template v-else-if="activeView === 'batches'">
-          <div v-loading="batchesLoading" class="art-card p-4 min-h-[200px]">
-            <ElEmpty v-if="!batches.length" description="暂无批处理数据" :image-size="80" />
-            <div v-else class="space-y-2">
-              <div
-                v-for="batch in batches"
-                :key="batch.id"
-                class="batch-row"
-                @click="showBatchDetail(batch.id)"
-              >
-                <div class="min-w-0">
-                  <div class="text-sm font-medium text-g-800 truncate">{{ batch.name }}</div>
-                  <div class="text-xs text-g-400 font-mono truncate">{{ batch.id }}</div>
-                </div>
-                <div class="text-sm text-g-700 tabular-nums text-right">
-                  <span class="text-xs text-g-400">总数</span> {{ batch.total_jobs }}
-                </div>
-                <div class="text-sm text-g-700 tabular-nums text-right">
-                  <span class="text-xs text-g-400">已处理</span> {{ batch.processed_jobs }}
-                </div>
-                <div class="text-sm tabular-nums text-right">
-                  <span class="text-xs text-g-400">失败</span>
-                  <span :class="batch.failed_jobs > 0 ? 'text-danger font-bold' : 'text-g-700'">{{
-                    batch.failed_jobs
-                  }}</span>
-                </div>
-                <div class="text-right">
-                  <ElTag size="small" :type="batchStatusType(batch)" effect="light">{{
-                    batchStatusLabel(batch)
-                  }}</ElTag>
+          <div class="art-card p-5">
+            <div class="art-card-header">
+              <div class="title">
+                <h4>批处理</h4>
+                <p>共 {{ batches.length }} 个批次</p>
+              </div>
+            </div>
+            <div v-loading="batchesLoading" class="mt-3">
+              <ElEmpty v-if="!batches.length" description="暂无批处理数据" :image-size="60" />
+              <div v-else class="space-y-1.5">
+                <div
+                  v-for="batch in batches"
+                  :key="batch.id"
+                  class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_100px_100px_100px_80px] gap-x-4 gap-y-1 items-center py-2.5 px-1 border-b-d last:border-b-0 hover:bg-hover-color transition-all duration-200 rounded-md cursor-pointer"
+                  @click="showBatchDetail(batch.id)"
+                >
+                  <div class="min-w-0">
+                    <div class="text-sm font-medium text-g-800 truncate">{{ batch.name }}</div>
+                    <div class="text-xs text-g-400 font-mono truncate">{{ batch.id }}</div>
+                  </div>
+                  <div class="text-sm text-g-700 tabular-nums lg:text-right">
+                    <span class="text-xs text-g-400">总数</span> {{ batch.total_jobs }}
+                  </div>
+                  <div class="text-sm text-g-700 tabular-nums lg:text-right">
+                    <span class="text-xs text-g-400">已处理</span> {{ batch.processed_jobs }}
+                  </div>
+                  <div class="text-sm tabular-nums lg:text-right">
+                    <span class="text-xs text-g-400">失败</span>
+                    <span :class="batch.failed_jobs > 0 ? 'text-danger font-bold' : 'text-g-700'">{{
+                      batch.failed_jobs
+                    }}</span>
+                  </div>
+                  <div class="lg:text-right">
+                    <ElTag size="small" :type="batchStatusType(batch)" effect="light">{{
+                      batchStatusLabel(batch)
+                    }}</ElTag>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </template>
 
-        <!-- ===== Failed / Pending / Completed / Silenced Jobs ===== -->
+        <!-- ===== Job Lists ===== -->
         <template v-else>
-          <div class="art-card p-4">
-            <JobList
-              :type="activeView as any"
-              :title="currentNavLabel"
-              @show-detail="showJobDetail"
-              @retry="handleRetry"
-            />
+          <div class="art-card p-5">
+            <div class="art-card-header">
+              <div class="title">
+                <h4>{{ currentNavLabel }}</h4>
+                <p>点击查看任务详情</p>
+              </div>
+            </div>
+            <div class="mt-3">
+              <JobList
+                :type="activeView as any"
+                :title="currentNavLabel"
+                @show-detail="showJobDetail"
+                @retry="handleRetry"
+              />
+            </div>
           </div>
         </template>
-      </main>
+      </div>
     </div>
 
     <!-- 任务详情抽屉 -->
@@ -366,7 +434,7 @@
               <div
                 v-for="(retry, idx) in jobDetail.retried_by"
                 :key="idx"
-                class="flex-c gap-2 p-2 rounded-custom-xs bg-(--art-gray-100)"
+                class="flex items-center gap-2 p-2 rounded-md bg-(--art-gray-100)"
               >
                 <span class="text-xs text-g-600 font-mono">{{ retry.retried_at }}</span>
               </div>
@@ -421,7 +489,7 @@
           </div>
 
           <div v-if="batchDetail.failedJobs?.length">
-            <div class="flex-cb mb-2">
+            <div class="flex items-center justify-between mb-2">
               <span class="text-xs text-g-500"
                 >失败任务（{{ batchDetail.failedJobs.length }}）</span
               >
@@ -433,7 +501,7 @@
               <div
                 v-for="job in batchDetail.failedJobs"
                 :key="job.id"
-                class="flex-c gap-2 p-2 rounded-custom-xs bg-(--art-gray-100) cursor-pointer"
+                class="flex items-center gap-2 p-2 rounded-md bg-(--art-gray-100) cursor-pointer"
                 @click="
                   showJobDetail(String(job.id))
                   batchDrawerVisible = false
@@ -493,15 +561,15 @@
   }
 
   const navItems: NavItem[] = [
-    { key: 'dashboard', label: 'Dashboard', icon: 'ri:dashboard-line' },
-    { key: 'monitoring', label: 'Monitoring', icon: 'ri:eye-line' },
-    { key: 'metrics-jobs', label: 'Job Metrics', icon: 'ri:bar-chart-line' },
-    { key: 'metrics-queues', label: 'Queue Metrics', icon: 'ri:line-chart-line' },
-    { key: 'batches', label: 'Batches', icon: 'ri:stack-line' },
-    { key: 'pending', label: 'Pending Jobs', icon: 'ri:pause-circle-line' },
-    { key: 'completed', label: 'Completed Jobs', icon: 'ri:checkbox-circle-line' },
-    { key: 'silenced', label: 'Silenced Jobs', icon: 'ri:volume-mute-line' },
-    { key: 'failed', label: 'Failed Jobs', icon: 'ri:error-warning-line' }
+    { key: 'dashboard', label: '仪表盘', icon: 'ri:dashboard-line' },
+    { key: 'monitoring', label: '标签监控', icon: 'ri:eye-line' },
+    { key: 'metrics-jobs', label: '任务指标', icon: 'ri:bar-chart-line' },
+    { key: 'metrics-queues', label: '队列指标', icon: 'ri:line-chart-line' },
+    { key: 'batches', label: '批处理', icon: 'ri:stack-line' },
+    { key: 'pending', label: '待处理任务', icon: 'ri:pause-circle-line' },
+    { key: 'completed', label: '已完成任务', icon: 'ri:checkbox-circle-line' },
+    { key: 'silenced', label: '静默任务', icon: 'ri:volume-mute-line' },
+    { key: 'failed', label: '失败任务', icon: 'ri:error-warning-line' }
   ]
 
   const activeView = ref('dashboard')
@@ -518,7 +586,7 @@
     if (key === 'monitoring' && !monitoringTags.value.length) fetchTags()
   }
 
-  // ===== 核心数据（高频轮询） =====
+  // ===== 核心数据 =====
   const loading = ref(false)
   const stats = ref<HorizonStats>()
   const workload = ref<HorizonWorkload[]>([])
@@ -565,6 +633,19 @@
 
   // ===== 工具函数 =====
 
+  function statusTagType(status: string): 'success' | 'warning' | 'info' | 'danger' {
+    switch (status) {
+      case 'running':
+        return 'success'
+      case 'paused':
+        return 'warning'
+      case 'inactive':
+        return 'info'
+      default:
+        return 'info'
+    }
+  }
+
   function statusLabel(status: string): string {
     switch (status) {
       case 'running':
@@ -575,6 +656,19 @@
         return 'Inactive'
       default:
         return status
+    }
+  }
+
+  function statusDotClass(status: string): string {
+    switch (status) {
+      case 'running':
+        return 'bg-success'
+      case 'paused':
+        return 'bg-warning'
+      case 'inactive':
+        return 'bg-danger'
+      default:
+        return 'bg-g-400'
     }
   }
 
@@ -826,172 +920,5 @@
 
   .horizon-monitor {
     @apply pb-4;
-  }
-
-  /* 侧边栏 */
-  .horizon-sidebar {
-    width: 180px;
-  }
-
-  .nav-item {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 8px 12px;
-    font-size: 13px;
-    color: var(--color-g-600);
-    cursor: pointer;
-    border-radius: var(--custom-radius-xs);
-    transition: all 0.15s;
-  }
-
-  .nav-item:hover {
-    color: var(--color-g-800);
-    background: var(--art-gray-100);
-  }
-
-  .nav-item.active {
-    font-weight: 500;
-    color: var(--el-color-primary);
-    background: var(--color-primary-10, rgba(var(--el-color-primary-rgb), 0.1));
-  }
-
-  .nav-icon {
-    flex-shrink: 0;
-    font-size: 16px;
-  }
-
-  /* 卡片头部 */
-  .card-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--default-border);
-  }
-
-  .card-header h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-g-800);
-  }
-
-  /* 工作负载表 */
-  .workload-table {
-    width: 100%;
-  }
-
-  .workload-head {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) 100px 100px 120px;
-    gap: 8px;
-    padding: 8px 16px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--color-g-500);
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--default-border);
-  }
-
-  .workload-row {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) 100px 100px 120px;
-    gap: 8px;
-    padding: 10px 16px;
-    font-size: 13px;
-    color: var(--color-g-700);
-    border-bottom: 1px solid var(--default-border);
-    transition: background 0.15s;
-  }
-
-  .workload-row:last-child {
-    border-bottom: none;
-  }
-
-  .workload-row:hover {
-    background: var(--art-gray-100);
-  }
-
-  /* 批处理行 */
-  .batch-row {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) 100px 100px 100px 80px;
-    gap: 12px;
-    align-items: center;
-    padding: 10px 12px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--default-border);
-    border-radius: var(--custom-radius-xs);
-    transition: background 0.15s;
-  }
-
-  .batch-row:hover {
-    background: var(--art-gray-100);
-  }
-
-  /* 状态徽章 */
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    border-radius: 4px;
-  }
-
-  .status-badge.status-running {
-    color: var(--el-color-success);
-    background: rgba(var(--el-color-success-rgb), 0.15);
-  }
-
-  .status-badge.status-paused {
-    color: var(--el-color-warning);
-    background: rgba(var(--el-color-warning-rgb), 0.15);
-  }
-
-  .status-badge.status-inactive {
-    color: var(--el-color-danger);
-    background: rgba(var(--el-color-danger-rgb), 0.15);
-  }
-
-  /* 状态指示点 */
-  .status-dot {
-    display: inline-block;
-    flex-shrink: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-
-  .status-dot.status-running {
-    background: var(--el-color-success);
-  }
-
-  .status-dot.status-paused {
-    background: var(--el-color-warning);
-  }
-
-  .status-dot.status-inactive {
-    background: var(--el-color-danger);
-  }
-
-  /* 响应式 */
-  @media (width <= 768px) {
-    .horizon-sidebar {
-      width: 100%;
-      margin-bottom: 16px;
-    }
-
-    .horizon-monitor > .flex {
-      flex-direction: column;
-    }
-
-    .workload-head,
-    .workload-row {
-      grid-template-columns: 1fr 60px 60px 60px;
-    }
-
-    .batch-row {
-      grid-template-columns: 1fr 60px 60px 60px;
-    }
   }
 </style>

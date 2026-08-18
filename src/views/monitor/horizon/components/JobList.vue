@@ -1,51 +1,53 @@
 <template>
   <div class="job-list">
     <div v-loading="loading" class="min-h-[300px]">
-      <ElEmpty v-if="!jobs.length && !loading" :description="title + '为空'" :image-size="80" />
+      <ElEmpty v-if="!jobs.length && !loading" :description="title + '为空'" :image-size="60" />
       <div v-else>
         <!-- 表头 -->
-        <div class="job-header hidden md:grid">
+        <div
+          class="hidden lg:grid grid-cols-[minmax(0,2fr)_120px_100px_1fr_auto] gap-x-4 px-1 pb-2 border-b-d text-xs uppercase font-bold text-g-500"
+        >
           <div>任务</div>
           <div>队列</div>
           <div>状态</div>
           <div class="text-right">时间</div>
-          <div v-if="type === 'failed'" class="w-16"></div>
+          <div v-if="type === 'failed'" class="w-12"></div>
         </div>
         <!-- 任务行 -->
         <div
           v-for="job in jobs"
           :key="job.id"
-          class="job-row"
+          class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_120px_100px_1fr_auto] gap-x-4 gap-y-1 items-center py-2.5 px-1 border-b-d last:border-b-0 hover:bg-hover-color transition-all duration-200 rounded-md cursor-pointer"
           @click="$emit('showDetail', String(job.id))"
         >
-          <div class="job-main">
-            <div class="job-name" :title="job.name">{{ simplifyName(job.name) }}</div>
-            <div class="job-id text-xs text-g-400 font-mono truncate">{{ job.id }}</div>
+          <div class="min-w-0">
+            <div class="text-sm font-medium text-g-800 truncate" :title="job.name">{{
+              simplifyName(job.name)
+            }}</div>
+            <div class="text-xs text-g-400 font-mono truncate">{{ job.id }}</div>
           </div>
-          <div class="job-queue hidden md:block">
+          <div class="hidden lg:block">
             <ElTag size="small" type="info" effect="plain">{{ job.queue }}</ElTag>
           </div>
-          <div class="job-status">
-            <ElTag size="small" :type="statusTagType(job.status)" effect="light">
-              {{ job.status }}
-            </ElTag>
+          <div>
+            <ElTag size="small" :type="statusTagType(job.status)" effect="light">{{
+              job.status
+            }}</ElTag>
           </div>
-          <div
-            class="job-time text-xs text-g-500 tabular-nums hidden md:block text-right whitespace-nowrap"
-          >
+          <div class="text-xs text-g-500 tabular-nums hidden lg:block text-right whitespace-nowrap">
             {{ formatTime(job.failed_at || job.completed_at || job.created_at || '') }}
           </div>
-          <div v-if="type === 'failed'" class="job-action">
+          <div v-if="type === 'failed'" class="w-12 text-right">
             <ElButton size="small" type="primary" text @click.stop="handleRetry(String(job.id))"
               >重试</ElButton
             >
           </div>
         </div>
         <!-- 加载更多 -->
-        <div v-if="hasMore" class="text-center py-4">
+        <div v-if="hasMore" class="mt-4 text-center">
           <ElButton size="small" text :loading="loading" @click="loadMore">加载更多</ElButton>
         </div>
-        <div v-else-if="jobs.length" class="text-center py-4 text-xs text-g-400">
+        <div v-else-if="jobs.length" class="mt-4 text-center text-xs text-g-400">
           共 {{ total }} 条
         </div>
       </div>
@@ -202,60 +204,4 @@
 
 <style scoped>
   @reference '@/assets/styles/core/tailwind.css';
-
-  .job-header {
-    grid-template-columns: minmax(0, 2fr) 120px 100px 1fr;
-
-    @apply gap-x-3 px-3 pb-2 text-xs uppercase font-bold text-g-500;
-
-    border-bottom: 1px solid var(--default-border);
-  }
-
-  .job-row {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) 120px 100px 1fr;
-    gap: 12px;
-    align-items: center;
-    padding: 10px 12px;
-    cursor: pointer;
-    border-radius: var(--custom-radius-xs);
-    transition: background 0.15s;
-  }
-
-  .job-row:hover {
-    background: var(--art-gray-100);
-  }
-
-  .job-row + .job-row {
-    margin-top: 2px;
-  }
-
-  .job-name {
-    overflow: hidden;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-g-800);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  @media (width <= 768px) {
-    .job-row {
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .job-main {
-      grid-column: 1;
-    }
-
-    .job-status {
-      grid-row: 1;
-      grid-column: 2;
-    }
-
-    .job-queue,
-    .job-time {
-      display: none;
-    }
-  }
 </style>

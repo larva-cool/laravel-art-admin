@@ -134,41 +134,445 @@
       </div>
     </div>
 
-    <!-- 详情抽屉 -->
-    <ElDrawer v-model="detailVisible" title="条目详情" size="46%" destroy-on-close>
-      <div v-loading="detailLoading">
+    <!-- 详情抽屉（对齐原版 Telescope 详情结构） -->
+    <ElDrawer
+      v-model="detailVisible"
+      :title="detailTitle"
+      size="1000px"
+      destroy-on-close
+      class="debug-detail-drawer"
+    >
+      <div v-loading="detailLoading" class="detail-scroll">
         <template v-if="detail">
-          <ElDescriptions :column="1" border size="small">
-            <ElDescriptionsItem label="条目 ID">{{ detail.entry.id }}</ElDescriptionsItem>
-            <ElDescriptionsItem label="类型">{{ typeLabel(detail.entry.type) }}</ElDescriptionsItem>
-            <ElDescriptionsItem label="批次 ID">{{ detail.entry.batch_id }}</ElDescriptionsItem>
-            <ElDescriptionsItem label="记录时间">{{ detail.entry.created_at }}</ElDescriptionsItem>
-            <ElDescriptionsItem v-if="detail.entry.tags.length" label="标签">
-              <ElTag v-for="tag in detail.entry.tags" :key="tag" size="small" class="mr-1">
-                {{ tag }}
-              </ElTag>
-            </ElDescriptionsItem>
-          </ElDescriptions>
+          <!-- 基础信息卡片 -->
+          <div class="detail-card">
+            <div class="detail-card-head">基础信息</div>
+            <ElDescriptions :column="1" border size="small" class="detail-desc">
+              <ElDescriptionsItem label="条目 ID">{{ detail.entry.id }}</ElDescriptionsItem>
+              <ElDescriptionsItem label="主机名">{{
+                detail.entry.content.hostname || '-'
+              }}</ElDescriptionsItem>
+              <ElDescriptionsItem label="记录时间">
+                {{ formatTime(detail.entry.created_at) }}
+                <span class="text-g-500">（{{ detail.entry.created_at }}）</span>
+              </ElDescriptionsItem>
 
-          <div v-if="detail.entry.type === 'exception'" class="mt-3 text-right">
-            <ElButton
-              v-auth="'debug.manage'"
-              size="small"
-              type="success"
-              :disabled="!!detail.entry.content.resolved_at"
-              @click="handleResolve"
-            >
-              {{ detail.entry.content.resolved_at ? '已解决' : '标记为已解决' }}
-            </ElButton>
+              <!-- 类型专属字段 -->
+              <template v-if="detail.entry.type === 'request'">
+                <ElDescriptionsItem label="方法">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.method }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="控制器动作">
+                  {{ detail.entry.content.controller_action || '-' }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.middleware?.length" label="中间件">
+                  {{ detail.entry.content.middleware.join(', ') }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="路径">{{ detail.entry.content.uri }}</ElDescriptionsItem>
+                <ElDescriptionsItem label="状态码">
+                  <ElTag
+                    size="small"
+                    :type="statusCodeTagType(detail.entry.content.response_status)"
+                  >
+                    {{ detail.entry.content.response_status }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="耗时">
+                  {{ detail.entry.content.duration ?? '-' }} ms
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="IP 地址">
+                  {{ detail.entry.content.ip_address || '-' }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="内存使用">
+                  {{ detail.entry.content.memory || '-' }} MB
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'exception'">
+                <ElDescriptionsItem label="类型">
+                  <span class="font-mono text-xs">{{ detail.entry.content.class }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="位置">
+                  {{ detail.entry.content.file }}:{{ detail.entry.content.line }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="出现次数">
+                  <el-link type="primary" @click="filterByFamilyHash">查看同类型</el-link>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="解决时间">
+                  <template v-if="detail.entry.content.resolved_at">
+                    {{ detail.entry.content.resolved_at }}
+                  </template>
+                  <template v-else>
+                    <ElButton
+                      v-auth="'debug.manage'"
+                      size="small"
+                      type="success"
+                      @click="handleResolve"
+                    >
+                      标记为已解决
+                    </ElButton>
+                  </template>
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'log'">
+                <ElDescriptionsItem label="级别">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.level }}
+                  </ElTag>
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'query'">
+                <ElDescriptionsItem label="连接">
+                  {{ detail.entry.content.connection }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="位置">
+                  {{ detail.entry.content.file }}:{{ detail.entry.content.line }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="耗时">
+                  <span :class="detail.entry.content.slow ? 'text-red-500 font-medium' : ''">
+                    {{ detail.entry.content.time }} ms
+                  </span>
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'model'">
+                <ElDescriptionsItem label="模型">
+                  <span class="font-mono text-xs">{{ detail.entry.content.model }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="动作">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.action }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="实例数">
+                  {{ detail.entry.content.count ?? 1 }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'job'">
+                <ElDescriptionsItem label="状态">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.status }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="任务">
+                  <span class="font-mono text-xs">{{ detail.entry.content.name }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="连接">
+                  {{ detail.entry.content.connection }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="队列">
+                  {{ detail.entry.content.queue }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="尝试次数">
+                  {{ detail.entry.content.tries ?? 1 }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="超时时间">
+                  {{ detail.entry.content.timeout ?? '-' }} 秒
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.batch" label="批处理">
+                  {{ detail.entry.content.batch }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'event'">
+                <ElDescriptionsItem label="事件">
+                  <span class="font-mono text-xs">{{ detail.entry.content.name }}</span>
+                  <ElTag
+                    v-if="detail.entry.content.broadcast"
+                    size="small"
+                    type="info"
+                    class="ml-2"
+                  >
+                    Broadcast
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="监听器数">
+                  {{ detail.entry.content.listeners?.length ?? 0 }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'cache'">
+                <ElDescriptionsItem label="动作">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.type }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="键名">
+                  <span class="font-mono text-xs">{{ detail.entry.content.key }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.expiration !== undefined"
+                  label="过期时间"
+                >
+                  {{ detail.entry.content.expiration }} 秒
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'redis'">
+                <ElDescriptionsItem label="连接">
+                  {{ detail.entry.content.connection }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="耗时">
+                  {{ detail.entry.content.time }} ms
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'mail'">
+                <ElDescriptionsItem label="Mailable">
+                  <span class="font-mono text-xs">{{ detail.entry.content.mailable || '-' }}</span>
+                  <ElTag v-if="detail.entry.content.queued" size="small" type="info" class="ml-2">
+                    Queued
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="发件人">
+                  {{
+                    detail.entry.content.from
+                      ?.map((f: any) => `${f.name} <${f.address}>`)
+                      .join(', ') || '-'
+                  }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="收件人">
+                  {{ formatRecipients(detail.entry.content.to) }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.replyTo" label="回复">
+                  {{ formatRecipients(detail.entry.content.replyTo) }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.cc" label="抄送">
+                  {{ formatRecipients(detail.entry.content.cc) }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.bcc" label="密送">
+                  {{ formatRecipients(detail.entry.content.bcc) }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="主题">
+                  {{ detail.entry.content.subject || '-' }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'notification'">
+                <ElDescriptionsItem label="通知">
+                  <span class="font-mono text-xs">{{
+                    detail.entry.content.notification || '-'
+                  }}</span>
+                  <ElTag v-if="detail.entry.content.queued" size="small" type="info" class="ml-2">
+                    Queued
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="渠道">
+                  {{ detail.entry.content.channel }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="接收者">
+                  <span class="font-mono text-xs">{{
+                    detail.entry.content.notifiable || '-'
+                  }}</span>
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'gate'">
+                <ElDescriptionsItem label="能力">
+                  <span class="font-mono text-xs">{{ detail.entry.content.ability }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="结果">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.result }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.message" label="信息">
+                  {{ detail.entry.content.message }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.file" label="位置">
+                  {{ detail.entry.content.file }}:{{ detail.entry.content.line }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'command'">
+                <ElDescriptionsItem label="命令">
+                  <span class="font-mono text-xs">{{ detail.entry.content.command }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="退出码">
+                  {{ detail.entry.content.exit_code ?? '-' }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'schedule'">
+                <ElDescriptionsItem label="描述">
+                  {{ detail.entry.content.description || '-' }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="命令">
+                  <span class="font-mono text-xs">{{ detail.entry.content.command }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="表达式">
+                  <span class="font-mono text-xs">{{ detail.entry.content.expression }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="用户">
+                  {{ detail.entry.content.user }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="时区">
+                  {{ detail.entry.content.timezone }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'view'">
+                <ElDescriptionsItem label="视图">
+                  <span class="font-mono text-xs">{{ detail.entry.content.name }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="路径">
+                  <span class="font-mono text-xs">{{ detail.entry.content.path }}</span>
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'batch'">
+                <ElDescriptionsItem label="状态">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.status }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.cancelledAt" label="取消时间">
+                  {{ detail.entry.content.cancelledAt }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem v-if="detail.entry.content.finishedAt" label="完成时间">
+                  {{ detail.entry.content.finishedAt }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="名称">
+                  {{ detail.entry.content.name || '-' }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="连接">
+                  {{ detail.entry.content.connection }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="队列">
+                  {{ detail.entry.content.queue }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="总任务数">
+                  {{ detail.entry.content.totalJobs }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="待处理">
+                  {{ detail.entry.content.pendingJobs }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="已失败">
+                  {{ detail.entry.content.failedJobs }}
+                </ElDescriptionsItem>
+              </template>
+
+              <template v-else-if="detail.entry.type === 'client_request'">
+                <ElDescriptionsItem label="方法">
+                  <ElTag size="small" :type="entryBadgeType(detail.entry)">
+                    {{ detail.entry.content.method }}
+                  </ElTag>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="URI">
+                  <span class="font-mono text-xs">{{ detail.entry.content.uri }}</span>
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="状态码">
+                  {{ detail.entry.content.response_status ?? 'N/A' }}
+                </ElDescriptionsItem>
+                <ElDescriptionsItem label="耗时">
+                  {{ detail.entry.content.duration ?? '-' }} ms
+                </ElDescriptionsItem>
+              </template>
+
+              <ElDescriptionsItem v-if="relatedEntryLinks.length" label="关联条目">
+                <div class="flex flex-wrap gap-2">
+                  <el-link
+                    v-for="link in relatedEntryLinks"
+                    :key="link.type"
+                    type="primary"
+                    @click="loadDetail(link.id)"
+                  >
+                    查看{{ link.label }}
+                  </el-link>
+                </div>
+              </ElDescriptionsItem>
+
+              <ElDescriptionsItem v-if="detail.entry.tags.length" label="标签">
+                <div class="flex flex-wrap gap-1">
+                  <ElTag
+                    v-for="tag in detail.entry.tags"
+                    :key="tag"
+                    size="small"
+                    effect="plain"
+                    @click="filterByTag(tag)"
+                    class="cursor-pointer"
+                  >
+                    {{ tag }}
+                  </ElTag>
+                </div>
+              </ElDescriptionsItem>
+            </ElDescriptions>
           </div>
 
-          <div class="mt-4">
-            <div class="text-xs uppercase font-bold text-g-500 mb-2">内容</div>
-            <pre class="json-block">{{ formatJson(detail.entry.content) }}</pre>
+          <!-- 认证用户卡片 -->
+          <div v-if="detail.entry.content.user && detail.entry.content.user.id" class="detail-card">
+            <div class="detail-card-head">认证用户</div>
+            <ElDescriptions :column="1" border size="small" class="detail-desc">
+              <ElDescriptionsItem label="ID">{{ detail.entry.content.user.id }}</ElDescriptionsItem>
+              <ElDescriptionsItem v-if="detail.entry.content.user.name" label="姓名">
+                {{ detail.entry.content.user.name }}
+              </ElDescriptionsItem>
+              <ElDescriptionsItem v-if="detail.entry.content.user.email" label="邮箱">
+                {{ detail.entry.content.user.email }}
+              </ElDescriptionsItem>
+            </ElDescriptions>
           </div>
 
-          <!-- 同批次关联条目：按类型分 Tab（对齐原版 Telescope RelatedEntries 布局） -->
-          <div v-if="relatedGroups.length" class="mt-4 related-entries">
+          <!-- 请求类：请求体 / 响应体 分两组卡片（对齐 Telescope 原版） -->
+          <template v-if="requestDetailGroups.length">
+            <div v-for="group in requestDetailGroups" :key="group.key" class="detail-card">
+              <ElTabs v-model="group.active" class="detail-tabs">
+                <ElTabPane
+                  v-for="tab in group.tabs"
+                  :key="tab.key"
+                  :name="tab.key"
+                  :label="tab.label"
+                >
+                  <pre v-if="tab.mode === 'json'" class="json-block">{{
+                    formatJson(tab.data)
+                  }}</pre>
+                  <pre v-else class="json-block">{{ tab.data }}</pre>
+                </ElTabPane>
+              </ElTabs>
+            </div>
+          </template>
+
+          <!-- 非请求类：单卡片内容 Tab -->
+          <div v-else-if="detailTabs.length" class="detail-card">
+            <ElTabs v-model="detailContentTab" class="detail-tabs">
+              <ElTabPane
+                v-for="tab in detailTabs"
+                :key="tab.key"
+                :name="tab.key"
+                :label="tab.label"
+              >
+                <!-- JSON 数据展示 -->
+                <pre v-if="tab.mode === 'json'" class="json-block">{{ formatJson(tab.data) }}</pre>
+
+                <!-- 纯文本展示（异常消息等） -->
+                <pre v-else-if="tab.mode === 'text'" class="json-block">{{ tab.data }}</pre>
+
+                <!-- SQL 展示 -->
+                <pre v-else-if="tab.mode === 'sql'" class="json-block">{{
+                  formatSql(tab.data)
+                }}</pre>
+              </ElTabPane>
+            </ElTabs>
+          </div>
+
+          <!-- 邮件预览（无 Tab，直接显示 HTML） -->
+          <div v-if="detail.entry.type === 'mail' && detail.entry.content.html" class="detail-card">
+            <div class="detail-card-head">邮件预览</div>
+            <iframe
+              :srcdoc="detail.entry.content.html"
+              class="mail-iframe"
+              sandbox="allow-same-origin"
+            />
+          </div>
+
+          <!-- 同批次关联条目 -->
+          <div v-if="relatedGroups.length" class="detail-card related-entries">
+            <div class="detail-card-head">同批次关联条目</div>
             <ElTabs v-model="relatedTab">
               <ElTabPane
                 v-for="group in relatedGroups"
@@ -190,7 +594,7 @@
                     </small>
                   </div>
                 </div>
-                <div class="related-body">
+                <div>
                   <div
                     v-for="item in group.entries"
                     :key="item.id"
@@ -299,6 +703,8 @@
   const detail = ref<DebugEntryResponse | null>(null)
   /** 当前激活的关联条目 Tab（对应条目类型） */
   const relatedTab = ref('')
+  /** 详情内容 Tab 激活项 */
+  const detailContentTab = ref('')
 
   /** 关联条目 Tab 顺序，与原版 Telescope 保持一致 */
   const relatedTabOrder: DebugEntryType[] = [
@@ -317,7 +723,197 @@
     'client_request'
   ]
 
-  /** 同批次关联条目按类型分组（排除 request / command 自身入口类型） */
+  /** 详情抽屉标题 */
+  const detailTitle = computed(() => {
+    if (!detail.value) return '条目详情'
+    return `${typeLabel(detail.value.entry.type)}详情`
+  })
+
+  /** 关联条目链接（同批次中的 request / job / command） */
+  const relatedEntryLinks = computed(() => {
+    const batch = detail.value?.batch ?? []
+    const entryType = detail.value?.entry.type
+    const linkTypes = [
+      { type: 'request' as const, label: '请求' },
+      { type: 'job' as const, label: '任务' },
+      { type: 'command' as const, label: '命令' }
+    ]
+    return linkTypes
+      .filter(({ type: t }) => t !== entryType)
+      .map(({ type: t, label }) => {
+        const item = batch.find((b) => b.type === t)
+        return item ? { type: t, label, id: item.id } : null
+      })
+      .filter(Boolean) as Array<{ type: DebugEntryType; label: string; id: string }>
+  })
+
+  /** 请求类详情分组（请求组 / 响应组各一张卡片，对齐 Telescope 原版） */
+  const requestDetailGroups = computed(() => {
+    const entry = detail.value?.entry
+    if (!entry || !['request', 'client_request'].includes(entry.type)) return []
+    const content = entry.content
+    const groups: Array<{
+      key: string
+      active: string
+      tabs: Array<{ key: string; label: string; mode: 'json' | 'text'; data: unknown }>
+    }> = []
+
+    const reqTabs: (typeof groups)[0]['tabs'] = []
+    if (content.payload !== undefined && content.payload !== null) {
+      reqTabs.push({ key: 'payload', label: 'Payload', mode: 'json', data: content.payload })
+    }
+    if (content.headers) {
+      reqTabs.push({ key: 'headers', label: 'Headers', mode: 'json', data: content.headers })
+    }
+    if (reqTabs.length) {
+      groups.push({ key: 'request', active: reqTabs[0].key, tabs: reqTabs })
+    }
+
+    const resTabs: (typeof groups)[0]['tabs'] = []
+    if (content.response !== undefined && content.response !== null) {
+      resTabs.push({ key: 'response', label: 'Response', mode: 'json', data: content.response })
+    }
+    if (content.response_headers) {
+      resTabs.push({
+        key: 'response_headers',
+        label: 'Headers',
+        mode: 'json',
+        data: content.response_headers
+      })
+    }
+    if (content.session !== undefined) {
+      resTabs.push({ key: 'session', label: 'Session', mode: 'json', data: content.session })
+    }
+    if (resTabs.length) {
+      groups.push({ key: 'response', active: resTabs[0].key, tabs: resTabs })
+    }
+    return groups
+  })
+
+  /** 详情内容 Tab 配置（对齐 Telescope 原版的 after-attributes-card 区块） */
+  const detailTabs = computed(() => {
+    const entry = detail.value?.entry
+    if (!entry) return []
+    const content = entry.content
+    const tabs: Array<{
+      key: string
+      label: string
+      mode: 'json' | 'text' | 'sql'
+      data: unknown
+    }> = []
+
+    switch (entry.type) {
+      case 'request':
+        tabs.push({ key: 'payload', label: 'Payload', mode: 'json', data: content.payload ?? {} })
+        tabs.push({ key: 'headers', label: 'Headers', mode: 'json', data: content.headers ?? {} })
+        tabs.push({
+          key: 'response',
+          label: 'Response',
+          mode: 'json',
+          data: content.response ?? {}
+        })
+        tabs.push({
+          key: 'response_headers',
+          label: '响应 Headers',
+          mode: 'json',
+          data: content.response_headers ?? {}
+        })
+        tabs.push({ key: 'session', label: 'Session', mode: 'json', data: content.session ?? {} })
+        break
+      case 'exception':
+        tabs.push({ key: 'message', label: '消息', mode: 'text', data: content.message ?? '' })
+        if (content.context) {
+          tabs.push({ key: 'context', label: '上下文', mode: 'json', data: content.context })
+        }
+        if (content.trace) {
+          tabs.push({
+            key: 'trace',
+            label: '堆栈',
+            mode: 'text',
+            data: content.trace.map((t: any, i: number) => `#${i} ${t.file}:${t.line}`).join('\n')
+          })
+        }
+        break
+      case 'log':
+        tabs.push({ key: 'message', label: '日志消息', mode: 'text', data: content.message ?? '' })
+        if (content.context) {
+          tabs.push({ key: 'context', label: '上下文', mode: 'json', data: content.context })
+        }
+        break
+      case 'query':
+        tabs.push({ key: 'sql', label: 'SQL', mode: 'sql', data: content.sql ?? '' })
+        if (content.bindings) {
+          tabs.push({ key: 'bindings', label: '参数绑定', mode: 'json', data: content.bindings })
+        }
+        break
+      case 'model':
+        tabs.push({ key: 'changes', label: '变更', mode: 'json', data: content.changes ?? {} })
+        if (content.original) {
+          tabs.push({ key: 'original', label: '原始值', mode: 'json', data: content.original })
+        }
+        break
+      case 'job':
+        tabs.push({ key: 'payload', label: 'Data', mode: 'json', data: content.payload ?? {} })
+        if (content.exception) {
+          tabs.push({ key: 'exception', label: '异常消息', mode: 'text', data: content.exception })
+        }
+        if (content.trace) {
+          tabs.push({ key: 'trace', label: '堆栈', mode: 'text', data: content.trace })
+        }
+        break
+      case 'event':
+        tabs.push({ key: 'payload', label: '事件数据', mode: 'json', data: content.payload ?? {} })
+        if (content.listeners?.length) {
+          tabs.push({ key: 'listeners', label: '监听器', mode: 'json', data: content.listeners })
+        }
+        break
+      case 'cache':
+        if (content.value !== undefined) {
+          tabs.push({ key: 'value', label: '值', mode: 'json', data: content.value })
+        }
+        break
+      case 'redis':
+        tabs.push({ key: 'command', label: '命令', mode: 'text', data: content.command ?? '' })
+        break
+      case 'gate':
+        tabs.push({ key: 'arguments', label: '参数', mode: 'json', data: content.arguments ?? [] })
+        break
+      case 'command':
+        tabs.push({ key: 'arguments', label: '参数', mode: 'json', data: content.arguments ?? [] })
+        tabs.push({ key: 'options', label: '选项', mode: 'json', data: content.options ?? {} })
+        break
+      case 'schedule':
+        if (content.output) {
+          tabs.push({ key: 'output', label: '输出', mode: 'text', data: content.output })
+        }
+        break
+      case 'view':
+        tabs.push({ key: 'data', label: '数据', mode: 'json', data: content.data ?? {} })
+        if (content.composers?.length) {
+          tabs.push({ key: 'composers', label: 'Composers', mode: 'json', data: content.composers })
+        }
+        break
+      case 'client_request':
+        if (content.payload)
+          tabs.push({ key: 'payload', label: 'Payload', mode: 'json', data: content.payload })
+        if (content.headers)
+          tabs.push({ key: 'headers', label: 'Headers', mode: 'json', data: content.headers })
+        if (content.response)
+          tabs.push({ key: 'response', label: 'Response', mode: 'json', data: content.response })
+        if (content.response_headers) {
+          tabs.push({
+            key: 'response_headers',
+            label: '响应 Headers',
+            mode: 'json',
+            data: content.response_headers
+          })
+        }
+        break
+      default:
+        tabs.push({ key: 'content', label: '内容', mode: 'json', data: content })
+    }
+    return tabs
+  })
   const relatedGroups = computed(() => {
     const batch = detail.value?.batch ?? []
     return relatedTabOrder
@@ -638,9 +1234,47 @@
     try {
       detail.value = await fetchDebugEntry(id)
       relatedTab.value = relatedGroups.value[0]?.type ?? ''
+      detailContentTab.value = detailTabs.value[0]?.key ?? ''
     } finally {
       detailLoading.value = false
     }
+  }
+
+  /** 状态码标签类型 */
+  function statusCodeTagType(
+    code: number | string | undefined
+  ): 'success' | 'warning' | 'danger' | 'info' {
+    const n = Number(code)
+    if (n >= 200 && n < 300) return 'success'
+    if (n >= 300 && n < 400) return 'info'
+    if (n >= 400 && n < 500) return 'warning'
+    return 'danger'
+  }
+
+  /** 格式化邮件收件人列表 */
+  function formatRecipients(list?: Array<{ name?: string; address?: string }>): string {
+    if (!list?.length) return '-'
+    return list.map((r) => (r.name ? `${r.name} <${r.address}>` : r.address)).join(', ')
+  }
+
+  /** 格式化 SQL（仅做基础缩进占位，保持原文展示） */
+  function formatSql(sql: string): string {
+    return sql || ''
+  }
+
+  /** 按标签过滤列表（点击详情标签跳转） */
+  function filterByTag(tag: string): void {
+    tagFilter.value = tag
+    detailVisible.value = false
+    reload()
+  }
+
+  /** 按 family_hash 过滤同类型异常 */
+  function filterByFamilyHash(): void {
+    if (!detail.value?.entry.family_hash) return
+    detailVisible.value = false
+    // 当前接口暂无 family_hash 查询参数，先用类型刷新
+    reload()
   }
 
   /** 打开详情抽屉 */
@@ -669,9 +1303,120 @@
     padding: 4px;
   }
 
+  .detail-scroll {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .detail-card {
+    margin-bottom: 16px;
+    background: var(--default-box-color);
+    border: 1px solid var(--art-card-border);
+    border-radius: calc(var(--custom-radius) / 2 + 2px);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .detail-card-head {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--art-gray-900);
+    border-bottom: 1px solid var(--default-border);
+  }
+
+  .detail-desc {
+    :deep(.el-descriptions__label) {
+      width: 120px;
+      font-weight: 400;
+      color: var(--art-gray-500);
+    }
+
+    :deep(.el-descriptions__body) {
+      padding: 12px 16px;
+    }
+  }
+
+  .detail-tabs {
+    padding: 0;
+
+    :deep(.el-tabs__header) {
+      padding: 12px 0 0;
+      margin: 0 16px;
+      border-bottom: 1px solid var(--default-border);
+    }
+
+    :deep(.el-tabs__nav-wrap::after) {
+      display: none;
+    }
+
+    :deep(.el-tabs__item) {
+      height: 32px;
+      font-size: 13px;
+      color: var(--art-gray-600);
+
+      &.is-active {
+        font-weight: 500;
+        color: var(--theme-color);
+      }
+    }
+
+    :deep(.el-tabs__active-bar) {
+      height: 2px;
+      background-color: var(--theme-color);
+    }
+
+    :deep(.el-tabs__content) {
+      padding: 12px 16px 16px;
+    }
+  }
+
+  .json-block {
+    max-height: 420px;
+    padding: 14px 16px;
+    margin: 0;
+    overflow: auto;
+    font-family: var(--el-font-family-mono, monospace);
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--art-gray-800);
+    word-break: break-all;
+    white-space: pre-wrap;
+    background: var(--art-gray-100);
+    border: 1px solid var(--art-gray-200);
+    border-radius: calc(var(--custom-radius) / 2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--art-gray-300) transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--art-gray-300);
+      border-radius: 3px;
+    }
+  }
+
+  .mail-iframe {
+    width: 100%;
+    min-height: 400px;
+    background: #fff;
+    border: 0;
+  }
+
+  .related-entries :deep(.el-tabs__header) {
+    margin: 0 16px;
+  }
+
   .related-entries :deep(.el-tabs__content) {
     min-height: 160px;
     max-height: 320px;
+    padding: 0 16px 16px;
     overflow-y: auto;
   }
 
@@ -679,7 +1424,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 8px 0;
     font-size: 12px;
     font-weight: 500;
     color: var(--art-gray-500);
@@ -696,26 +1441,12 @@
     display: flex;
     gap: 12px;
     align-items: center;
-    padding: 8px 12px;
+    padding: 8px 0;
     border-bottom: 1px solid var(--default-border);
     transition: all 0.2s ease;
 
     &:last-child {
       border-bottom: 0;
     }
-  }
-
-  .json-block {
-    max-height: 420px;
-    padding: 12px;
-    overflow: auto;
-    font-family: var(--el-font-family-mono, monospace);
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--art-gray-800);
-    word-break: break-all;
-    white-space: pre-wrap;
-    background: var(--art-gray-100);
-    border-radius: 6px;
   }
 </style>
