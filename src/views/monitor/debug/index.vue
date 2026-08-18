@@ -4,20 +4,20 @@
     <div class="art-card p-4 mb-4 flex items-center justify-between flex-wrap gap-3">
       <div class="flex items-center gap-2">
         <ArtSvgIcon icon="ri:bug-line" class="text-lg text-theme" />
-        <h3 class="text-base font-medium text-g-900">调试面板</h3>
+        <h3 class="text-base font-medium text-g-900">{{ $t('monitor.debug.title') }}</h3>
         <ElTag size="small" :type="statusTagType">{{ statusLabel }}</ElTag>
       </div>
       <div class="flex items-center gap-2">
         <ElInput
           v-model="tagFilter"
-          placeholder="按标签筛选，如 admin:1"
+          :placeholder="$t('monitor.debug.filterPlaceholder')"
           size="small"
           clearable
           style="width: 200px"
           @keyup.enter="reload"
           @clear="reload"
         />
-        <ElButton size="small" @click="reload">筛选</ElButton>
+        <ElButton size="small" @click="reload">{{ $t('monitor.debug.filter') }}</ElButton>
         <ElButton :icon="Refresh" :loading="loading" size="small" circle @click="reload" />
         <ElButton
           v-auth="'debug.manage'"
@@ -25,10 +25,10 @@
           :type="status === 'paused' ? 'success' : 'warning'"
           @click="handleToggleRecording"
         >
-          {{ status === 'paused' ? '恢复记录' : '暂停记录' }}
+          {{ status === 'paused' ? $t('monitor.debug.resume') : $t('monitor.debug.pause') }}
         </ElButton>
         <ElButton v-auth="'debug.manage'" size="small" type="danger" @click="handleClear">
-          清空记录
+          {{ $t('monitor.debug.clear') }}
         </ElButton>
       </div>
     </div>
@@ -37,7 +37,9 @@
       <!-- 左侧：类型导航 + 监控标签 -->
       <div class="w-full md:w-66 shrink-0">
         <div class="art-card p-4 mb-4">
-          <div class="text-xs uppercase font-bold text-g-500 mb-2">条目类型</div>
+          <div class="text-xs uppercase font-bold text-g-500 mb-2">{{
+            $t('monitor.debug.entryTypes')
+          }}</div>
           <div class="space-y-0.5">
             <div
               v-for="item in entryTypes"
@@ -59,21 +61,25 @@
         <div class="art-card p-4">
           <div
             class="text-xs uppercase font-bold text-g-500 mb-2"
-            title="命中标签的条目将被强制记录"
+            :title="$t('monitor.debug.monitorTagsHint')"
           >
-            监控标签
+            {{ $t('monitor.debug.monitorTags') }}
           </div>
           <div v-loading="tagsLoading">
             <div v-auth="'debug.manage'" class="flex items-center gap-1.5 mb-3">
               <ElInput
                 v-model="newTag"
-                placeholder="输入标签"
+                :placeholder="$t('monitor.debug.tagPlaceholder')"
                 size="small"
                 @keyup.enter="handleMonitorTag"
               />
-              <ElButton size="small" type="primary" @click="handleMonitorTag">添加</ElButton>
+              <ElButton size="small" type="primary" @click="handleMonitorTag">{{
+                $t('monitor.debug.addTag')
+              }}</ElButton>
             </div>
-            <p v-if="!monitoredTags.length" class="text-xs text-g-500">暂无监控标签</p>
+            <p v-if="!monitoredTags.length" class="text-xs text-g-500">{{
+              $t('monitor.debug.noTags')
+            }}</p>
             <div v-else class="flex flex-wrap gap-1.5">
               <ElTag
                 v-for="tag in monitoredTags"
@@ -95,12 +101,16 @@
           <div class="art-card-header">
             <div class="title">
               <h4>{{ currentTypeLabel }}</h4>
-              <p>共加载 {{ entries.length }} 条，按时间倒序</p>
+              <p>{{ $t('monitor.debug.totalLoaded', { count: entries.length }) }}</p>
             </div>
           </div>
 
           <div v-loading="loading" class="mt-3">
-            <ElEmpty v-if="!entries.length" description="暂无调试记录" :image-size="60" />
+            <ElEmpty
+              v-if="!entries.length"
+              :description="$t('monitor.debug.empty')"
+              :image-size="60"
+            />
             <div v-else class="space-y-1.5">
               <div
                 v-for="entry in entries"
@@ -127,7 +137,9 @@
             </div>
 
             <div v-if="nextBefore !== null" class="mt-4 text-center">
-              <ElButton size="small" :loading="loadingMore" @click="loadMore">加载更多</ElButton>
+              <ElButton size="small" :loading="loadingMore" @click="loadMore">{{
+                $t('monitor.debug.loadMore')
+              }}</ElButton>
             </div>
           </div>
         </div>
@@ -146,32 +158,39 @@
         <template v-if="detail">
           <!-- 基础信息卡片 -->
           <div class="detail-card">
-            <div class="detail-card-head">基础信息</div>
+            <div class="detail-card-head">{{ $t('monitor.debug.basicInfo') }}</div>
             <ElDescriptions :column="1" border size="small" class="detail-desc">
-              <ElDescriptionsItem label="条目 ID">{{ detail.entry.id }}</ElDescriptionsItem>
-              <ElDescriptionsItem label="主机名">{{
+              <ElDescriptionsItem :label="$t('monitor.debug.entryId')">{{
+                detail.entry.id
+              }}</ElDescriptionsItem>
+              <ElDescriptionsItem :label="$t('monitor.debug.hostname')">{{
                 detail.entry.content.hostname || '-'
               }}</ElDescriptionsItem>
-              <ElDescriptionsItem label="记录时间">
+              <ElDescriptionsItem :label="$t('monitor.debug.recordedAt')">
                 {{ formatTime(detail.entry.created_at) }}
                 <span class="text-g-500">（{{ detail.entry.created_at }}）</span>
               </ElDescriptionsItem>
 
               <!-- 类型专属字段 -->
               <template v-if="detail.entry.type === 'request'">
-                <ElDescriptionsItem label="方法">
+                <ElDescriptionsItem :label="$t('monitor.debug.method')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.method }}
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="控制器动作">
+                <ElDescriptionsItem :label="$t('monitor.debug.controllerAction')">
                   {{ detail.entry.content.controller_action || '-' }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.middleware?.length" label="中间件">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.middleware?.length"
+                  :label="$t('monitor.debug.middleware')"
+                >
                   {{ detail.entry.content.middleware.join(', ') }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="路径">{{ detail.entry.content.uri }}</ElDescriptionsItem>
-                <ElDescriptionsItem label="状态码">
+                <ElDescriptionsItem :label="$t('monitor.debug.path')">{{
+                  detail.entry.content.uri
+                }}</ElDescriptionsItem>
+                <ElDescriptionsItem :label="$t('monitor.debug.statusCode')">
                   <ElTag
                     size="small"
                     :type="statusCodeTagType(detail.entry.content.response_status)"
@@ -179,28 +198,30 @@
                     {{ detail.entry.content.response_status }}
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="耗时">
+                <ElDescriptionsItem :label="$t('monitor.debug.duration')">
                   {{ detail.entry.content.duration ?? '-' }} ms
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="IP 地址">
+                <ElDescriptionsItem :label="$t('monitor.debug.ipAddress')">
                   {{ detail.entry.content.ip_address || '-' }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="内存使用">
+                <ElDescriptionsItem :label="$t('monitor.debug.memoryUsage')">
                   {{ detail.entry.content.memory || '-' }} MB
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'exception'">
-                <ElDescriptionsItem label="类型">
+                <ElDescriptionsItem :label="$t('monitor.debug.type')">
                   <span class="font-mono text-xs">{{ detail.entry.content.class }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="位置">
+                <ElDescriptionsItem :label="$t('monitor.debug.location')">
                   {{ detail.entry.content.file }}:{{ detail.entry.content.line }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="出现次数">
-                  <el-link type="primary" @click="filterByFamilyHash">查看同类型</el-link>
+                <ElDescriptionsItem :label="$t('monitor.debug.occurrences')">
+                  <el-link type="primary" @click="filterByFamilyHash">{{
+                    $t('monitor.debug.viewSame')
+                  }}</el-link>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="解决时间">
+                <ElDescriptionsItem :label="$t('monitor.debug.resolvedAt')">
                   <template v-if="detail.entry.content.resolved_at">
                     {{ detail.entry.content.resolved_at }}
                   </template>
@@ -211,14 +232,14 @@
                       type="success"
                       @click="handleResolve"
                     >
-                      标记为已解决
+                      {{ $t('monitor.debug.markResolved') }}
                     </ElButton>
                   </template>
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'log'">
-                <ElDescriptionsItem label="级别">
+                <ElDescriptionsItem :label="$t('monitor.debug.level')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.level }}
                   </ElTag>
@@ -226,13 +247,13 @@
               </template>
 
               <template v-else-if="detail.entry.type === 'query'">
-                <ElDescriptionsItem label="连接">
+                <ElDescriptionsItem :label="$t('monitor.debug.connection')">
                   {{ detail.entry.content.connection }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="位置">
+                <ElDescriptionsItem :label="$t('monitor.debug.location')">
                   {{ detail.entry.content.file }}:{{ detail.entry.content.line }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="耗时">
+                <ElDescriptionsItem :label="$t('monitor.debug.duration')">
                   <span :class="detail.entry.content.slow ? 'text-red-500 font-medium' : ''">
                     {{ detail.entry.content.time }} ms
                   </span>
@@ -240,47 +261,52 @@
               </template>
 
               <template v-else-if="detail.entry.type === 'model'">
-                <ElDescriptionsItem label="模型">
+                <ElDescriptionsItem :label="$t('monitor.debug.model')">
                   <span class="font-mono text-xs">{{ detail.entry.content.model }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="动作">
+                <ElDescriptionsItem :label="$t('monitor.debug.action')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.action }}
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="实例数">
+                <ElDescriptionsItem :label="$t('monitor.debug.instances')">
                   {{ detail.entry.content.count ?? 1 }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'job'">
-                <ElDescriptionsItem label="状态">
+                <ElDescriptionsItem :label="$t('monitor.debug.status')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.status }}
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="任务">
+                <ElDescriptionsItem :label="$t('monitor.debug.job')">
                   <span class="font-mono text-xs">{{ detail.entry.content.name }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="连接">
+                <ElDescriptionsItem :label="$t('monitor.debug.connection')">
                   {{ detail.entry.content.connection }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="队列">
+                <ElDescriptionsItem :label="$t('monitor.debug.queue')">
                   {{ detail.entry.content.queue }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="尝试次数">
+                <ElDescriptionsItem :label="$t('monitor.debug.attempts')">
                   {{ detail.entry.content.tries ?? 1 }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="超时时间">
-                  {{ detail.entry.content.timeout ?? '-' }} 秒
+                <ElDescriptionsItem :label="$t('monitor.debug.timeout')">
+                  {{
+                    $t('monitor.debug.secondsSuffix', { n: detail.entry.content.timeout ?? '-' })
+                  }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.batch" label="批处理">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.batch"
+                  :label="$t('monitor.debug.batch')"
+                >
                   {{ detail.entry.content.batch }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'event'">
-                <ElDescriptionsItem label="事件">
+                <ElDescriptionsItem :label="$t('monitor.debug.event')">
                   <span class="font-mono text-xs">{{ detail.entry.content.name }}</span>
                   <ElTag
                     v-if="detail.entry.content.broadcast"
@@ -291,33 +317,33 @@
                     Broadcast
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="监听器数">
+                <ElDescriptionsItem :label="$t('monitor.debug.listeners')">
                   {{ detail.entry.content.listeners?.length ?? 0 }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'cache'">
-                <ElDescriptionsItem label="动作">
+                <ElDescriptionsItem :label="$t('monitor.debug.action')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.type }}
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="键名">
+                <ElDescriptionsItem :label="$t('monitor.debug.key')">
                   <span class="font-mono text-xs">{{ detail.entry.content.key }}</span>
                 </ElDescriptionsItem>
                 <ElDescriptionsItem
                   v-if="detail.entry.content.expiration !== undefined"
-                  label="过期时间"
+                  :label="$t('monitor.debug.expiration')"
                 >
-                  {{ detail.entry.content.expiration }} 秒
+                  {{ $t('monitor.debug.secondsSuffix', { n: detail.entry.content.expiration }) }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'redis'">
-                <ElDescriptionsItem label="连接">
+                <ElDescriptionsItem :label="$t('monitor.debug.connection')">
                   {{ detail.entry.content.connection }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="耗时">
+                <ElDescriptionsItem :label="$t('monitor.debug.duration')">
                   {{ detail.entry.content.time }} ms
                 </ElDescriptionsItem>
               </template>
@@ -329,32 +355,38 @@
                     Queued
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="发件人">
+                <ElDescriptionsItem :label="$t('monitor.debug.from')">
                   {{
                     detail.entry.content.from
                       ?.map((f: any) => `${f.name} <${f.address}>`)
                       .join(', ') || '-'
                   }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="收件人">
+                <ElDescriptionsItem :label="$t('monitor.debug.to')">
                   {{ formatRecipients(detail.entry.content.to) }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.replyTo" label="回复">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.replyTo"
+                  :label="$t('monitor.debug.replyTo')"
+                >
                   {{ formatRecipients(detail.entry.content.replyTo) }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.cc" label="抄送">
+                <ElDescriptionsItem v-if="detail.entry.content.cc" :label="$t('monitor.debug.cc')">
                   {{ formatRecipients(detail.entry.content.cc) }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.bcc" label="密送">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.bcc"
+                  :label="$t('monitor.debug.bcc')"
+                >
                   {{ formatRecipients(detail.entry.content.bcc) }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="主题">
+                <ElDescriptionsItem :label="$t('monitor.debug.subject')">
                   {{ detail.entry.content.subject || '-' }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'notification'">
-                <ElDescriptionsItem label="通知">
+                <ElDescriptionsItem :label="$t('monitor.debug.notification')">
                   <span class="font-mono text-xs">{{
                     detail.entry.content.notification || '-'
                   }}</span>
@@ -362,10 +394,10 @@
                     Queued
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="渠道">
+                <ElDescriptionsItem :label="$t('monitor.debug.channel')">
                   {{ detail.entry.content.channel }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="接收者">
+                <ElDescriptionsItem :label="$t('monitor.debug.recipient')">
                   <span class="font-mono text-xs">{{
                     detail.entry.content.notifiable || '-'
                   }}</span>
@@ -373,92 +405,104 @@
               </template>
 
               <template v-else-if="detail.entry.type === 'gate'">
-                <ElDescriptionsItem label="能力">
+                <ElDescriptionsItem :label="$t('monitor.debug.ability')">
                   <span class="font-mono text-xs">{{ detail.entry.content.ability }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="结果">
+                <ElDescriptionsItem :label="$t('monitor.debug.result')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.result }}
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.message" label="信息">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.message"
+                  :label="$t('monitor.debug.message')"
+                >
                   {{ detail.entry.content.message }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.file" label="位置">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.file"
+                  :label="$t('monitor.debug.location')"
+                >
                   {{ detail.entry.content.file }}:{{ detail.entry.content.line }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'command'">
-                <ElDescriptionsItem label="命令">
+                <ElDescriptionsItem :label="$t('monitor.debug.command')">
                   <span class="font-mono text-xs">{{ detail.entry.content.command }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="退出码">
+                <ElDescriptionsItem :label="$t('monitor.debug.exitCode')">
                   {{ detail.entry.content.exit_code ?? '-' }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'schedule'">
-                <ElDescriptionsItem label="描述">
+                <ElDescriptionsItem :label="$t('monitor.debug.description')">
                   {{ detail.entry.content.description || '-' }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="命令">
+                <ElDescriptionsItem :label="$t('monitor.debug.command')">
                   <span class="font-mono text-xs">{{ detail.entry.content.command }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="表达式">
+                <ElDescriptionsItem :label="$t('monitor.debug.expression')">
                   <span class="font-mono text-xs">{{ detail.entry.content.expression }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="用户">
+                <ElDescriptionsItem :label="$t('monitor.debug.user')">
                   {{ detail.entry.content.user }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="时区">
+                <ElDescriptionsItem :label="$t('monitor.debug.timezone')">
                   {{ detail.entry.content.timezone }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'view'">
-                <ElDescriptionsItem label="视图">
+                <ElDescriptionsItem :label="$t('monitor.debug.view')">
                   <span class="font-mono text-xs">{{ detail.entry.content.name }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="路径">
+                <ElDescriptionsItem :label="$t('monitor.debug.path')">
                   <span class="font-mono text-xs">{{ detail.entry.content.path }}</span>
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'batch'">
-                <ElDescriptionsItem label="状态">
+                <ElDescriptionsItem :label="$t('monitor.debug.status')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.status }}
                   </ElTag>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.cancelledAt" label="取消时间">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.cancelledAt"
+                  :label="$t('monitor.debug.cancelledAt')"
+                >
                   {{ detail.entry.content.cancelledAt }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem v-if="detail.entry.content.finishedAt" label="完成时间">
+                <ElDescriptionsItem
+                  v-if="detail.entry.content.finishedAt"
+                  :label="$t('monitor.debug.finishedAt')"
+                >
                   {{ detail.entry.content.finishedAt }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="名称">
+                <ElDescriptionsItem :label="$t('monitor.debug.name')">
                   {{ detail.entry.content.name || '-' }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="连接">
+                <ElDescriptionsItem :label="$t('monitor.debug.connection')">
                   {{ detail.entry.content.connection }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="队列">
+                <ElDescriptionsItem :label="$t('monitor.debug.queue')">
                   {{ detail.entry.content.queue }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="总任务数">
+                <ElDescriptionsItem :label="$t('monitor.debug.totalJobs')">
                   {{ detail.entry.content.totalJobs }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="待处理">
+                <ElDescriptionsItem :label="$t('monitor.debug.pending')">
                   {{ detail.entry.content.pendingJobs }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="已失败">
+                <ElDescriptionsItem :label="$t('monitor.debug.failedJobs')">
                   {{ detail.entry.content.failedJobs }}
                 </ElDescriptionsItem>
               </template>
 
               <template v-else-if="detail.entry.type === 'client_request'">
-                <ElDescriptionsItem label="方法">
+                <ElDescriptionsItem :label="$t('monitor.debug.method')">
                   <ElTag size="small" :type="entryBadgeType(detail.entry)">
                     {{ detail.entry.content.method }}
                   </ElTag>
@@ -466,15 +510,18 @@
                 <ElDescriptionsItem label="URI">
                   <span class="font-mono text-xs">{{ detail.entry.content.uri }}</span>
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="状态码">
+                <ElDescriptionsItem :label="$t('monitor.debug.statusCode')">
                   {{ detail.entry.content.response_status ?? 'N/A' }}
                 </ElDescriptionsItem>
-                <ElDescriptionsItem label="耗时">
+                <ElDescriptionsItem :label="$t('monitor.debug.duration')">
                   {{ detail.entry.content.duration ?? '-' }} ms
                 </ElDescriptionsItem>
               </template>
 
-              <ElDescriptionsItem v-if="relatedEntryLinks.length" label="关联条目">
+              <ElDescriptionsItem
+                v-if="relatedEntryLinks.length"
+                :label="$t('monitor.debug.relatedEntries')"
+              >
                 <div class="flex flex-wrap gap-2">
                   <el-link
                     v-for="link in relatedEntryLinks"
@@ -482,12 +529,12 @@
                     type="primary"
                     @click="loadDetail(link.id)"
                   >
-                    查看{{ link.label }}
+                    {{ $t('monitor.debug.viewRelated', { label: link.label }) }}
                   </el-link>
                 </div>
               </ElDescriptionsItem>
 
-              <ElDescriptionsItem v-if="detail.entry.tags.length" label="标签">
+              <ElDescriptionsItem v-if="detail.entry.tags.length" :label="$t('monitor.debug.tags')">
                 <div class="flex flex-wrap gap-1">
                   <ElTag
                     v-for="tag in detail.entry.tags"
@@ -506,13 +553,21 @@
 
           <!-- 认证用户卡片 -->
           <div v-if="detail.entry.content.user && detail.entry.content.user.id" class="detail-card">
-            <div class="detail-card-head">认证用户</div>
+            <div class="detail-card-head">{{ $t('monitor.debug.authUser') }}</div>
             <ElDescriptions :column="1" border size="small" class="detail-desc">
-              <ElDescriptionsItem label="ID">{{ detail.entry.content.user.id }}</ElDescriptionsItem>
-              <ElDescriptionsItem v-if="detail.entry.content.user.name" label="姓名">
+              <ElDescriptionsItem :label="$t('monitor.debug.id')">{{
+                detail.entry.content.user.id
+              }}</ElDescriptionsItem>
+              <ElDescriptionsItem
+                v-if="detail.entry.content.user.name"
+                :label="$t('monitor.debug.realName')"
+              >
                 {{ detail.entry.content.user.name }}
               </ElDescriptionsItem>
-              <ElDescriptionsItem v-if="detail.entry.content.user.email" label="邮箱">
+              <ElDescriptionsItem
+                v-if="detail.entry.content.user.email"
+                :label="$t('monitor.debug.email')"
+              >
                 {{ detail.entry.content.user.email }}
               </ElDescriptionsItem>
             </ElDescriptions>
@@ -562,7 +617,7 @@
 
           <!-- 邮件预览（无 Tab，直接显示 HTML） -->
           <div v-if="detail.entry.type === 'mail' && detail.entry.content.html" class="detail-card">
-            <div class="detail-card-head">邮件预览</div>
+            <div class="detail-card-head">{{ $t('monitor.debug.mailPreview') }}</div>
             <iframe
               :srcdoc="detail.entry.content.html"
               class="mail-iframe"
@@ -583,7 +638,12 @@
                   <div>
                     {{ relatedColumns(group.type)[0] }}
                     <small v-if="group.type === 'query'" class="related-summary">
-                      {{ group.entries.length }} 条查询，{{ queriesSummary.duplicated }} 条重复
+                      {{
+                        $t('monitor.debug.queryCountSummary', {
+                          count: group.entries.length,
+                          duplicated: queriesSummary.duplicated
+                        })
+                      }}
                     </small>
                   </div>
                   <div class="text-right">
@@ -660,29 +720,48 @@
   } from '@/api/debug'
   import { Refresh } from '@element-plus/icons-vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
+  import { useI18n } from 'vue-i18n'
 
   defineOptions({ name: 'DebugPanel' })
 
+  const { t } = useI18n()
+
   /** 条目类型导航配置 */
   const entryTypes: Array<{ value: DebugEntryType; label: string; icon: string }> = [
-    { value: 'request', label: '请求', icon: 'ri:exchange-line' },
-    { value: 'exception', label: '异常', icon: 'ri:error-warning-line' },
-    { value: 'log', label: '日志', icon: 'ri:file-text-line' },
-    { value: 'query', label: '数据库', icon: 'ri:database-2-line' },
-    { value: 'model', label: '模型', icon: 'ri:box-3-line' },
-    { value: 'job', label: '任务', icon: 'ri:task-line' },
-    { value: 'batch', label: '批处理', icon: 'ri:stack-line' },
-    { value: 'event', label: '事件', icon: 'ri:broadcast-line' },
-    { value: 'cache', label: '缓存', icon: 'ri:hard-drive-2-line' },
-    { value: 'redis', label: 'Redis', icon: 'ri:server-line' },
-    { value: 'mail', label: '邮件', icon: 'ri:mail-line' },
-    { value: 'notification', label: '通知', icon: 'ri:notification-3-line' },
-    { value: 'gate', label: '授权', icon: 'ri:shield-keyhole-line' },
-    { value: 'command', label: '命令', icon: 'ri:terminal-box-line' },
-    { value: 'schedule', label: '调度', icon: 'ri:calendar-schedule-line' },
-    { value: 'view', label: '视图', icon: 'ri:layout-line' },
-    { value: 'dump', label: 'Dump', icon: 'ri:code-box-line' },
-    { value: 'client_request', label: '外部请求', icon: 'ri:global-line' }
+    { value: 'request', label: t('monitor.debug.entryType.request'), icon: 'ri:exchange-line' },
+    {
+      value: 'exception',
+      label: t('monitor.debug.entryType.exception'),
+      icon: 'ri:error-warning-line'
+    },
+    { value: 'log', label: t('monitor.debug.entryType.log'), icon: 'ri:file-text-line' },
+    { value: 'query', label: t('monitor.debug.entryType.query'), icon: 'ri:database-2-line' },
+    { value: 'model', label: t('monitor.debug.entryType.model'), icon: 'ri:box-3-line' },
+    { value: 'job', label: t('monitor.debug.entryType.job'), icon: 'ri:task-line' },
+    { value: 'batch', label: t('monitor.debug.entryType.batch'), icon: 'ri:stack-line' },
+    { value: 'event', label: t('monitor.debug.entryType.event'), icon: 'ri:broadcast-line' },
+    { value: 'cache', label: t('monitor.debug.entryType.cache'), icon: 'ri:hard-drive-2-line' },
+    { value: 'redis', label: t('monitor.debug.entryType.redis'), icon: 'ri:server-line' },
+    { value: 'mail', label: t('monitor.debug.entryType.mail'), icon: 'ri:mail-line' },
+    {
+      value: 'notification',
+      label: t('monitor.debug.entryType.notification'),
+      icon: 'ri:notification-3-line'
+    },
+    { value: 'gate', label: t('monitor.debug.entryType.gate'), icon: 'ri:shield-keyhole-line' },
+    { value: 'command', label: t('monitor.debug.entryType.command'), icon: 'ri:terminal-box-line' },
+    {
+      value: 'schedule',
+      label: t('monitor.debug.entryType.schedule'),
+      icon: 'ri:calendar-schedule-line'
+    },
+    { value: 'view', label: t('monitor.debug.entryType.view'), icon: 'ri:layout-line' },
+    { value: 'dump', label: t('monitor.debug.entryType.dump'), icon: 'ri:code-box-line' },
+    {
+      value: 'client_request',
+      label: t('monitor.debug.entryType.client_request'),
+      icon: 'ri:global-line'
+    }
   ]
 
   const type = ref<DebugEntryType>('request')
@@ -724,8 +803,8 @@
 
   /** 详情抽屉标题 */
   const detailTitle = computed(() => {
-    if (!detail.value) return '条目详情'
-    return `${typeLabel(detail.value.entry.type)}详情`
+    if (!detail.value) return t('monitor.debug.detailTitle')
+    return t('monitor.debug.detailTitleSuffix', { type: typeLabel(detail.value.entry.type) })
   })
 
   /** 关联条目链接（同批次中的 request / job / command） */
@@ -733,9 +812,9 @@
     const batch = detail.value?.batch ?? []
     const entryType = detail.value?.entry.type
     const linkTypes = [
-      { type: 'request' as const, label: '请求' },
-      { type: 'job' as const, label: '任务' },
-      { type: 'command' as const, label: '命令' }
+      { type: 'request' as const, label: t('monitor.debug.entryType.request') },
+      { type: 'job' as const, label: t('monitor.debug.entryType.job') },
+      { type: 'command' as const, label: t('monitor.debug.entryType.command') }
     ]
     return linkTypes
       .filter(({ type: t }) => t !== entryType)
@@ -766,7 +845,12 @@
       reqTabs.push({ key: 'headers', label: 'Headers', mode: 'json', data: content.headers })
     }
     if (reqTabs.length) {
-      groups.push({ key: 'request', title: '请求', active: reqTabs[0].key, tabs: reqTabs })
+      groups.push({
+        key: 'request',
+        title: t('monitor.debug.tab.requestGroup'),
+        active: reqTabs[0].key,
+        tabs: reqTabs
+      })
     }
 
     const resTabs: (typeof groups)[0]['tabs'] = []
@@ -785,7 +869,12 @@
       resTabs.push({ key: 'session', label: 'Session', mode: 'json', data: content.session })
     }
     if (resTabs.length) {
-      groups.push({ key: 'response', title: '响应', active: resTabs[0].key, tabs: resTabs })
+      groups.push({
+        key: 'response',
+        title: t('monitor.debug.tab.responseGroup'),
+        active: resTabs[0].key,
+        tabs: resTabs
+      })
     }
     return groups
   })
@@ -814,83 +903,178 @@
         })
         tabs.push({
           key: 'response_headers',
-          label: '响应 Headers',
+          label: t('monitor.debug.tab.responseHeaders'),
           mode: 'json',
           data: content.response_headers ?? {}
         })
         tabs.push({ key: 'session', label: 'Session', mode: 'json', data: content.session ?? {} })
         break
       case 'exception':
-        tabs.push({ key: 'message', label: '消息', mode: 'text', data: content.message ?? '' })
+        tabs.push({
+          key: 'message',
+          label: t('monitor.debug.tab.message'),
+          mode: 'text',
+          data: content.message ?? ''
+        })
         if (content.context) {
-          tabs.push({ key: 'context', label: '上下文', mode: 'json', data: content.context })
+          tabs.push({
+            key: 'context',
+            label: t('monitor.debug.tab.context'),
+            mode: 'json',
+            data: content.context
+          })
         }
         if (content.trace) {
           tabs.push({
             key: 'trace',
-            label: '堆栈',
+            label: t('monitor.debug.tab.trace'),
             mode: 'text',
             data: content.trace.map((t: any, i: number) => `#${i} ${t.file}:${t.line}`).join('\n')
           })
         }
         break
       case 'log':
-        tabs.push({ key: 'message', label: '日志消息', mode: 'text', data: content.message ?? '' })
+        tabs.push({
+          key: 'message',
+          label: t('monitor.debug.tab.logMessage'),
+          mode: 'text',
+          data: content.message ?? ''
+        })
         if (content.context) {
-          tabs.push({ key: 'context', label: '上下文', mode: 'json', data: content.context })
+          tabs.push({
+            key: 'context',
+            label: t('monitor.debug.tab.context'),
+            mode: 'json',
+            data: content.context
+          })
         }
         break
       case 'query':
         tabs.push({ key: 'sql', label: 'SQL', mode: 'sql', data: content.sql ?? '' })
         if (content.bindings) {
-          tabs.push({ key: 'bindings', label: '参数绑定', mode: 'json', data: content.bindings })
+          tabs.push({
+            key: 'bindings',
+            label: t('monitor.debug.tab.bindings'),
+            mode: 'json',
+            data: content.bindings
+          })
         }
         break
       case 'model':
-        tabs.push({ key: 'changes', label: '变更', mode: 'json', data: content.changes ?? {} })
+        tabs.push({
+          key: 'changes',
+          label: t('monitor.debug.tab.changes'),
+          mode: 'json',
+          data: content.changes ?? {}
+        })
         if (content.original) {
-          tabs.push({ key: 'original', label: '原始值', mode: 'json', data: content.original })
+          tabs.push({
+            key: 'original',
+            label: t('monitor.debug.tab.original'),
+            mode: 'json',
+            data: content.original
+          })
         }
         break
       case 'job':
         tabs.push({ key: 'payload', label: 'Data', mode: 'json', data: content.payload ?? {} })
         if (content.exception) {
-          tabs.push({ key: 'exception', label: '异常消息', mode: 'text', data: content.exception })
+          tabs.push({
+            key: 'exception',
+            label: t('monitor.debug.tab.exceptionMessage'),
+            mode: 'text',
+            data: content.exception
+          })
         }
         if (content.trace) {
-          tabs.push({ key: 'trace', label: '堆栈', mode: 'text', data: content.trace })
+          tabs.push({
+            key: 'trace',
+            label: t('monitor.debug.tab.trace'),
+            mode: 'text',
+            data: content.trace
+          })
         }
         break
       case 'event':
-        tabs.push({ key: 'payload', label: '事件数据', mode: 'json', data: content.payload ?? {} })
+        tabs.push({
+          key: 'payload',
+          label: t('monitor.debug.tab.eventData'),
+          mode: 'json',
+          data: content.payload ?? {}
+        })
         if (content.listeners?.length) {
-          tabs.push({ key: 'listeners', label: '监听器', mode: 'json', data: content.listeners })
+          tabs.push({
+            key: 'listeners',
+            label: t('monitor.debug.tab.listeners'),
+            mode: 'json',
+            data: content.listeners
+          })
         }
         break
       case 'cache':
         if (content.value !== undefined) {
-          tabs.push({ key: 'value', label: '值', mode: 'json', data: content.value })
+          tabs.push({
+            key: 'value',
+            label: t('monitor.debug.tab.value'),
+            mode: 'json',
+            data: content.value
+          })
         }
         break
       case 'redis':
-        tabs.push({ key: 'command', label: '命令', mode: 'text', data: content.command ?? '' })
+        tabs.push({
+          key: 'command',
+          label: t('monitor.debug.tab.command'),
+          mode: 'text',
+          data: content.command ?? ''
+        })
         break
       case 'gate':
-        tabs.push({ key: 'arguments', label: '参数', mode: 'json', data: content.arguments ?? [] })
+        tabs.push({
+          key: 'arguments',
+          label: t('monitor.debug.tab.arguments'),
+          mode: 'json',
+          data: content.arguments ?? []
+        })
         break
       case 'command':
-        tabs.push({ key: 'arguments', label: '参数', mode: 'json', data: content.arguments ?? [] })
-        tabs.push({ key: 'options', label: '选项', mode: 'json', data: content.options ?? {} })
+        tabs.push({
+          key: 'arguments',
+          label: t('monitor.debug.tab.arguments'),
+          mode: 'json',
+          data: content.arguments ?? []
+        })
+        tabs.push({
+          key: 'options',
+          label: t('monitor.debug.tab.options'),
+          mode: 'json',
+          data: content.options ?? {}
+        })
         break
       case 'schedule':
         if (content.output) {
-          tabs.push({ key: 'output', label: '输出', mode: 'text', data: content.output })
+          tabs.push({
+            key: 'output',
+            label: t('monitor.debug.tab.output'),
+            mode: 'text',
+            data: content.output
+          })
         }
         break
       case 'view':
-        tabs.push({ key: 'data', label: '数据', mode: 'json', data: content.data ?? {} })
+        tabs.push({
+          key: 'data',
+          label: t('monitor.debug.tab.data'),
+          mode: 'json',
+          data: content.data ?? {}
+        })
         if (content.composers?.length) {
-          tabs.push({ key: 'composers', label: 'Composers', mode: 'json', data: content.composers })
+          tabs.push({
+            key: 'composers',
+            label: 'Composers',
+            mode: 'json',
+            data: content.composers
+          })
         }
         break
       case 'client_request':
@@ -903,14 +1087,19 @@
         if (content.response_headers) {
           tabs.push({
             key: 'response_headers',
-            label: '响应 Headers',
+            label: t('monitor.debug.tab.responseHeaders'),
             mode: 'json',
             data: content.response_headers
           })
         }
         break
       default:
-        tabs.push({ key: 'content', label: '内容', mode: 'json', data: content })
+        tabs.push({
+          key: 'content',
+          label: t('monitor.debug.tab.content'),
+          mode: 'json',
+          data: content
+        })
     }
     return tabs
   })
@@ -937,22 +1126,25 @@
 
   /** 各类型关联条目的表头文案 [左列, 右列] */
   function relatedColumns(groupType: string): [string, string] {
-    const map: Record<string, [string, string]> = {
-      exception: ['异常信息', '位置'],
-      log: ['日志内容', '级别'],
-      view: ['视图', 'Composer 数'],
-      query: ['查询语句', '耗时'],
-      model: ['模型', '动作'],
-      gate: ['权限', '结果'],
-      job: ['任务', '状态'],
-      mail: ['邮件', '状态'],
-      notification: ['通知', '渠道'],
-      event: ['事件', '监听器数'],
-      cache: ['键名', '动作'],
-      redis: ['命令', '耗时'],
-      client_request: ['请求地址', '状态']
-    }
-    return map[groupType] ?? ['内容', '状态']
+    const key = groupType in relatedColumnMap ? groupType : 'default'
+    return relatedColumnMap[key]
+  }
+
+  const relatedColumnMap: Record<string, [string, string]> = {
+    exception: t('monitor.debug.relatedColumn.exception'),
+    log: t('monitor.debug.relatedColumn.log'),
+    view: t('monitor.debug.relatedColumn.view'),
+    query: t('monitor.debug.relatedColumn.query'),
+    model: t('monitor.debug.relatedColumn.model'),
+    gate: t('monitor.debug.relatedColumn.gate'),
+    job: t('monitor.debug.relatedColumn.job'),
+    mail: t('monitor.debug.relatedColumn.mail'),
+    notification: t('monitor.debug.relatedColumn.notification'),
+    event: t('monitor.debug.relatedColumn.event'),
+    cache: t('monitor.debug.relatedColumn.cache'),
+    redis: t('monitor.debug.relatedColumn.redis'),
+    client_request: t('monitor.debug.relatedColumn.client_request'),
+    default: t('monitor.debug.relatedColumn.default')
   }
 
   /** 关联条目主标题 */
@@ -975,11 +1167,16 @@
       case 'exception':
         return String(entry.content.message ?? '')
       case 'job':
-        return `连接：${entry.content.connection ?? '-'} | 队列：${entry.content.queue ?? '-'}`
+        return t('monitor.debug.relatedSubtitle.job', {
+          connection: entry.content.connection ?? '-',
+          queue: entry.content.queue ?? '-'
+        })
       case 'mail':
-        return `主题：${entry.content.subject ?? '-'}`
+        return t('monitor.debug.relatedSubtitle.mail', { subject: entry.content.subject ?? '-' })
       case 'notification':
-        return `接收者：${entry.content.notifiable ?? '-'}`
+        return t('monitor.debug.relatedSubtitle.notification', {
+          notifiable: entry.content.notifiable ?? '-'
+        })
       case 'view':
         return String(entry.content.path ?? '')
       default:
@@ -996,10 +1193,10 @@
 
   const statusLabel = computed(() => {
     const map: Record<DebugStatus, string> = {
-      enabled: '采集中',
-      paused: '已暂停',
-      disabled: '已禁用',
-      off: '该类型未启用'
+      enabled: t('monitor.debug.recordingStatus.enabled'),
+      paused: t('monitor.debug.recordingStatus.paused'),
+      disabled: t('monitor.debug.recordingStatus.disabled'),
+      off: t('monitor.debug.recordingStatus.off')
     }
     return map[status.value]
   })
@@ -1021,12 +1218,12 @@
   function formatTime(time: string): string {
     const diff = Date.now() - new Date(time.replace(' ', 'T')).getTime()
     const seconds = Math.floor(diff / 1000)
-    if (seconds < 60) return `${Math.max(seconds, 0)}秒前`
+    if (seconds < 60) return t('monitor.common.time.secondsAgo', { n: Math.max(seconds, 0) })
     const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `${minutes}分钟前`
+    if (minutes < 60) return t('monitor.common.time.minutesAgo', { n: minutes })
     const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours}小时前`
-    return `${Math.floor(hours / 24)}天前`
+    if (hours < 24) return t('monitor.common.time.hoursAgo', { n: hours })
+    return t('monitor.common.time.daysAgo', { n: Math.floor(hours / 24) })
   }
 
   /** JSON 美化输出 */
@@ -1197,7 +1394,7 @@
   async function handleMonitorTag(): Promise<void> {
     const tag = newTag.value.trim()
     if (!tag) {
-      ElMessage.warning('请输入标签')
+      ElMessage.warning(t('monitor.debug.tagRequired'))
       return
     }
     const res = await monitorDebugTag(tag)
@@ -1220,9 +1417,13 @@
 
   /** 清空全部调试记录 */
   async function handleClear(): Promise<void> {
-    await ElMessageBox.confirm('将删除全部调试记录，此操作不可恢复，是否继续？', '清空记录', {
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('monitor.debug.confirmClear.message'),
+      t('monitor.debug.confirmClear.title'),
+      {
+        type: 'warning'
+      }
+    )
     await clearDebugEntries()
     entries.value = []
     nextBefore.value = null

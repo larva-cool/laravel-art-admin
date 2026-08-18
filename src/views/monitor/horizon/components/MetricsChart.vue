@@ -8,7 +8,10 @@
   import { getCssVar } from '@/utils/ui'
   import { storeToRefs } from 'pinia'
   import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import type { HorizonMetricSnapshot } from '@/api/queue'
+
+  const { t } = useI18n()
 
   const props = defineProps<{
     snapshots: HorizonMetricSnapshot[]
@@ -40,7 +43,8 @@
     const values = props.snapshots.map((s) =>
       props.metric === 'throughput' ? s.throughput : s.runtime
     )
-    const metricLabel = props.metric === 'throughput' ? '吞吐量' : '运行时间'
+    const metricLabel =
+      props.metric === 'throughput' ? t('monitor.horizon.throughput') : t('monitor.horizon.runtime')
 
     return {
       tooltip: {
