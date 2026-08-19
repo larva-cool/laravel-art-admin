@@ -144,7 +144,6 @@
   } from '@/api/system-manage'
   import request from '@/utils/http'
   import type { FormInstance, FormRules, UploadFile } from 'element-plus'
-  import { ElMessage } from 'element-plus'
 
   defineOptions({ name: 'SettingEditDialog' })
 
