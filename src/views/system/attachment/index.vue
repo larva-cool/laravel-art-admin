@@ -44,22 +44,11 @@
     </div>
 
     <div class="flex flex-col md:flex-row items-start gap-4 mt-3">
-      <!-- 左侧：按类型归类的目录 -->
+      <!-- 左侧：按文件类型筛选 -->
       <div class="w-full md:w-66 shrink-0">
         <div class="art-card p-4">
-          <div class="text-xs uppercase font-bold text-g-500 mb-1">目录管理</div>
-          <p class="text-xs text-g-400 mb-3">目录按文件类型归类，切换后自动筛选列表</p>
-
-          <div class="grid grid-cols-2 gap-2 mb-3">
-            <div class="p-2.5 rounded-md bg-(--art-gray-100)">
-              <div class="text-lg font-bold text-g-900 tabular-nums">{{ typeItems.length }}</div>
-              <div class="text-xs text-g-500">目录数</div>
-            </div>
-            <div class="p-2.5 rounded-md bg-(--art-gray-100)">
-              <div class="text-sm font-bold text-g-900 truncate">{{ activeTypeLabel }}</div>
-              <div class="text-xs text-g-500">当前目录</div>
-            </div>
-          </div>
+          <div class="text-xs uppercase font-bold text-g-500 mb-1">文件类型管理</div>
+          <p class="text-xs text-g-400 mb-3">按文件类型归类，切换后自动筛选列表</p>
 
           <div class="space-y-0.5">
             <div
@@ -197,9 +186,6 @@
   const uploadModeLabel = computed(() => (uploadMode.value === 'direct' ? '直传' : '中转'))
   const uploadModeHint = computed(() =>
     uploadMode.value === 'direct' ? '浏览器直接上传至对象存储' : '文件经服务端写入存储'
-  )
-  const activeTypeLabel = computed(
-    () => typeItems.find((item) => item.value === activeType.value)?.label ?? '全部文件'
   )
 
   const stats = computed(() => ({
