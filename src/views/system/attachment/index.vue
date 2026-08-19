@@ -125,6 +125,9 @@
             :data="data"
             :columns="columns"
             :pagination="pagination"
+            row-key="id"
+            class="attachment-table"
+            @row-click="handleRowClick"
             @selection-change="handleSelectionChange"
             @pagination:size-change="handleSizeChange"
             @pagination:current-change="handleCurrentChange"
@@ -142,6 +145,7 @@
       @close="previewVisible = false"
     />
 
+    <AttachmentDetailDrawer ref="detailDrawerRef" @refresh="handleRemoved" />
     <AttachmentRenameDialog ref="renameDialogRef" @refresh="handleUpdated" />
     <AttachmentMoveDialog ref="moveDialogRef" @refresh="handleUpdated" />
   </div>
@@ -164,7 +168,9 @@
   import { useAuth } from '@/hooks/core/useAuth'
   import { useTable } from '@/hooks/core/useTable'
   import { ElImage, ElImageViewer, ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import { diskLabel, directoryOf, typeIcon, typeItems, typeTagType } from './utils'
   import AttachmentSearch from './modules/attachment-search.vue'
+  import AttachmentDetailDrawer from './modules/attachment-detail-drawer.vue'
   import AttachmentRenameDialog from './modules/attachment-rename-dialog.vue'
   import AttachmentMoveDialog from './modules/attachment-move-dialog.vue'
 
@@ -174,31 +180,13 @@
 
   type AttachmentListItem = Api.SystemManage.AttachmentListItem
 
-  /** 左侧目录（按文件类型模拟目录归类） */
-  const typeItems = [
-    { value: '', label: '全部文件', icon: 'ri:folder-2-line' },
-    { value: 'image', label: '图片资源', icon: 'ri:image-line' },
-    { value: 'document', label: '文档资料', icon: 'ri:file-text-line' },
-    { value: 'video', label: '视频文件', icon: 'ri:video-line' },
-    { value: 'audio', label: '音频文件', icon: 'ri:music-2-line' },
-    { value: 'other', label: '其他文件', icon: 'ri:file-3-line' }
-  ]
-
-  /** 文件类型标签配色 */
-  const typeTagType: Record<string, 'primary' | 'success' | 'warning' | 'info'> = {
-    image: 'success',
-    video: 'primary',
-    audio: 'info',
-    document: 'warning',
-    other: 'info'
-  }
-
   const showSearchBar = ref(true)
   const uploadMode = ref<'direct' | 'proxy'>('proxy')
   const uploading = ref(false)
   const activeType = ref('')
   const selectedRows = ref<AttachmentListItem[]>([])
   const fileInputRef = ref<HTMLInputElement>()
+  const detailDrawerRef = ref<InstanceType<typeof AttachmentDetailDrawer>>()
   const renameDialogRef = ref<InstanceType<typeof AttachmentRenameDialog>>()
   const moveDialogRef = ref<InstanceType<typeof AttachmentMoveDialog>>()
   const typeCounts = ref<Record<string, number>>({})
@@ -254,8 +242,11 @@
                 ? h(
                     'div',
                     {
-                      class: 'w-11 h-11 shrink-0 cursor-pointer',
-                      onClick: () => handlePreview(row)
+                      class: 'w-11 h-11 shrink-0 cursor-zoom-in',
+                      onClick: (event: MouseEvent) => {
+                        event.stopPropagation()
+                        handlePreview(row)
+                      }
                     },
                     row.preview_url
                       ? h(ElImage, {
@@ -353,27 +344,6 @@
     }
   })
 
-  /** 文件类型图标 */
-  function typeIcon(type: string): string {
-    return typeItems.find((item) => item.value === type)?.icon ?? 'ri:file-3-line'
-  }
-
-  /** 存储磁盘展示名 */
-  function diskLabel(disk: string): string {
-    const labels: Record<string, string> = {
-      local: '本地私有',
-      public: '本地公开',
-      s3: 'S3 云存储'
-    }
-    return labels[disk] ?? disk
-  }
-
-  /** 从完整路径截取所属目录 */
-  function directoryOf(path: string): string {
-    const directory = path.split('/').slice(0, -1).join('/')
-    return directory || '根目录'
-  }
-
   /** 加载左侧目录计数与顶部统计 */
   const loadStats = async () => {
     const typeValues = typeItems.map((item) => item.value)
@@ -440,6 +410,12 @@
     await loadStats()
   }
 
+  const handleRemoved = async () => {
+    selectedRows.value = []
+    refreshRemove()
+    await loadStats()
+  }
+
   /** 点击图片缩略图：优先用列表已返回的展示地址，缺失时再换取临时签名地址 */
   const handlePreview = async (row: AttachmentListItem) => {
     const url = row.preview_url ?? (await fetchTemporaryUrlAttachment(row.id)).url
@@ -447,14 +423,20 @@
     previewVisible.value = true
   }
 
-  /** 查看：公开文件直接打开，私有文件换取临时签名地址 */
-  const handleView = async (row: AttachmentListItem) => {
-    if (row.preview_url) {
-      window.open(row.preview_url, '_blank')
+  /** 点击行：打开详情抽屉；勾选列与操作列不触发 */
+  const handleRowClick = (
+    row: AttachmentListItem,
+    column: { type?: string; property?: string }
+  ) => {
+    if (column?.type === 'selection' || column?.property === 'operation') {
       return
     }
-    const { url } = await fetchTemporaryUrlAttachment(row.id)
-    window.open(url, '_blank')
+    detailDrawerRef.value?.open(row)
+  }
+
+  /** 查看：打开详情抽屉 */
+  const handleView = (row: AttachmentListItem) => {
+    detailDrawerRef.value?.open(row)
   }
 
   const handleDownload = async (row: AttachmentListItem) => {
@@ -541,3 +523,11 @@
 
   onMounted(loadStats)
 </script>
+
+<style scoped lang="scss">
+  .attachment-table {
+    :deep(.el-table__body tr) {
+      cursor: pointer;
+    }
+  }
+</style>
