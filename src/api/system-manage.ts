@@ -413,13 +413,11 @@ export function fetchRenameAttachment(id: number, data: Api.SystemManage.Attachm
   })
 }
 
-// 移动附件
+// 移动附件（成功提示交由调用方处理，便于批量移动汇总结果）
 export function fetchMoveAttachment(id: number, data: Api.SystemManage.AttachmentMoveParams) {
   return request.put<Api.SystemManage.AttachmentListItem>({
     url: `/admin/attachments/${id}/move`,
-    data,
-    showSuccessMessage: true,
-    successMessage: '移动成功'
+    data
   })
 }
 

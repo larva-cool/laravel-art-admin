@@ -19,7 +19,7 @@
   const emit = defineEmits<Emits>()
 
   const searchBarRef = ref()
-  const formData = ref<Partial<Api.SystemManage.AttachmentSearchParams>>({})
+  const formData = ref<Record<string, unknown>>({})
 
   const formItems = [
     {
@@ -48,7 +48,7 @@
       }
     },
     {
-      label: '存储位置',
+      label: '云厂商',
       key: 'disk',
       type: 'select',
       props: {
@@ -71,23 +71,16 @@
       }
     },
     {
-      label: '上传开始日期',
-      key: 'start_date',
-      type: 'date',
+      label: '上传日期',
+      key: 'date_range',
+      type: 'daterange',
       props: {
-        placeholder: '开始日期',
+        type: 'daterange',
+        startPlaceholder: '开始日期',
+        endPlaceholder: '结束日期',
         clearable: true,
-        valueFormat: 'YYYY-MM-DD'
-      }
-    },
-    {
-      label: '上传结束日期',
-      key: 'end_date',
-      type: 'date',
-      props: {
-        placeholder: '结束日期',
-        clearable: true,
-        valueFormat: 'YYYY-MM-DD'
+        valueFormat: 'YYYY-MM-DD',
+        unlinkPanels: true
       }
     }
   ]
@@ -97,8 +90,17 @@
     emit('resetSearchParams')
   }
 
-  async function handleSearch(params: Partial<Api.SystemManage.AttachmentSearchParams>) {
+  async function handleSearch(params: Record<string, unknown>) {
     await searchBarRef.value?.validate()
-    emit('search', params)
+
+    /** 日期区间拆分为后端要求的 start_date / end_date */
+    const { date_range: dateRange, ...rest } = params
+    const [startDate, endDate] = Array.isArray(dateRange) ? dateRange : []
+
+    emit('search', {
+      ...rest,
+      ...(startDate ? { start_date: startDate } : {}),
+      ...(endDate ? { end_date: endDate } : {})
+    } as Partial<Api.SystemManage.AttachmentSearchParams>)
   }
 </script>

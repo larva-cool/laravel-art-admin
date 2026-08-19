@@ -12,6 +12,9 @@
             <ElRadioButton value="direct">直传云存储</ElRadioButton>
             <ElRadioButton value="proxy">中转上传</ElRadioButton>
           </ElRadioGroup>
+          <ElTooltip content="目录按文件类型自动归类，暂不支持新建" placement="top">
+            <ElButton disabled>新建目录</ElButton>
+          </ElTooltip>
           <ElButton type="primary" :loading="uploading" @click="triggerUpload" v-ripple>
             上传文件
           </ElButton>
@@ -93,6 +96,9 @@
           <div class="flex flex-wrap items-center gap-2 mb-3">
             <ElTag size="small" type="info">当前目录：{{ activeTypeLabel }}</ElTag>
             <ElTag size="small" type="info">当前页 {{ data.length }} 条</ElTag>
+            <ElTag v-if="selectedRows.length" size="small" type="success">
+              已选 {{ selectedRows.length }} 项
+            </ElTag>
             <ElTag size="small" type="warning">上传模式：{{ uploadModeLabel }}</ElTag>
           </div>
 
@@ -103,15 +109,25 @@
             @refresh="handleRefresh"
           >
             <template #left>
-              <ElButton
-                v-auth="'delete'"
-                type="danger"
-                :disabled="selectedRows.length === 0"
-                @click="handleBatchDelete"
-                v-ripple
-              >
-                批量删除
-              </ElButton>
+              <ElSpace wrap>
+                <ElButton
+                  v-if="hasAuth('move')"
+                  :disabled="selectedRows.length === 0"
+                  @click="handleBatchMove"
+                  v-ripple
+                >
+                  批量移动
+                </ElButton>
+                <ElButton
+                  v-if="hasAuth('delete')"
+                  type="danger"
+                  :disabled="selectedRows.length === 0"
+                  @click="handleBatchDelete"
+                  v-ripple
+                >
+                  批量删除
+                </ElButton>
+              </ElSpace>
             </template>
           </ArtTableHeader>
 
@@ -278,15 +294,6 @@
           formatter: (row: AttachmentListItem) => directoryOf(row.path)
         },
         {
-          prop: 'visibility',
-          label: '可见性',
-          width: 100,
-          formatter: (row: AttachmentListItem) =>
-            h(ElTag, { type: row.url ? 'success' : 'info', size: 'small' }, () =>
-              row.url ? '公开' : '私有'
-            )
-        },
-        {
           prop: 'disk',
           label: '存储',
           width: 110,
@@ -416,6 +423,7 @@
   }
 
   const handleUpdated = async () => {
+    selectedRows.value = []
     refreshUpdate()
     await loadStats()
   }
@@ -454,6 +462,10 @@
         await loadStats()
       })
       .catch(() => {})
+  }
+
+  const handleBatchMove = () => {
+    moveDialogRef.value?.open([...selectedRows.value])
   }
 
   const handleBatchDelete = () => {
