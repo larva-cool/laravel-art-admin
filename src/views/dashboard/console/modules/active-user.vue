@@ -1,5 +1,5 @@
 <template>
-  <div class="art-card h-105 p-4 box-border mb-5 max-sm:mb-4">
+  <div v-loading="loading" class="art-card h-105 p-4 box-border mb-5 max-sm:mb-4">
     <ArtBarChart
       class="box-border p-2"
       barWidth="50%"
@@ -10,12 +10,11 @@
     />
     <div class="ml-1">
       <h3 class="mt-5 text-lg font-medium">用户概述</h3>
-      <p class="mt-1 text-sm">比上周 <span class="text-success font-medium">+23%</span></p>
-      <p class="mt-1 text-sm">我们为您创建了多个选项，可将它们组合在一起并定制为像素完美的页面</p>
+      <p class="mt-1 text-sm text-g-600">近 7 天用户增长趋势</p>
     </div>
     <div class="flex-b mt-2">
       <div class="flex-1" v-for="(item, index) in list" :key="index">
-        <p class="text-2xl text-g-900">{{ item.num }}</p>
+        <p class="text-2xl text-g-900 tabular-nums">{{ item.num }}</p>
         <p class="text-xs text-g-500">{{ item.name }}</p>
       </div>
     </div>
@@ -23,25 +22,47 @@
 </template>
 
 <script setup lang="ts">
+  import { fetchDashboardStats, type DashboardStatsResponse } from '@/api/dashboard'
+
   interface UserStatItem {
     name: string
     num: string
   }
 
-  // 最近9个月
-  const xAxisLabels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月']
+  const loading = ref(true)
+  const xAxisLabels = ref<string[]>([])
+  const chartData = ref<number[]>([])
+  const list = ref<UserStatItem[]>([])
 
-  // 每月活跃用户数
-  const chartData = [160, 100, 150, 80, 190, 100, 175, 120, 160]
+  async function loadData() {
+    loading.value = true
+    try {
+      const res: DashboardStatsResponse = await fetchDashboardStats({ days: 7 })
+      const trend = res.user_trend
 
-  /**
-   * 用户统计数据列表
-   * 包含总用户量、总访问量、日访问量和周同比等关键指标
-   */
-  const list: UserStatItem[] = [
-    { name: '总用户量', num: '32k' },
-    { name: '总访问量', num: '128k' },
-    { name: '日访问量', num: '1.2k' },
-    { name: '周同比', num: '+5%' }
-  ]
+      xAxisLabels.value = trend.map((p) => {
+        const d = new Date(p.date)
+        return `${d.getMonth() + 1}/${d.getDate()}`
+      })
+      chartData.value = trend.map((p) => p.new)
+
+      const cards = res.cards
+      list.value = [
+        { name: '总用户量', num: formatNum(cards.total_users) },
+        { name: '今日新增', num: String(cards.today_new_users) },
+        { name: '今日活跃', num: String(cards.today_active_users) },
+        { name: '管理员', num: String(cards.total_admins) }
+      ]
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function formatNum(n: number): string {
+    if (n >= 10000) return `${(n / 10000).toFixed(1)}w`
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
+    return String(n)
+  }
+
+  onMounted(loadData)
 </script>

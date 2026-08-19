@@ -1,9 +1,9 @@
 <template>
-  <div class="art-card h-105 p-5 mb-5 max-sm:mb-4">
+  <div v-loading="loading" class="art-card h-105 p-5 mb-5 max-sm:mb-4">
     <div class="art-card-header">
       <div class="title">
-        <h4>访问量</h4>
-        <p>今年增长<span class="text-success">+15%</span></p>
+        <h4>登录趋势</h4>
+        <p class="text-g-600">近 7 天每日登录次数</p>
       </div>
     </div>
     <ArtLineChart
@@ -17,27 +17,27 @@
 </template>
 
 <script setup lang="ts">
-  /**
-   * 全年访问量数据
-   * 记录每月的访问量统计
-   */
-  const data = [50, 25, 40, 20, 70, 35, 65, 30, 35, 20, 40, 44]
+  import { fetchDashboardStats, type DashboardStatsResponse } from '@/api/dashboard'
 
-  /**
-   * X 轴月份标签
-   */
-  const xAxisData = [
-    '1月',
-    '2月',
-    '3月',
-    '4月',
-    '5月',
-    '6月',
-    '7月',
-    '8月',
-    '9月',
-    '10月',
-    '11月',
-    '12月'
-  ]
+  const loading = ref(true)
+  const data = ref<number[]>([])
+  const xAxisData = ref<string[]>([])
+
+  async function loadData() {
+    loading.value = true
+    try {
+      const res: DashboardStatsResponse = await fetchDashboardStats({ days: 7 })
+      const trend = res.login_trend
+
+      xAxisData.value = trend.map((p) => {
+        const d = new Date(p.date)
+        return `${d.getMonth() + 1}/${d.getDate()}`
+      })
+      data.value = trend.map((p) => p.count)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(loadData)
 </script>

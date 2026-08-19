@@ -1,16 +1,19 @@
 <template>
   <ElRow :gutter="20" class="flex">
     <ElCol v-for="(item, index) in dataList" :key="index" :sm="12" :md="6" :lg="6">
-      <div class="art-card relative flex flex-col justify-center h-35 px-5 mb-5 max-sm:mb-4">
+      <div
+        v-loading="loading"
+        class="art-card relative flex flex-col justify-center h-35 px-5 mb-5 max-sm:mb-4"
+      >
         <span class="text-g-700 text-sm">{{ item.des }}</span>
         <ArtCountTo class="text-[26px] font-medium mt-2" :target="item.num" :duration="1300" />
         <div class="flex-c mt-1">
           <span class="text-xs text-g-600">较上周</span>
           <span
             class="ml-1 text-xs font-semibold"
-            :class="[item.change.indexOf('+') === -1 ? 'text-danger' : 'text-success']"
+            :class="item.change < 0 ? 'text-danger' : 'text-success'"
           >
-            {{ item.change }}
+            {{ item.change >= 0 ? '+' : '' }}{{ item.change }}%
           </span>
         </div>
         <div
@@ -24,51 +27,40 @@
 </template>
 
 <script setup lang="ts">
+  import { fetchDashboardStats, type DashboardCards } from '@/api/dashboard'
+
   interface CardDataItem {
     des: string
     icon: string
-    startVal: number
-    duration: number
     num: number
-    change: string
+    change: number
   }
 
-  /**
-   * 卡片统计数据列表
-   * 展示总访问次数、在线访客数、点击量和新用户等核心数据指标
-   */
+  const loading = ref(true)
   const dataList = reactive<CardDataItem[]>([
-    {
-      des: '总访问次数',
-      icon: 'ri:pie-chart-line',
-      startVal: 0,
-      duration: 1000,
-      num: 9120,
-      change: '+20%'
-    },
-    {
-      des: '在线访客数',
-      icon: 'ri:group-line',
-      startVal: 0,
-      duration: 1000,
-      num: 182,
-      change: '+10%'
-    },
-    {
-      des: '点击量',
-      icon: 'ri:fire-line',
-      startVal: 0,
-      duration: 1000,
-      num: 9520,
-      change: '-12%'
-    },
-    {
-      des: '新用户',
-      icon: 'ri:progress-2-line',
-      startVal: 0,
-      duration: 1000,
-      num: 156,
-      change: '+30%'
-    }
+    { des: '总用户数', icon: 'ri:group-line', num: 0, change: 0 },
+    { des: '今日新增', icon: 'ri:user-add-line', num: 0, change: 0 },
+    { des: '今日活跃', icon: 'ri:pulse-line', num: 0, change: 0 },
+    { des: '今日登录', icon: 'ri:login-circle-line', num: 0, change: 0 }
   ])
+
+  async function loadData() {
+    loading.value = true
+    try {
+      const res = await fetchDashboardStats({ days: 7 })
+      const c: DashboardCards = res.cards
+      dataList[0].num = c.total_users
+      dataList[0].change = c.new_users_change
+      dataList[1].num = c.today_new_users
+      dataList[1].change = c.new_users_change
+      dataList[2].num = c.today_active_users
+      dataList[2].change = c.new_users_change
+      dataList[3].num = c.today_logins
+      dataList[3].change = c.new_users_change
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(loadData)
 </script>
