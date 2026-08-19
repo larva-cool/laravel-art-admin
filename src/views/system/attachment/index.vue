@@ -83,24 +83,25 @@
 
       <!-- 右侧：搜索 + 列表 -->
       <div class="flex-1 min-w-0 w-full">
-        <ElCard class="art-table-card">
-          <AttachmentSearch
-            v-show="showSearchBar"
-            @search="handleSearch"
-            @reset-search-params="handleResetSearch"
-          />
+        <AttachmentSearch
+          v-show="showSearchBar"
+          @search="handleSearch"
+          @reset-search-params="handleResetSearch"
+        />
 
+        <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
           <ArtTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
             :loading="loading"
             @refresh="handleRefresh"
           >
-            <template #left>
-              <ElSpace wrap>
+            <template #right>
+              <ElSpace v-if="selectedRows.length" wrap class="ml-2">
+                <ElTag size="small" type="success">已选 {{ selectedRows.length }} 项</ElTag>
                 <ElButton
                   v-if="hasAuth('attachments.edit')"
-                  :disabled="selectedRows.length === 0"
+                  size="small"
                   @click="handleBatchMove"
                   v-ripple
                 >
@@ -108,16 +109,13 @@
                 </ElButton>
                 <ElButton
                   v-if="hasAuth('attachments.delete')"
+                  size="small"
                   type="danger"
-                  :disabled="selectedRows.length === 0"
                   @click="handleBatchDelete"
                   v-ripple
                 >
                   批量删除
                 </ElButton>
-                <ElTag v-if="selectedRows.length" size="small" type="success">
-                  已选 {{ selectedRows.length }} 项
-                </ElTag>
               </ElSpace>
             </template>
           </ArtTableHeader>
@@ -136,6 +134,13 @@
     </div>
 
     <input ref="fileInputRef" type="file" class="hidden" @change="handleFileChange" />
+
+    <ElImageViewer
+      v-if="previewVisible"
+      :url-list="previewUrlList"
+      teleported
+      @close="previewVisible = false"
+    />
 
     <AttachmentRenameDialog ref="renameDialogRef" @refresh="handleUpdated" />
     <AttachmentMoveDialog ref="moveDialogRef" @refresh="handleUpdated" />
@@ -158,7 +163,7 @@
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
   import { useTable } from '@/hooks/core/useTable'
-  import { ElImage, ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import { ElImage, ElImageViewer, ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import AttachmentSearch from './modules/attachment-search.vue'
   import AttachmentRenameDialog from './modules/attachment-rename-dialog.vue'
   import AttachmentMoveDialog from './modules/attachment-move-dialog.vue'
@@ -198,6 +203,8 @@
   const moveDialogRef = ref<InstanceType<typeof AttachmentMoveDialog>>()
   const typeCounts = ref<Record<string, number>>({})
   const privateCount = ref(0)
+  const previewVisible = ref(false)
+  const previewUrlList = ref<string[]>([])
 
   const uploadModeLabel = computed(() => (uploadMode.value === 'direct' ? '直传' : '中转'))
   const uploadModeHint = computed(() =>
@@ -243,14 +250,24 @@
           minWidth: 280,
           formatter: (row: AttachmentListItem) =>
             h('div', { class: 'flex items-center gap-3' }, [
-              row.type.value === 'image' && row.url
-                ? h(ElImage, {
-                    src: row.url,
-                    fit: 'cover',
-                    class: 'w-11 h-11 rounded shrink-0',
-                    previewSrcList: [row.url],
-                    previewTeleported: true
-                  })
+              row.type.value === 'image'
+                ? h(
+                    'div',
+                    {
+                      class: 'w-11 h-11 shrink-0 cursor-pointer',
+                      onClick: () => handlePreview(row)
+                    },
+                    row.url
+                      ? h(ElImage, { src: row.url, fit: 'cover', class: 'w-11 h-11 rounded' })
+                      : h(
+                          'div',
+                          {
+                            class:
+                              'w-11 h-11 rounded flex-cc bg-(--art-gray-100) text-g-500 text-lg'
+                          },
+                          h(ArtSvgIcon, { icon: 'ri:image-line' })
+                        )
+                  )
                 : h(
                     'div',
                     {
@@ -417,6 +434,13 @@
     selectedRows.value = []
     refreshUpdate()
     await loadStats()
+  }
+
+  /** 点击图片缩略图：私有文件先换取临时签名地址，再用图片查看器预览 */
+  const handlePreview = async (row: AttachmentListItem) => {
+    const url = row.url ?? (await fetchTemporaryUrlAttachment(row.id)).url
+    previewUrlList.value = [url]
+    previewVisible.value = true
   }
 
   /** 查看：公开文件直接打开，私有文件换取临时签名地址 */
