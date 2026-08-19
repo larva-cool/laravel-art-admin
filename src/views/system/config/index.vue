@@ -233,9 +233,14 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchBatchUpdateSettings, fetchGetSettingGroups } from '@/api/system-manage'
+  import {
+    fetchBatchUpdateSettings,
+    fetchGetSettingGroups,
+    fetchUploadAttachmentFile
+  } from '@/api/system-manage'
   import AppConfig from '@/config'
   import { ElMessage } from 'element-plus'
+  import type { UploadFile } from 'element-plus'
   import { useI18n } from 'vue-i18n'
 
   defineOptions({ name: 'SystemConfig' })
@@ -332,6 +337,31 @@
         return v ? 1 : 0
       default:
         return v ?? ''
+    }
+  }
+
+  /** 正在上传图片的配置项 key */
+  const uploadingKey = ref('')
+
+  /** 选择图片后上传，并把返回地址写入对应配置项 */
+  const handleImageChange = async (key: string, uploadFile: UploadFile) => {
+    const file = uploadFile.raw
+    if (!file) {
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      ElMessage.error('请选择图片文件')
+      return
+    }
+    uploadingKey.value = key
+    try {
+      const res = await fetchUploadAttachmentFile(file)
+      formData[key] = res.url ?? res.file_path
+      ElMessage.success('图片上传成功')
+    } catch {
+      ElMessage.error('图片上传失败，请重试')
+    } finally {
+      uploadingKey.value = ''
     }
   }
 
