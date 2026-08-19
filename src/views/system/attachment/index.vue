@@ -156,6 +156,7 @@
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
   import { useTable } from '@/hooks/core/useTable'
+  import { useClipboard } from '@vueuse/core'
   import { ElImage, ElImageViewer, ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import { diskLabel, directoryOf, typeIcon, typeItems, typeTagType } from './utils'
   import AttachmentSearch from './modules/attachment-search.vue'
@@ -166,6 +167,7 @@
   defineOptions({ name: 'Attachment' })
 
   const { hasAuth } = useAuth()
+  const { copy } = useClipboard()
 
   type AttachmentListItem = Api.SystemManage.AttachmentListItem
 
@@ -298,15 +300,24 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 230,
+          width: 270,
           fixed: 'right',
           formatter: (row: AttachmentListItem) =>
             h('div', { class: 'flex items-center' }, [
-              h(ArtButtonTable, { type: 'view', onClick: () => handleView(row) }),
+              h(ArtButtonTable, {
+                type: 'view',
+                iconClass: 'bg-g-200 text-g-600',
+                onClick: () => handleView(row)
+              }),
               h(ArtButtonTable, {
                 icon: 'ri:download-line',
                 iconClass: 'bg-info/12 text-info',
                 onClick: () => handleDownload(row)
+              }),
+              h(ArtButtonTable, {
+                icon: 'ri:link',
+                iconClass: 'bg-success/12 text-success',
+                onClick: () => handleCopyLink(row)
               }),
               hasAuth('attachments.edit')
                 ? h(ArtButtonTable, {
@@ -423,6 +434,13 @@
   /** 查看：打开详情抽屉 */
   const handleView = (row: AttachmentListItem) => {
     detailDrawerRef.value?.open(row)
+  }
+
+  /** 复制访问链接：公开文件用直链，私有文件换取临时签名地址 */
+  const handleCopyLink = async (row: AttachmentListItem) => {
+    const url = row.url ?? (await fetchTemporaryUrlAttachment(row.id)).url
+    await copy(url)
+    ElMessage.success('链接已复制到剪贴板')
   }
 
   const handleDownload = async (row: AttachmentListItem) => {
