@@ -385,3 +385,74 @@ export function fetchGetMailCodeDetail(id: number) {
     url: `/admin/mail-codes/${id}`
   })
 }
+
+// ========== 附件管理 ==========
+
+// 获取附件列表（分页）
+export function fetchGetAttachmentList(params: Api.SystemManage.AttachmentSearchParams) {
+  return request.get<Api.SystemManage.AttachmentList>({
+    url: '/admin/attachments',
+    params
+  })
+}
+
+// 获取附件详情
+export function fetchGetAttachmentDetail(id: number) {
+  return request.get<Api.SystemManage.AttachmentListItem>({
+    url: `/admin/attachments/${id}`
+  })
+}
+
+// 重命名附件
+export function fetchRenameAttachment(id: number, data: Api.SystemManage.AttachmentRenameParams) {
+  return request.put<Api.SystemManage.AttachmentListItem>({
+    url: `/admin/attachments/${id}/rename`,
+    data,
+    showSuccessMessage: true,
+    successMessage: '重命名成功'
+  })
+}
+
+// 移动附件
+export function fetchMoveAttachment(id: number, data: Api.SystemManage.AttachmentMoveParams) {
+  return request.put<Api.SystemManage.AttachmentListItem>({
+    url: `/admin/attachments/${id}/move`,
+    data,
+    showSuccessMessage: true,
+    successMessage: '移动成功'
+  })
+}
+
+// 下载附件
+export function fetchDownloadAttachment(id: number) {
+  return request.get<Blob>({
+    url: `/admin/attachments/${id}/download`,
+    responseType: 'blob'
+  })
+}
+
+// 获取临时访问URL
+export function fetchTemporaryUrlAttachment(id: number) {
+  return request.get<{ url: string }>({
+    url: `/admin/attachments/${id}/temporary-url`
+  })
+}
+
+// 删除单个附件
+export function fetchDeleteAttachment(id: number) {
+  return request.del<null>({
+    url: `/admin/attachments/${id}`,
+    showSuccessMessage: true,
+    successMessage: '删除成功'
+  })
+}
+
+// 批量删除附件
+export function fetchBatchDeleteAttachments(ids: number[]) {
+  return request.del<null>({
+    url: '/admin/attachments',
+    data: { ids },
+    showSuccessMessage: true,
+    successMessage: '批量删除成功'
+  })
+}

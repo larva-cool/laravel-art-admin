@@ -407,6 +407,55 @@ declare namespace Api {
       email?: string
       state?: number
     }
+
+    /** 附件列表（Laravel 分页） */
+    type AttachmentList = Api.Common.PaginatedResponse<AttachmentListItem>
+
+    /** 附件列表项（AttachmentResource） */
+    interface AttachmentListItem {
+      id: number
+      name: string
+      original_name: string
+      disk: string
+      path: string
+      url: string
+      type: { value: string; label: string }
+      extension: string
+      mime_type: string
+      size: number
+      size_text: string
+      uploader?: {
+        id: number
+        name: string | null
+      } | null
+      created_at: string | null
+    }
+
+    /** 附件搜索参数 */
+    interface AttachmentSearchParams extends Api.Common.CommonSearchParams {
+      keyword?: string
+      type?: string
+      disk?: string
+      extension?: string
+      start_date?: string
+      end_date?: string
+    }
+
+    /** 附件重命名参数 */
+    interface AttachmentRenameParams {
+      name: string
+    }
+
+    /** 附件移动参数 */
+    interface AttachmentMoveParams {
+      disk: string
+      path: string
+    }
+
+    /** 附件批量删除参数 */
+    interface AttachmentBatchDeleteParams {
+      ids: number[]
+    }
   }
 
   /** 用户管理模块（前台用户） */

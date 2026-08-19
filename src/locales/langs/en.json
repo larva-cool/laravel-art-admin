@@ -258,7 +258,8 @@
       },
       "area": "Area Manage",
       "phoneCode": "SMS Code",
-      "mailCode": "Mail Code"
+      "mailCode": "Email Code",
+      "attachment": "Attachment Manage"
     }
   },
   "table": {

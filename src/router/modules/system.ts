@@ -61,6 +61,20 @@ export const systemRoutes: AppRouteRecord = {
         keep_alive: true,
         icon: 'ri:settings-3-line'
       }
+    },
+    {
+      path: 'attachment',
+      name: 'Attachment',
+      component: '/system/attachment',
+      meta: {
+        title: 'menus.system.attachment',
+        keep_alive: true,
+        auth_list: [
+          { title: '重命名', auth_mark: 'rename' },
+          { title: '移动', auth_mark: 'move' },
+          { title: '删除', auth_mark: 'delete' }
+        ]
+      }
     }
   ]
 }
