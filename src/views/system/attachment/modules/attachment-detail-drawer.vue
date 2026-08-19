@@ -8,7 +8,7 @@
   >
     <div v-if="detail" class="h-full flex flex-col">
       <!-- 头部：文件名 + 公开/私有标记 -->
-      <div class="shrink-0 pb-4 border-b-d">
+      <div class="shrink-0 pb-4">
         <div class="flex items-start gap-2">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
@@ -21,11 +21,12 @@
             </div>
             <p class="text-xs text-g-400 mt-1 break-all">{{ detail.original_name }}</p>
           </div>
-          <ArtSvgIcon
-            icon="ri:close-line"
-            class="text-lg text-g-400 cursor-pointer shrink-0 mt-1 hover:text-g-700"
+          <div
+            class="shrink-0 mt-1 text-lg text-g-400 cursor-pointer hover:text-g-700"
             @click="visible = false"
-          />
+          >
+            <ArtSvgIcon icon="ri:close-line" />
+          </div>
         </div>
       </div>
 
@@ -82,7 +83,7 @@
       </div>
 
       <!-- 底部操作 -->
-      <div class="shrink-0 pt-4 border-t-d flex justify-end gap-2">
+      <div class="shrink-0 pt-4 flex justify-end gap-2">
         <ElButton type="primary" :loading="downloading" @click="handleDownload" v-ripple>
           下载
         </ElButton>
