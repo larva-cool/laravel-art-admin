@@ -456,3 +456,30 @@ export function fetchBatchDeleteAttachments(ids: number[]) {
     successMessage: '批量删除成功'
   })
 }
+
+// 中转上传文件（服务端代理写入存储并自动登记台账）
+export function fetchUploadAttachmentFile(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return request.post<Api.SystemManage.AttachmentUploadResult>({
+    url: '/admin/uploader/file',
+    data: formData
+  })
+}
+
+// 获取直传云存储的预签名地址
+export function fetchAttachmentUploadToken(filename: string) {
+  return request.post<Api.SystemManage.AttachmentUploadToken>({
+    url: '/admin/uploader/token',
+    data: { filename }
+  })
+}
+
+// 直传完成后登记附件台账
+export function fetchRegisterAttachment(data: Api.SystemManage.AttachmentRegisterParams) {
+  return request.post<Api.SystemManage.AttachmentListItem>({
+    url: '/admin/attachments/register',
+    data
+  })
+}

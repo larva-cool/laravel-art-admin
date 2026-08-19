@@ -254,7 +254,14 @@
         "inputPlaceholder": "请输入{name}",
         "selectPlaceholder": "请选择{name}",
         "empty": "暂无配置项",
-        "resetSuccess": "已重置"
+        "resetSuccess": "已重置",
+        "groupNav": "配置分组",
+        "groupItemCount": "共 {count} 项配置",
+        "impactTitle": "发布影响",
+        "impactTip": "配置保存后会即时同步到全站，公开配置将影响系统前台展示。",
+        "saveTip": "保存后可即时同步配置，页面标题与系统品牌展示。",
+        "resetForm": "重置当前表单",
+        "savePublish": "保存并发布配置"
       },
       "area": "地区管理",
       "phoneCode": "短信验证码",

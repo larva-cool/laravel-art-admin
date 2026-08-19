@@ -254,7 +254,14 @@
         "inputPlaceholder": "Please enter {name}",
         "selectPlaceholder": "Please select {name}",
         "empty": "No configuration items",
-        "resetSuccess": "Reset successfully"
+        "resetSuccess": "Reset successfully",
+        "groupNav": "Config Groups",
+        "groupItemCount": "{count} settings in total",
+        "impactTitle": "Publish Impact",
+        "impactTip": "Saved settings take effect immediately, and public options affect the frontend display.",
+        "saveTip": "Settings sync instantly after saving, including page title and system branding.",
+        "resetForm": "Reset Form",
+        "savePublish": "Save & Publish"
       },
       "area": "Area Manage",
       "phoneCode": "SMS Code",

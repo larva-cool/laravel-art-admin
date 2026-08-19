@@ -418,7 +418,7 @@ declare namespace Api {
       original_name: string
       disk: string
       path: string
-      url: string
+      url: string | null
       type: { value: string; label: string }
       extension: string
       mime_type: string
@@ -429,6 +429,7 @@ declare namespace Api {
         name: string | null
       } | null
       created_at: string | null
+      exists?: boolean
     }
 
     /** 附件搜索参数 */
@@ -437,6 +438,7 @@ declare namespace Api {
       type?: string
       disk?: string
       extension?: string
+      uploader_id?: number
       start_date?: string
       end_date?: string
     }
@@ -446,15 +448,40 @@ declare namespace Api {
       name: string
     }
 
-    /** 附件移动参数 */
+    /** 附件移动参数（后端仅支持同磁盘内移动路径） */
     interface AttachmentMoveParams {
-      disk: string
       path: string
     }
 
     /** 附件批量删除参数 */
     interface AttachmentBatchDeleteParams {
       ids: number[]
+    }
+
+    /** 中转上传返回结果 */
+    interface AttachmentUploadResult {
+      id: number
+      storage: string
+      origin_name: string
+      file_name: string
+      file_path: string
+      file_size: number
+      file_ext: string
+      mime_type: string
+    }
+
+    /** 直传签名返回结果 */
+    interface AttachmentUploadToken {
+      url: string
+      headers: Record<string, string>
+      path: string
+    }
+
+    /** 直传完成后登记附件参数 */
+    interface AttachmentRegisterParams {
+      path: string
+      disk?: string
+      original_name?: string
     }
   }
 

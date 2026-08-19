@@ -71,7 +71,7 @@
       if (!valid) return
       submitting.value = true
       try {
-        await fetchRenameAttachment(id.value, form)
+        await fetchRenameAttachment(id.value!, form)
         dialogVisible.value = false
         emit('refresh')
       } catch {
