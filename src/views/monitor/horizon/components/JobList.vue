@@ -22,7 +22,7 @@
           v-for="job in jobs"
           :key="job.id"
           class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_120px_100px_1fr_auto] gap-x-4 gap-y-1 items-center py-2.5 px-1 border-b-d last:border-b-0 hover:bg-hover-color transition-all duration-200 rounded-md cursor-pointer"
-          @click="$emit('show-detail', String(job.id))"
+          @click="emit('showDetail', String(job.id))"
         >
           <div class="min-w-0">
             <div class="text-sm font-medium text-g-800 truncate" :title="job.name">{{
@@ -93,7 +93,7 @@
 
   const effectiveTitle = computed(() => props.title || t('monitor.horizon.jobListTitle'))
 
-  defineEmits<{
+  const emit = defineEmits<{
     showDetail: [id: string]
     retry: [id: string]
   }>()
