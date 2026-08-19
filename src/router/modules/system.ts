@@ -70,9 +70,9 @@ export const systemRoutes: AppRouteRecord = {
         title: 'menus.system.attachment',
         keep_alive: true,
         auth_list: [
-          { title: '重命名', auth_mark: 'rename' },
-          { title: '移动', auth_mark: 'move' },
-          { title: '删除', auth_mark: 'delete' }
+          { title: '登记附件', auth_mark: 'attachments.create' },
+          { title: '编辑附件', auth_mark: 'attachments.edit' },
+          { title: '删除附件', auth_mark: 'attachments.delete' }
         ]
       }
     }

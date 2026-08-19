@@ -23,7 +23,7 @@
         <div class="p-3 rounded-md bg-(--art-gray-100)">
           <div class="text-xl font-bold text-g-900 tabular-nums">{{ stats.total }}</div>
           <div class="text-xs text-g-500 mt-1">总文件数</div>
-          <div class="text-xs text-g-400 mt-0.5">当前筛选条件下的文件总数</div>
+          <div class="text-xs text-g-400 mt-0.5">台账登记的文件总数</div>
         </div>
         <div class="p-3 rounded-md bg-(--art-gray-100)">
           <div class="text-xl font-bold text-g-900 tabular-nums">{{ stats.private }}</div>
@@ -90,15 +90,6 @@
             @reset-search-params="handleResetSearch"
           />
 
-          <div class="flex flex-wrap items-center gap-2 mb-3">
-            <ElTag size="small" type="info">当前目录：{{ activeTypeLabel }}</ElTag>
-            <ElTag size="small" type="info">当前页 {{ data.length }} 条</ElTag>
-            <ElTag v-if="selectedRows.length" size="small" type="success">
-              已选 {{ selectedRows.length }} 项
-            </ElTag>
-            <ElTag size="small" type="warning">上传模式：{{ uploadModeLabel }}</ElTag>
-          </div>
-
           <ArtTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
@@ -108,7 +99,7 @@
             <template #left>
               <ElSpace wrap>
                 <ElButton
-                  v-if="hasAuth('move')"
+                  v-if="hasAuth('attachments.edit')"
                   :disabled="selectedRows.length === 0"
                   @click="handleBatchMove"
                   v-ripple
@@ -116,7 +107,7 @@
                   批量移动
                 </ElButton>
                 <ElButton
-                  v-if="hasAuth('delete')"
+                  v-if="hasAuth('attachments.delete')"
                   type="danger"
                   :disabled="selectedRows.length === 0"
                   @click="handleBatchDelete"
@@ -124,6 +115,9 @@
                 >
                   批量删除
                 </ElButton>
+                <ElTag v-if="selectedRows.length" size="small" type="success">
+                  已选 {{ selectedRows.length }} 项
+                </ElTag>
               </ElSpace>
             </template>
           </ArtTableHeader>
@@ -306,7 +300,7 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 190,
+          width: 230,
           fixed: 'right',
           formatter: (row: AttachmentListItem) =>
             h('div', { class: 'flex items-center' }, [
@@ -316,20 +310,20 @@
                 iconClass: 'bg-info/12 text-info',
                 onClick: () => handleDownload(row)
               }),
-              hasAuth('rename')
+              hasAuth('attachments.edit')
                 ? h(ArtButtonTable, {
                     type: 'edit',
                     onClick: () => renameDialogRef.value?.open(row)
                   })
                 : null,
-              hasAuth('move')
+              hasAuth('attachments.edit')
                 ? h(ArtButtonTable, {
                     icon: 'ri:folder-transfer-line',
                     iconClass: 'bg-warning/12 text-warning',
                     onClick: () => moveDialogRef.value?.open(row)
                   })
                 : null,
-              hasAuth('delete')
+              hasAuth('attachments.delete')
                 ? h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete(row) })
                 : null
             ])
