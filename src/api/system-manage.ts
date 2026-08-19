@@ -455,13 +455,26 @@ export function fetchBatchDeleteAttachments(ids: number[]) {
   })
 }
 
+/**
+ * 按文件 MIME 匹配上传通道：图片走 image，视频走 video，其余走 file
+ */
+function resolveUploaderChannel(file: File): 'image' | 'video' | 'file' {
+  if (file.type.startsWith('image/')) {
+    return 'image'
+  }
+  if (file.type.startsWith('video/')) {
+    return 'video'
+  }
+  return 'file'
+}
+
 // 中转上传文件（服务端代理写入存储并自动登记台账）
 export function fetchUploadAttachmentFile(file: File) {
   const formData = new FormData()
   formData.append('file', file)
 
   return request.post<Api.SystemManage.AttachmentUploadResult>({
-    url: '/admin/uploader/file',
+    url: `/admin/uploader/${resolveUploaderChannel(file)}`,
     data: formData
   })
 }

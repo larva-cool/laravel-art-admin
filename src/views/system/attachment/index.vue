@@ -47,14 +47,14 @@
       <!-- 左侧：按文件类型筛选 -->
       <div class="w-full md:w-66 shrink-0">
         <div class="art-card p-4">
-          <div class="text-xs uppercase font-bold text-g-500 mb-1">文件类型管理</div>
+          <div class="text-sm uppercase font-bold text-g-500 mb-1">文件类型管理</div>
           <p class="text-xs text-g-400 mb-3">按文件类型归类，切换后自动筛选列表</p>
 
           <div class="space-y-0.5">
             <div
               v-for="item in typeItems"
               :key="item.value"
-              class="flex items-center gap-2 px-2.5 py-2 rounded-md cursor-pointer transition-all duration-200"
+              class="flex items-center gap-2 px-2.5 py-2.5 rounded-md cursor-pointer transition-all duration-200"
               :class="
                 activeType === item.value
                   ? 'bg-theme/10 text-theme font-medium'
@@ -62,9 +62,9 @@
               "
               @click="handleTypeChange(item.value)"
             >
-              <ArtSvgIcon :icon="item.icon" class="text-base shrink-0" />
-              <span class="text-sm truncate flex-1">{{ item.label }}</span>
-              <span class="text-xs tabular-nums">{{ typeCounts[item.value] ?? 0 }}</span>
+              <ArtSvgIcon :icon="item.icon" class="text-lg shrink-0" />
+              <span class="text-[15px] truncate flex-1">{{ item.label }}</span>
+              <span class="text-sm tabular-nums">{{ typeCounts[item.value] ?? 0 }}</span>
             </div>
           </div>
         </div>
@@ -258,7 +258,7 @@
                     h(ArtSvgIcon, { icon: typeIcon(row.type.value) })
                   ),
               h('div', { class: 'min-w-0' }, [
-                h('div', { class: 'text-sm text-g-900 truncate' }, row.name),
+                h('div', { class: 'text-sm text-g-900 truncate' }, row.original_name || row.name),
                 h('div', { class: 'text-xs text-g-400 truncate' }, row.path)
               ])
             ])
