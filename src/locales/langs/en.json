@@ -649,6 +649,25 @@
       "slowOutgoing": "Slow Outgoing",
       "slowOutgoingSubtitle": "Outgoing HTTP duration",
       "noSlowOutgoing": "No slow outgoing requests"
+    },
+    "scheduleLog": {
+      "title": "Schedule Logs",
+      "name": "Task Name",
+      "type": "Type",
+      "expression": "Cron Expression",
+      "status": "Status",
+      "exitCode": "Exit Code",
+      "runtime": "Duration",
+      "hostname": "Hostname",
+      "startedAt": "Started At",
+      "finishedAt": "Finished At",
+      "exception": "Exception",
+      "operation": "Action",
+      "view": "View",
+      "statusRunning": "Running",
+      "statusSuccess": "Success",
+      "statusFailed": "Failed",
+      "statusSkipped": "Skipped"
     }
   }
 }

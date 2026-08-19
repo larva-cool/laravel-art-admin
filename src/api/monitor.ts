@@ -287,3 +287,15 @@ export function fetchPulseSlowOutgoingRequests(params?: PulseOrderByParams) {
 export function fetchPulseUsage(params?: PulseUsageParams) {
   return request.get<PulseUsageResponse>({ url: '/admin/monitor/usage', params })
 }
+
+// ========== 调度任务日志 ==========
+
+/** 调度日志列表（分页） */
+export function fetchScheduleLogList(params: Api.Monitor.ScheduleLogSearchParams) {
+  return request.get<Api.Monitor.ScheduleLogList>({ url: '/admin/schedule-logs', params })
+}
+
+/** 调度日志详情 */
+export function fetchScheduleLogDetail(id: number) {
+  return request.get<Api.Monitor.ScheduleLogItem>({ url: `/admin/schedule-logs/${id}` })
+}

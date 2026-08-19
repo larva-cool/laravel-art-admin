@@ -649,6 +649,25 @@
       "slowOutgoing": "慢外部请求",
       "slowOutgoingSubtitle": "outgoing HTTP 耗时",
       "noSlowOutgoing": "暂无慢外部请求"
+    },
+    "scheduleLog": {
+      "title": "调度日志",
+      "name": "任务名称",
+      "type": "类型",
+      "expression": "Cron 表达式",
+      "status": "状态",
+      "exitCode": "退出码",
+      "runtime": "耗时",
+      "hostname": "主机名",
+      "startedAt": "开始时间",
+      "finishedAt": "结束时间",
+      "exception": "异常信息",
+      "operation": "操作",
+      "view": "查看",
+      "statusRunning": "执行中",
+      "statusSuccess": "成功",
+      "statusFailed": "失败",
+      "statusSkipped": "跳过"
     }
   }
 }

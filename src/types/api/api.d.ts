@@ -755,4 +755,35 @@ declare namespace Api {
       reason?: string
     }
   }
+
+  /** 调度日志监控 */
+  namespace Monitor {
+    /** 调度日志列表（Laravel 分页） */
+    type ScheduleLogList = Api.Common.PaginatedResponse<ScheduleLogItem>
+
+    /** 调度日志列表项（ScheduleLogResource） */
+    interface ScheduleLogItem {
+      id: number
+      name: string
+      type: string
+      expression: string
+      status: number
+      status_text: string
+      exit_code: number | null
+      runtime: number | null
+      exception: string | null
+      hostname: string | null
+      started_at: string | null
+      finished_at: string | null
+    }
+
+    /** 调度日志搜索参数 */
+    interface ScheduleLogSearchParams extends Api.Common.CommonSearchParams {
+      name?: string
+      type?: string
+      status?: number
+      start_date?: string
+      end_date?: string
+    }
+  }
 }
