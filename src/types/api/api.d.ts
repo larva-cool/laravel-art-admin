@@ -274,6 +274,17 @@ declare namespace Api {
       disks: string[]
     }
 
+    /** 配置输入类型选项 */
+    interface SettingInputTypeOption {
+      value: string
+      label: string
+    }
+
+    /** 配置输入类型响应 */
+    interface SettingInputTypesResponse {
+      data: SettingInputTypeOption[]
+    }
+
     /** 地区列表项（AreaResource） */
     interface AreaListItem {
       id: number
@@ -463,6 +474,7 @@ declare namespace Api {
     /** 中转上传返回结果 */
     interface AttachmentUploadResult {
       id: number
+      url: string | null
       storage: string
       origin_name: string
       file_name: string

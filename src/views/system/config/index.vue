@@ -166,6 +166,36 @@
                         {{ opt.label }}
                       </ElCheckbox>
                     </ElCheckboxGroup>
+                    <!-- image 图片上传 -->
+                    <div v-else-if="item.input_type === 'image'" class="w-full">
+                      <ElUpload
+                        :auto-upload="false"
+                        accept="image/*"
+                        :show-file-list="false"
+                        :disabled="uploadingKey === item.key"
+                        @change="(file: UploadFile) => handleImageChange(item.key, file)"
+                      >
+                        <div
+                          class="flex-c-c w-[100px] h-[100px] rounded-md border-full-d overflow-hidden c-p"
+                          v-loading="uploadingKey === item.key"
+                        >
+                          <ElImage
+                            v-if="formData[item.key]"
+                            :src="formData[item.key]"
+                            fit="cover"
+                            class="w-full h-full"
+                          />
+                          <ArtSvgIcon v-else icon="ri:image-add-line" class="text-2xl text-g-400" />
+                        </div>
+                      </ElUpload>
+                      <div class="mt-1 flex-c gap-2">
+                        <ElInput
+                          v-model="formData[item.key]"
+                          placeholder="图片地址（可手动填写）"
+                          clearable
+                        />
+                      </div>
+                    </div>
                     <!-- 默认降级为 input -->
                     <ElInput v-else v-model="formData[item.key]" clearable />
 

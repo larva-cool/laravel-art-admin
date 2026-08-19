@@ -244,6 +244,13 @@ export function fetchGetSettingGroups() {
   })
 }
 
+// 获取所有可用的配置输入类型（供编辑弹窗下拉使用）
+export function fetchGetSettingInputTypes() {
+  return request.get<Api.SystemManage.SettingInputTypesResponse>({
+    url: '/admin/settings/input-types'
+  })
+}
+
 // 批量保存配置
 export function fetchBatchUpdateSettings(data: Record<string, any>) {
   return request.put<{ message: string }>({
