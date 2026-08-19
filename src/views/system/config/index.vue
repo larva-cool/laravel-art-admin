@@ -112,7 +112,7 @@
                       v-model="formData[item.key]"
                       :min="0"
                       controls-position="right"
-                      class="w-full"
+                      class="!w-full"
                     />
                     <!-- float 数字输入 -->
                     <ElInputNumber
@@ -121,7 +121,7 @@
                       :min="0"
                       :precision="2"
                       controls-position="right"
-                      class="w-full"
+                      class="!w-full"
                     />
                     <!-- select 下拉选择 -->
                     <ElSelect
@@ -170,7 +170,7 @@
                     <ElInput v-else v-model="formData[item.key]" clearable />
 
                     <!-- 备注提示 -->
-                    <div v-if="item.remark" class="text-xs text-g-500 mt-1 leading-tight">
+                    <div v-if="item.remark" class="w-full text-xs text-g-500 mt-1 leading-tight">
                       {{ item.remark }}
                     </div>
                   </ElFormItem>

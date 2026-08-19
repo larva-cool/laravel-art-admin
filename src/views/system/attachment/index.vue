@@ -12,9 +12,6 @@
             <ElRadioButton value="direct">直传云存储</ElRadioButton>
             <ElRadioButton value="proxy">中转上传</ElRadioButton>
           </ElRadioGroup>
-          <ElTooltip content="目录按文件类型自动归类，暂不支持新建" placement="top">
-            <ElButton disabled>新建目录</ElButton>
-          </ElTooltip>
           <ElButton type="primary" :loading="uploading" @click="triggerUpload" v-ripple>
             上传文件
           </ElButton>

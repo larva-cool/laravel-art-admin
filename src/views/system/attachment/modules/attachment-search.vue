@@ -48,7 +48,7 @@
       }
     },
     {
-      label: '云厂商',
+      label: '存储',
       key: 'disk',
       type: 'select',
       props: {
