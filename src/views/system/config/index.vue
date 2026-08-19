@@ -156,10 +156,59 @@
                     <!-- checkbox 多选 -->
                     <ElCheckboxGroup
                       v-else-if="item.input_type === 'checkbox'"
-                      v-model="formData[item.key]"
+                      :model-value="getMultipleValue(item.key)"
+                      @update:model-value="(val) => setMultipleValue(item.key, val as string[])"
                     >
                       <ElCheckbox
                         v-for="opt in parseOptions(item.param)"
+                        :key="opt.value"
+                        :value="opt.value"
+                      >
+                        {{ opt.label }}
+                      </ElCheckbox>
+                    </ElCheckboxGroup>
+                    <!-- remote_select 远程下拉选择 -->
+                    <ElSelect
+                      v-else-if="item.input_type === 'remote_select'"
+                      v-model="formData[item.key]"
+                      :placeholder="
+                        t('menus.system.configPage.selectPlaceholder', { name: item.name })
+                      "
+                      :loading="remoteLoading[item.key]"
+                      clearable
+                      filterable
+                      class="w-full"
+                    >
+                      <ElOption
+                        v-for="opt in remoteOptions[item.key] ?? []"
+                        :key="opt.value"
+                        :label="opt.label"
+                        :value="opt.value"
+                      />
+                    </ElSelect>
+                    <!-- remote_radio 远程单选 -->
+                    <ElRadioGroup
+                      v-else-if="item.input_type === 'remote_radio'"
+                      v-model="formData[item.key]"
+                      :disabled="remoteLoading[item.key]"
+                    >
+                      <ElRadio
+                        v-for="opt in remoteOptions[item.key] ?? []"
+                        :key="opt.value"
+                        :value="opt.value"
+                      >
+                        {{ opt.label }}
+                      </ElRadio>
+                    </ElRadioGroup>
+                    <!-- remote_checkbox 远程多选 -->
+                    <ElCheckboxGroup
+                      v-else-if="item.input_type === 'remote_checkbox'"
+                      :model-value="getMultipleValue(item.key)"
+                      :disabled="remoteLoading[item.key]"
+                      @update:model-value="(val) => setMultipleValue(item.key, val as string[])"
+                    >
+                      <ElCheckbox
+                        v-for="opt in remoteOptions[item.key] ?? []"
                         :key="opt.value"
                         :value="opt.value"
                       >
@@ -239,6 +288,7 @@
     fetchUploadAttachmentFile
   } from '@/api/system-manage'
   import AppConfig from '@/config'
+  import request from '@/utils/http'
   import type { UploadFile } from 'element-plus'
   import { useI18n } from 'vue-i18n'
 
@@ -339,6 +389,105 @@
     }
   }
 
+  /** 多选类型的值以 JSON 数组字符串存储，读取时转为数组 */
+  const getMultipleValue = (key: string): string[] => {
+    const raw = formData[key]
+    if (Array.isArray(raw)) {
+      return raw.map((item) => String(item))
+    }
+    if (!raw) {
+      return []
+    }
+    try {
+      const parsed = JSON.parse(String(raw))
+      return Array.isArray(parsed) ? parsed.map((item) => String(item)) : []
+    } catch {
+      return String(raw).split(',').filter(Boolean)
+    }
+  }
+
+  /** 多选类型写回时序列化为 JSON 数组字符串 */
+  const setMultipleValue = (key: string, val: string[]) => {
+    formData[key] = val.length ? JSON.stringify(val) : ''
+  }
+
+  /** 远程数据源的输入类型 */
+  const REMOTE_INPUT_TYPES = ['remote_select', 'remote_radio', 'remote_checkbox']
+
+  /** 各配置项的远程选项与加载状态（以配置 key 索引） */
+  const remoteOptions = reactive<Record<string, Array<{ label: string; value: string }>>>({})
+  const remoteLoading = reactive<Record<string, boolean>>({})
+
+  /**
+   * 归一化远程返回的数据为下拉选项
+   *
+   * 兼容 `[{ label, value }]`、`{ data: [...] }`、`{ options: [...] }` 及键值对结构
+   */
+  const normalizeRemoteOptions = (raw: unknown): Array<{ label: string; value: string }> => {
+    const source = raw as Record<string, unknown> | null
+    const list = Array.isArray(raw)
+      ? raw
+      : Array.isArray(source?.data)
+        ? (source.data as unknown[])
+        : Array.isArray(source?.options)
+          ? (source.options as unknown[])
+          : null
+
+    if (list) {
+      return list.map((item) => {
+        if (item !== null && typeof item === 'object') {
+          const obj = item as Record<string, unknown>
+          const value = String(obj.value ?? obj.key ?? obj.id ?? '')
+          return { label: String(obj.label ?? obj.name ?? obj.title ?? value), value }
+        }
+        return { label: String(item), value: String(item) }
+      })
+    }
+
+    if (raw !== null && typeof raw === 'object') {
+      return Object.entries(raw as Record<string, unknown>).map(([value, label]) => ({
+        value,
+        label: String(label)
+      }))
+    }
+
+    return []
+  }
+
+  /**
+   * 加载单个远程类型配置项的选项数据，url 取自 param.url
+   */
+  const loadRemoteOptions = async (item: SettingGroupItem) => {
+    const url = String(item.param?.url ?? '')
+    if (!url) {
+      remoteOptions[item.key] = []
+      return
+    }
+
+    remoteLoading[item.key] = true
+    try {
+      const isAbsolute = /^https?:\/\//i.test(url)
+      const res = await request.get<unknown>({
+        url,
+        baseURL: isAbsolute ? '' : import.meta.env.VITE_API_URL,
+        showErrorMessage: false
+      })
+      remoteOptions[item.key] = normalizeRemoteOptions(res)
+    } catch {
+      remoteOptions[item.key] = []
+    } finally {
+      remoteLoading[item.key] = false
+    }
+  }
+
+  /** 并发加载所有远程类型配置项的选项 */
+  const loadAllRemoteOptions = async () => {
+    const items = groups.value.flatMap((group) =>
+      group.items.filter((item) => REMOTE_INPUT_TYPES.includes(item.input_type))
+    )
+    await Promise.all(items.map((item) => loadRemoteOptions(item)))
+  }
+
   /** 正在上传图片的配置项 key */
   const uploadingKey = ref('')
 
@@ -382,6 +531,7 @@
       Object.keys(formData).forEach((k) => delete formData[k])
       Object.assign(formData, data)
       originalData.value = JSON.parse(JSON.stringify(data))
+      loadAllRemoteOptions()
     } finally {
       loading.value = false
     }
