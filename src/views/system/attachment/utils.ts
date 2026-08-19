@@ -10,6 +10,15 @@ export const typeItems = [
   { value: 'other', label: '其他文件', icon: 'ri:file-3-line' }
 ]
 
+/** 文件类型标签英文大写名（表格列用，对齐设计图） */
+export const typeLabelUpper: Record<string, string> = {
+  image: 'IMAGE',
+  video: 'VIDEO',
+  audio: 'AUDIO',
+  document: 'DOC',
+  other: 'OTHER'
+}
+
 /** 文件类型标签配色 */
 export const typeTagType: Record<string, 'primary' | 'success' | 'warning' | 'info'> = {
   image: 'success',

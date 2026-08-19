@@ -1,54 +1,72 @@
 <template>
   <div class="art-full-height">
-    <!-- 顶部：标题 + 上传操作 -->
-    <div class="art-card p-5">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h4 class="text-base font-medium text-g-900">文件中心</h4>
-          <p class="text-xs text-g-500 mt-1">上传、整理目录并管理文件公开分发</p>
+    <!-- 顶部：标题 + 操作 + 统计 -->
+    <section class="art-card-sm shrink-0 px-5 py-4 md:px-6 md:py-5">
+      <div class="relative z-10 flex flex-col gap-6 xl:flex-row xl:justify-between xl:items-center">
+        <div class="min-w-0 max-w-3xl">
+          <h1 class="font-semibold tracking-tight text-g-900 text-xl">文件中心</h1>
+          <p class="mt-2 text-sm leading-7 text-g-600 max-w-2xl">
+            上传、整理目录并管理文件公开分发。
+          </p>
         </div>
-        <ElSpace wrap>
-          <ElRadioGroup v-model="uploadMode" size="default">
-            <ElRadioButton value="direct">直传云存储</ElRadioButton>
-            <ElRadioButton value="proxy">中转上传</ElRadioButton>
+        <div class="min-w-0 flex flex-wrap items-center gap-2">
+          <ElRadioGroup v-model="uploadMode">
+            <ElRadioButton value="direct">前端直传</ElRadioButton>
+            <ElRadioButton value="proxy">后端中转</ElRadioButton>
           </ElRadioGroup>
           <ElButton type="primary" :loading="uploading" @click="triggerUpload" v-ripple>
             上传文件
           </ElButton>
-        </ElSpace>
-      </div>
-
-      <!-- 统计指标 -->
-      <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="p-3 rounded-md bg-(--art-gray-100)">
-          <div class="text-xl font-bold text-g-900 tabular-nums">{{ stats.total }}</div>
-          <div class="text-xs text-g-500 mt-1">总文件数</div>
-          <div class="text-xs text-g-400 mt-0.5">台账登记的文件总数</div>
-        </div>
-        <div class="p-3 rounded-md bg-(--art-gray-100)">
-          <div class="text-xl font-bold text-g-900 tabular-nums">{{ stats.private }}</div>
-          <div class="text-xs text-g-500 mt-1">私有文件</div>
-          <div class="text-xs text-g-400 mt-0.5">需签名地址才能访问的内容</div>
-        </div>
-        <div class="p-3 rounded-md bg-(--art-gray-100)">
-          <div class="text-xl font-bold text-g-900 tabular-nums">{{ stats.public }}</div>
-          <div class="text-xs text-g-500 mt-1">公开文件</div>
-          <div class="text-xs text-g-400 mt-0.5">可生成公开链接直接分发</div>
-        </div>
-        <div class="p-3 rounded-md bg-(--art-gray-100)">
-          <div class="text-xl font-bold text-g-900">{{ uploadModeLabel }}</div>
-          <div class="text-xs text-g-500 mt-1">当前上传模式</div>
-          <div class="text-xs text-g-400 mt-0.5">{{ uploadModeHint }}</div>
         </div>
       </div>
-    </div>
+      <div class="relative z-10 mt-4">
+        <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <div
+            class="rounded-[var(--custom-radius)] border border-[var(--default-border)] px-4 py-3"
+          >
+            <div class="text-xs uppercase tracking-[0.14em] text-g-500">总文件数</div>
+            <div class="mt-2 leading-none text-g-900 text-[26px] font-semibold tabular-nums">
+              {{ stats.total }}
+            </div>
+            <div class="mt-1 text-xs leading-5 text-g-600">当前筛选条件下的可访问资源数量</div>
+          </div>
+          <div
+            class="rounded-[var(--custom-radius)] border border-[var(--default-border)] px-4 py-3"
+          >
+            <div class="text-xs uppercase tracking-[0.14em] text-g-500">图片</div>
+            <div class="mt-2 leading-none text-g-900 text-[26px] font-semibold tabular-nums">
+              {{ stats.images }}
+            </div>
+            <div class="mt-1 text-xs leading-5 text-g-600">IMAGE 类型文件数</div>
+          </div>
+          <div
+            class="rounded-[var(--custom-radius)] border border-[var(--default-border)] px-4 py-3"
+          >
+            <div class="text-xs uppercase tracking-[0.14em] text-g-500">视频</div>
+            <div class="mt-2 leading-none text-g-900 text-[26px] font-semibold tabular-nums">
+              {{ stats.videos }}
+            </div>
+            <div class="mt-1 text-xs leading-5 text-g-600">VIDEO 类型文件数</div>
+          </div>
+          <div
+            class="rounded-[var(--custom-radius)] border border-[var(--default-border)] px-4 py-3"
+          >
+            <div class="text-xs uppercase tracking-[0.14em] text-g-500">当前模式</div>
+            <div class="mt-2 leading-none text-g-900 text-[22px] font-semibold">
+              {{ uploadModeLabel }}
+            </div>
+            <div class="mt-1 text-xs leading-5 text-g-600">{{ uploadModeHint }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <div class="flex flex-col md:flex-row items-start gap-4 mt-3">
+    <div class="grid grid-cols-12 gap-4 mt-3 flex-1 min-h-0">
       <!-- 左侧：按文件类型筛选 -->
-      <div class="w-full md:w-66 shrink-0">
-        <div class="art-card p-4">
-          <div class="text-sm uppercase font-bold text-g-500 mb-1">文件类型管理</div>
-          <p class="text-xs text-g-400 mb-3">按文件类型归类，切换后自动筛选列表</p>
+      <div class="col-span-12 h-full xl:col-span-3">
+        <div class="art-card p-4 h-full">
+          <div class="text-sm font-bold text-g-900 mb-1">文件类型管理</div>
+          <p class="text-xs text-g-600 mb-3">按文件类型归类，切换后自动筛选列表</p>
 
           <div class="space-y-0.5">
             <div
@@ -63,7 +81,11 @@
               @click="handleTypeChange(item.value)"
             >
               <ArtSvgIcon :icon="item.icon" class="text-lg shrink-0" />
-              <span class="text-[15px] truncate flex-1">{{ item.label }}</span>
+              <span
+                class="truncate text-sm flex-1"
+                :class="activeType === item.value ? 'text-theme font-medium' : 'text-g-800'"
+                >{{ item.label }}</span
+              >
               <span class="text-sm tabular-nums">{{ typeCounts[item.value] ?? 0 }}</span>
             </div>
           </div>
@@ -71,26 +93,27 @@
       </div>
 
       <!-- 右侧：搜索 + 列表 -->
-      <div class="flex-1 min-w-0 w-full">
-        <AttachmentSearch
-          v-show="showSearchBar"
-          @search="handleSearch"
-          @reset-search-params="handleResetSearch"
-        />
-
-        <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-          <ArtTableHeader
-            v-model:columns="columnChecks"
-            v-model:showSearchBar="showSearchBar"
-            :loading="loading"
-            @refresh="handleRefresh"
-          >
-            <template #right>
-              <ElSpace v-if="selectedRows.length" wrap class="ml-2">
-                <ElTag size="small" type="success">已选 {{ selectedRows.length }} 项</ElTag>
+      <div class="col-span-12 h-full min-w-0 xl:col-span-9">
+        <ElCard
+          class="art-table-card attachment-card !mt-0 flex h-full flex-col overflow-hidden"
+          body-class="!p-0 flex-1 flex flex-col min-h-0"
+        >
+          <!-- 搜索区 -->
+          <div class="border-b-d px-5 py-5 shrink-0">
+            <AttachmentSearch @search="handleSearch" @reset-search-params="handleResetSearch" />
+            <!-- 信息标签 + 批量操作行 -->
+            <div class="mt-4 flex items-center justify-between gap-3 h-8">
+              <div class="flex items-center gap-2">
+                <ElTag type="info">共 {{ pagination.total }} 条</ElTag>
+                <ElTag v-if="selectedRows.length" type="primary">
+                  已选 {{ selectedRows.length }} 项
+                </ElTag>
+                <ElTag type="warning" effect="light">上传模式：{{ uploadModeLabel }}</ElTag>
+              </div>
+              <div v-if="selectedRows.length" class="flex items-center gap-2">
                 <ElButton
                   v-if="hasAuth('attachments.edit')"
-                  size="small"
+                  plain
                   @click="handleBatchMove"
                   v-ripple
                 >
@@ -98,17 +121,18 @@
                 </ElButton>
                 <ElButton
                   v-if="hasAuth('attachments.delete')"
-                  size="small"
                   type="danger"
+                  plain
                   @click="handleBatchDelete"
                   v-ripple
                 >
                   批量删除
                 </ElButton>
-              </ElSpace>
-            </template>
-          </ArtTableHeader>
+              </div>
+            </div>
+          </div>
 
+          <!-- 表格区 -->
           <ArtTable
             :loading="loading"
             :data="data"
@@ -141,7 +165,6 @@
 </template>
 
 <script setup lang="ts">
-  import axios from 'axios'
   import {
     fetchAttachmentUploadToken,
     fetchBatchDeleteAttachments,
@@ -152,17 +175,18 @@
     fetchTemporaryUrlAttachment,
     fetchUploadAttachmentFile
   } from '@/api/system-manage'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
   import { useTable } from '@/hooks/core/useTable'
   import { useClipboard } from '@vueuse/core'
+  import axios from 'axios'
   import { ElImage, ElImageViewer, ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { diskLabel, directoryOf, typeIcon, typeItems, typeTagType } from './utils'
-  import AttachmentSearch from './modules/attachment-search.vue'
   import AttachmentDetailDrawer from './modules/attachment-detail-drawer.vue'
-  import AttachmentRenameDialog from './modules/attachment-rename-dialog.vue'
   import AttachmentMoveDialog from './modules/attachment-move-dialog.vue'
+  import AttachmentRenameDialog from './modules/attachment-rename-dialog.vue'
+  import AttachmentSearch from './modules/attachment-search.vue'
+  import { directoryOf, typeIcon, typeItems } from './utils'
 
   defineOptions({ name: 'Attachment' })
 
@@ -171,7 +195,6 @@
 
   type AttachmentListItem = Api.SystemManage.AttachmentListItem
 
-  const showSearchBar = ref(true)
   const uploadMode = ref<'direct' | 'proxy'>('proxy')
   const uploading = ref(false)
   const activeType = ref('')
@@ -181,24 +204,22 @@
   const renameDialogRef = ref<InstanceType<typeof AttachmentRenameDialog>>()
   const moveDialogRef = ref<InstanceType<typeof AttachmentMoveDialog>>()
   const typeCounts = ref<Record<string, number>>({})
-  const privateCount = ref(0)
   const previewVisible = ref(false)
   const previewUrlList = ref<string[]>([])
 
-  const uploadModeLabel = computed(() => (uploadMode.value === 'direct' ? '直传' : '中转'))
+  const uploadModeLabel = computed(() => (uploadMode.value === 'direct' ? '前端直传' : '后端中转'))
   const uploadModeHint = computed(() =>
     uploadMode.value === 'direct' ? '浏览器直接上传至对象存储' : '文件经服务端写入存储'
   )
 
   const stats = computed(() => ({
     total: typeCounts.value[''] ?? 0,
-    private: privateCount.value,
-    public: Math.max((typeCounts.value[''] ?? 0) - privateCount.value, 0)
+    images: typeCounts.value.image ?? 0,
+    videos: typeCounts.value.video ?? 0
   }))
 
   const {
     columns,
-    columnChecks,
     data,
     loading,
     pagination,
@@ -207,7 +228,6 @@
     resetSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData,
     refreshCreate,
     refreshUpdate,
     refreshRemove
@@ -269,12 +289,7 @@
           prop: 'type',
           label: '类型',
           width: 100,
-          formatter: (row: AttachmentListItem) =>
-            h(
-              ElTag,
-              { type: typeTagType[row.type.value] ?? 'info', size: 'small' },
-              () => row.type.label
-            )
+          formatter: (row: AttachmentListItem) => h('span', row.type.label)
         },
         { prop: 'size_text', label: '大小', width: 110 },
         {
@@ -283,18 +298,6 @@
           minWidth: 160,
           showOverflowTooltip: true,
           formatter: (row: AttachmentListItem) => directoryOf(row.path)
-        },
-        {
-          prop: 'disk',
-          label: '存储',
-          width: 110,
-          formatter: (row: AttachmentListItem) => diskLabel(row.disk)
-        },
-        {
-          prop: 'uploader',
-          label: '上传者',
-          width: 120,
-          formatter: (row: AttachmentListItem) => row.uploader?.name ?? '-'
         },
         { prop: 'created_at', label: '上传时间', width: 180 },
         {
@@ -341,26 +344,22 @@
     }
   })
 
-  /** 加载左侧目录计数与顶部统计 */
+  /** 加载左侧类型计数与顶部统计 */
   const loadStats = async () => {
     const typeValues = typeItems.map((item) => item.value)
-    const [counts, privateResult] = await Promise.all([
-      Promise.all(
-        typeValues.map((type) =>
-          fetchGetAttachmentList({ page: 1, per_page: 1, ...(type ? { type } : {}) })
-        )
-      ),
-      fetchGetAttachmentList({ page: 1, per_page: 1, disk: 'local' })
-    ])
+    const counts = await Promise.all(
+      typeValues.map((type) =>
+        fetchGetAttachmentList({ page: 1, per_page: 1, ...(type ? { type } : {}) })
+      )
+    )
 
     typeCounts.value = typeValues.reduce<Record<string, number>>((result, type, index) => {
       result[type] = counts[index]?.meta?.total ?? 0
       return result
     }, {})
-    privateCount.value = privateResult?.meta?.total ?? 0
   }
 
-  /** 切换左侧目录 */
+  /** 切换左侧类型 */
   const handleTypeChange = (type: string) => {
     if (activeType.value === type) return
     activeType.value = type
@@ -390,11 +389,6 @@
   const handleResetSearch = () => {
     activeType.value = ''
     resetSearchParams()
-  }
-
-  const handleRefresh = async () => {
-    refreshData()
-    await loadStats()
   }
 
   const handleSelectionChange = (rows: AttachmentListItem[]) => {
@@ -515,7 +509,6 @@
 
   /**
    * 直传云存储：先取预签名地址，浏览器直接 PUT 到对象存储，成功后登记台账。
-   * 预签名地址自带签名信息，必须绕过项目 http 封装以避免注入 Authorization 头。
    */
   const uploadDirect = async (file: File) => {
     const { url, headers, path } = await fetchAttachmentUploadToken(file.name)
