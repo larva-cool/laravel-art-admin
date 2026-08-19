@@ -61,10 +61,10 @@
       </div>
     </section>
 
-    <div class="grid grid-cols-12 gap-4 mt-3 flex-1 min-h-0">
+    <div class="grid grid-cols-12 gap-4 mt-3">
       <!-- 左侧：按文件类型筛选 -->
-      <div class="col-span-12 h-full xl:col-span-3">
-        <div class="art-card p-4 h-full">
+      <div class="col-span-12 min-w-0 xl:col-span-3">
+        <div class="art-card p-4">
           <div class="text-sm font-bold text-g-900 mb-1">文件类型管理</div>
           <p class="text-xs text-g-600 mb-3">按文件类型归类，切换后自动筛选列表</p>
 
@@ -93,13 +93,10 @@
       </div>
 
       <!-- 右侧：搜索 + 列表 -->
-      <div class="col-span-12 h-full min-w-0 xl:col-span-9">
-        <ElCard
-          class="art-table-card attachment-card !mt-0 flex h-full flex-col overflow-hidden"
-          body-class="!p-0 flex-1 flex flex-col min-h-0"
-        >
+      <div class="col-span-12 min-w-0 xl:col-span-9">
+        <ElCard class="art-table-card attachment-card !mt-0" body-class="!p-0">
           <!-- 搜索区 -->
-          <div class="border-b-d px-5 py-5 shrink-0">
+          <div class="border-b-d px-5 py-5">
             <AttachmentSearch @search="handleSearch" @reset-search-params="handleResetSearch" />
             <!-- 信息标签 + 批量操作行 -->
             <div class="mt-4 flex items-center justify-between gap-3 h-8">
@@ -132,19 +129,42 @@
             </div>
           </div>
 
+          <!-- 空状态提示 -->
+          <div v-if="!loading && data.length === 0" class="px-5 pt-4">
+            <div
+              class="rounded-custom-sm border border-dashed border-[var(--default-border)] bg-[var(--default-bg-color)] px-4 py-3 text-sm text-g-600"
+            >
+              当前筛选下没有文件，使用顶部「上传文件」或调整筛选条件继续查看。
+            </div>
+          </div>
+
           <!-- 表格区 -->
-          <ArtTable
-            :loading="loading"
-            :data="data"
-            :columns="columns"
-            :pagination="pagination"
-            row-key="id"
-            class="attachment-table"
-            @row-click="handleRowClick"
-            @selection-change="handleSelectionChange"
-            @pagination:size-change="handleSizeChange"
-            @pagination:current-change="handleCurrentChange"
-          />
+          <div class="file-table-wrap px-5 pt-4">
+            <ArtTable
+              :loading="loading"
+              :data="data"
+              :columns="columns"
+              :show-table-header="false"
+              row-key="id"
+              class="attachment-table"
+              @row-click="handleRowClick"
+              @selection-change="handleSelectionChange"
+            />
+          </div>
+
+          <!-- 底部分页 -->
+          <div class="flex items-center justify-center px-5 py-3">
+            <ElPagination
+              background
+              layout="total, prev, pager, next, sizes, jumper"
+              :total="pagination.total"
+              :page-size="pagination.size"
+              :current-page="pagination.current"
+              :page-sizes="[10, 20, 30, 50, 100]"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+            />
+          </div>
         </ElCard>
       </div>
     </div>
