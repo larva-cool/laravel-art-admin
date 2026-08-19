@@ -257,8 +257,12 @@
                       class: 'w-11 h-11 shrink-0 cursor-pointer',
                       onClick: () => handlePreview(row)
                     },
-                    row.url
-                      ? h(ElImage, { src: row.url, fit: 'cover', class: 'w-11 h-11 rounded' })
+                    row.preview_url
+                      ? h(ElImage, {
+                          src: row.preview_url,
+                          fit: 'cover',
+                          class: 'w-11 h-11 rounded'
+                        })
                       : h(
                           'div',
                           {
@@ -436,17 +440,17 @@
     await loadStats()
   }
 
-  /** 点击图片缩略图：私有文件先换取临时签名地址，再用图片查看器预览 */
+  /** 点击图片缩略图：优先用列表已返回的展示地址，缺失时再换取临时签名地址 */
   const handlePreview = async (row: AttachmentListItem) => {
-    const url = row.url ?? (await fetchTemporaryUrlAttachment(row.id)).url
+    const url = row.preview_url ?? (await fetchTemporaryUrlAttachment(row.id)).url
     previewUrlList.value = [url]
     previewVisible.value = true
   }
 
   /** 查看：公开文件直接打开，私有文件换取临时签名地址 */
   const handleView = async (row: AttachmentListItem) => {
-    if (row.url) {
-      window.open(row.url, '_blank')
+    if (row.preview_url) {
+      window.open(row.preview_url, '_blank')
       return
     }
     const { url } = await fetchTemporaryUrlAttachment(row.id)

@@ -419,6 +419,8 @@ declare namespace Api {
       disk: string
       path: string
       url: string | null
+      /** 可直接展示的地址：公开磁盘为直链，私有磁盘为临时签名地址 */
+      preview_url: string | null
       type: { value: string; label: string }
       extension: string
       mime_type: string
