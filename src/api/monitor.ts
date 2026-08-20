@@ -299,3 +299,15 @@ export function fetchScheduleLogList(params: Api.Monitor.ScheduleLogSearchParams
 export function fetchScheduleLogDetail(id: number) {
   return request.get<Api.Monitor.ScheduleLogItem>({ url: `/admin/schedule-logs/${id}` })
 }
+
+// ========== 操作日志（审计日志） ==========
+
+/** 审计日志列表（分页） */
+export function fetchAuditLogList(params: Api.Monitor.AuditLogSearchParams) {
+  return request.get<Api.Monitor.AuditLogList>({ url: '/admin/audit-logs', params })
+}
+
+/** 审计日志详情 */
+export function fetchAuditLogDetail(id: number) {
+  return request.get<Api.Monitor.AuditLogItem>({ url: `/admin/audit-logs/${id}` })
+}

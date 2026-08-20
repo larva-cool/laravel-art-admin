@@ -785,5 +785,40 @@ declare namespace Api {
       start_date?: string
       end_date?: string
     }
+
+    /** 审计日志列表（Laravel 分页） */
+    type AuditLogList = Api.Common.PaginatedResponse<AuditLogItem>
+
+    /** 审计日志列表项（AuditLogResource） */
+    interface AuditLogItem {
+      id: number
+      operator_id: number | null
+      operator_name: string | null
+      route: string | null
+      method: string
+      uri: string
+      title: string | null
+      payload: Record<string, any> | null
+      status_code: number
+      is_failed: boolean
+      error: string | null
+      runtime: number | null
+      ip: string | null
+      user_agent: string | null
+      created_at: string | null
+    }
+
+    /** 审计日志搜索参数 */
+    interface AuditLogSearchParams extends Api.Common.CommonSearchParams {
+      operator_id?: number
+      operator_name?: string
+      route?: string
+      method?: string
+      uri?: string
+      status_code?: number
+      is_failed?: boolean
+      start_date?: string
+      end_date?: string
+    }
   }
 }
